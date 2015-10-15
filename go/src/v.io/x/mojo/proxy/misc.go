@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"mojo/public/go/bindings"
-	"mojo/public/go/mojovdl"
 
+	"v.io/x/mojo/transcoder"
 	"v.io/v23/vdl"
 )
 
@@ -49,7 +49,7 @@ func encodeMessageFromVom(header bindings.MessageHeader, argptrs []interface{}, 
 		return nil, err
 	} else {
 		// Encode here.
-		moreBytes, err := mojovdl.Encode(vdlValue)
+		moreBytes, err := transcoder.Encode(vdlValue)
 		if err != nil {
 			return nil, fmt.Errorf("mojovdl.Encode failed: %v", err)
 		}

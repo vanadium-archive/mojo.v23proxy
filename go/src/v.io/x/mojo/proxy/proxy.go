@@ -13,11 +13,11 @@ import (
 
 	"mojo/public/go/application"
 	"mojo/public/go/bindings"
-	"mojo/public/go/mojovdl"
 	"mojo/public/go/system"
 	"mojo/public/interfaces/bindings/mojom_types"
 	"mojo/public/interfaces/bindings/v23proxy"
 
+	"v.io/x/mojo/transcoder"
 	_ "v.io/x/ref/runtime/factories/static"
 )
 
@@ -123,16 +123,16 @@ func (s *genericStub) Accept(message *bindings.Message) (err error) {
 func (s *genericStub) Call(name, method string, value []byte, inParamsType mojom_types.MojomStruct, outParamsType *mojom_types.MojomStruct) ([]byte, error) {
 	log.Printf("server: %s.%s: %#v", name, method, inParamsType)
 
-	inVType := mojovdl.MojomStructToVDLType(inParamsType, s.header.desc)
+	inVType := transcoder.MojomStructToVDLType(inParamsType, s.header.desc)
 	var outVType *vdl.Type
 	if outParamsType != nil {
-		outVType = mojovdl.MojomStructToVDLType(*outParamsType, s.header.desc)
+		outVType = transcoder.MojomStructToVDLType(*outParamsType, s.header.desc)
 	}
 
 	// Decode the vdl.Value from the mojom bytes and mojom type.
-	inVdlValue, err := mojovdl.DecodeValue(value, inVType)
+	inVdlValue, err := transcoder.DecodeValue(value, inVType)
 	if err != nil {
-		return nil, fmt.Errorf("mojovdl.DecodeValue failed: %v", err)
+		return nil, fmt.Errorf("transcoder.DecodeValue failed: %v", err)
 	}
 
 	// inVdlValue is a struct, but we need to send []interface.
@@ -160,9 +160,9 @@ func (s *genericStub) Call(name, method string, value []byte, inParamsType mojom
 	outVdlValue := combineVdlValueByMojomType(outargs, outVType)
 
 	// Finally, encode this *vdl.Value (struct) into mojom bytes and send the response.
-	result, err := mojovdl.Encode(outVdlValue)
+	result, err := transcoder.Encode(outVdlValue)
 	if err != nil {
-		return nil, fmt.Errorf("mojovdl.Encode failed: %v", err)
+		return nil, fmt.Errorf("transcoder.Encode failed: %v", err)
 	}
 	return result, nil
 }

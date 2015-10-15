@@ -1,4 +1,4 @@
-package mojovdl
+package transcoder
 
 import "v.io/v23/vdl"
 

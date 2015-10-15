@@ -1,4 +1,4 @@
-package v23
+package client
 
 import (
 	"mojo/public/go/application"

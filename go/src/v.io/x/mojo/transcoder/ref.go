@@ -1,4 +1,4 @@
-package mojovdl
+package transcoder
 
 type bytesRef struct {
 	allocator            *allocator

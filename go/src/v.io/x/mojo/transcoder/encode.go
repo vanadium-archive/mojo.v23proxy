@@ -1,4 +1,4 @@
-package mojovdl
+package transcoder
 
 import (
 	"reflect"

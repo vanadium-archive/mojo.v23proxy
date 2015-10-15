@@ -10,11 +10,11 @@ import (
 
 	"mojo/public/go/application"
 	"mojo/public/go/bindings"
-	"mojo/public/go/mojovdl"
 	"mojo/public/go/system"
 
 	"v.io/v23/vdl"
 	"v.io/v23/vdlroot/signature"
+	"v.io/x/mojo/transcoder"
 
 	"mojo/public/interfaces/bindings/mojom_types"
 	"mojo/public/interfaces/bindings/service_describer"
@@ -255,7 +255,7 @@ func (fs fakeService) callRemoteMethod(method string, mi mojom_types.MojomInterf
 	}
 
 	// Now produce the *bindings.Message that we will send to the other side.
-	inType := mojovdl.MojomStructToVDLType(mm.Parameters, desc)
+	inType := transcoder.MojomStructToVDLType(mm.Parameters, desc)
 	message, err := encodeMessageFromVom(header, argptrs, inType)
 	if err != nil {
 		return nil, err
@@ -276,10 +276,10 @@ func (fs fakeService) callRemoteMethod(method string, mi mojom_types.MojomInterf
 	}
 
 	// Decode the *vdl.Value from the mojom bytes and mojom type.
-	outType := mojovdl.MojomStructToVDLType(*mm.ResponseParams, desc)
-	outVdlValue, err := mojovdl.DecodeValue(outMessage.Payload, outType)
+	outType := transcoder.MojomStructToVDLType(*mm.ResponseParams, desc)
+	outVdlValue, err := transcoder.DecodeValue(outMessage.Payload, outType)
 	if err != nil {
-		return nil, fmt.Errorf("mojovdl.DecodeValue failed: %v", err)
+		return nil, fmt.Errorf("transcoder.DecodeValue failed: %v", err)
 	}
 
 	// Then split the *vdl.Value (struct) into []*vdl.Value
