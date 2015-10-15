@@ -1,0 +1,7 @@
+module v23proxy;
+
+import "../mojo/public/interfaces/bindings/mojom_types.mojom";
+
+interface V23 {
+  SetupProxy(string v23Name, mojo.bindings.types.MojomInterface ifaceSig, map<string, mojo.bindings.types.UserDefinedType> mapping, string serviceName, handle<message_pipe> futureMessages);
+};

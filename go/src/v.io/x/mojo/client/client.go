@@ -4,7 +4,7 @@ import (
 	"mojo/public/go/application"
 	"mojo/public/go/bindings"
 
-	"mojo/public/interfaces/bindings/v23proxy"
+	"mojom/v23proxy"
 )
 
 func ConnectToRemoteService(ctx application.Context, r application.ServiceRequest, v23Name string) {

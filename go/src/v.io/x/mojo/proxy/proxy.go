@@ -11,11 +11,12 @@ import (
 	"v.io/v23/security"
 	"v.io/v23/vdl"
 
+	"mojom/v23proxy"
+
 	"mojo/public/go/application"
 	"mojo/public/go/bindings"
 	"mojo/public/go/system"
 	"mojo/public/interfaces/bindings/mojom_types"
-	"mojo/public/interfaces/bindings/v23proxy"
 
 	"v.io/x/mojo/transcoder"
 	_ "v.io/x/ref/runtime/factories/static"
