@@ -1,10 +1,14 @@
 PWD := $(shell pwd)
-V23_GO_FILES := $(shell find $(JIRI_ROOT) -name "*.go")
 
 include ../shared/mojo.mk
 
-# Flags for V23Proxy mojo service.
-V23_MOJO_FLAGS := --v=0
+ifdef ANDROID
+	BUILD_DIR := $(PWD)/gen/mojo/android
+	MOJO_SHARED_LIB := $(PWD)/gen/lib/android/libsystem_thunk.a
+else
+	BUILD_DIR := $(PWD)/gen/mojo/linux_amd64
+	MOJO_SHARED_LIB := $(PWD)/gen/lib/linux_amd64/libsystem_thunk.a
+endif
 
-build:
+$(BUILD_DIR)/v23proxy.mojo: $(MOJO_SHARED_LIB)
 	$(call MOGO_BUILD,v.io/x/mojo/proxy,$@)

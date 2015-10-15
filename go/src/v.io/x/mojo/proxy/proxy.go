@@ -152,7 +152,7 @@ func (s *genericStub) Call(name, method string, value []byte, inParamsType mojom
 	}
 
 	// Now, run the call without any authorization.
-	if err := v23.GetClient(s.ctx).Call(s.ctx, name, method, inargsIfc, outptrs, options.SkipServerEndpointAuthorization{}); err != nil {
+	if err := v23.GetClient(s.ctx).Call(s.ctx, name, method, inargsIfc, outptrs, options.ServerAuthorizer{security.AllowEveryone()}); err != nil {
 		return nil, err
 	}
 
