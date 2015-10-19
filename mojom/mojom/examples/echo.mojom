@@ -1,0 +1,25 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[JavaPackage="org.chromium.mojo.examples.fortune"]
+module mojo.examples;
+
+enum Result {
+  A,
+  B
+};
+
+union outArgTypes {
+  int64 i64;
+  Result res;
+};
+
+struct aInArg {
+  string str;
+};
+
+interface RemoteEcho {
+  EchoString(string value) => (string value);
+  EchoX(array<bool> arg1, aInArg arg2) => (outArgTypes out);
+};

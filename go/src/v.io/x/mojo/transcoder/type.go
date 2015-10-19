@@ -76,7 +76,7 @@ func MojomStructToVDLType(ms mojom_types.MojomStruct, mp map[string]mojom_types.
 	for ix, mfield := range ms.Fields {
 		vfields[ix] = vdl.Field{
 			Name: *mfield.DeclData.ShortName,
-			Type: MojomToVDLType(mfield.FieldType, mp),
+			Type: MojomToVDLType(mfield.Type, mp),
 		}
 	}
 	vt = vdl.NamedType(*ms.DeclData.ShortName, vdl.StructType(vfields...))

@@ -71,16 +71,18 @@ func (r *v23HeaderReceiver) SetupProxy(v23Name string, ifaceSig mojom_types.Mojo
 	return nil
 }
 
-type byteCopyingPayload []byte
+// TODO(alexfandrianto): This assumes that bindings.Encoder has the method
+// WriteRawBytes. See the comment block below.
+// type byteCopyingPayload []byte
 
-func (bcp byteCopyingPayload) Encode(encoder *bindings.Encoder) error {
-	encoder.WriteRawBytes(bcp)
-	return nil
-}
+// func (bcp byteCopyingPayload) Encode(encoder *bindings.Encoder) error {
+// 	encoder.WriteRawBytes(bcp)
+// 	return nil
+// }
 
-func (bcp byteCopyingPayload) Decode(decoder *bindings.Decoder) error {
-	panic("not supported")
-}
+// func (bcp byteCopyingPayload) Decode(decoder *bindings.Decoder) error {
+// 	panic("not supported")
+// }
 
 type genericStub struct {
 	header    *v23HeaderReceiver
@@ -89,10 +91,6 @@ type genericStub struct {
 }
 
 func (s *genericStub) Accept(message *bindings.Message) (err error) {
-	/*if int(message.Header.Type) >= len(s.header.ifaceSig.Methods) {
-		return fmt.Errorf("Method had index %d, but interface only has %d methods",
-			message.Header.Type, len(s.header.ifaceSig.Methods))
-	}*/
 	if _, ok := s.header.ifaceSig.Methods[message.Header.Type]; !ok {
 		return fmt.Errorf("Method had index %d, but interface only has %d methods",
 			message.Header.Type, len(s.header.ifaceSig.Methods))
@@ -109,16 +107,48 @@ func (s *genericStub) Accept(message *bindings.Message) (err error) {
 	if err != nil {
 		return err
 	}
+
+	// TODO(alexfandrianto): This assumes that bindings.Encoder has the method
+	// WriteRawBytes. We will need to add this to Mojo ourselves.
+	// func (e *Encoder) WriteRawBytes(data []byte) {
+	// 	first := e.end
+	// 	e.claimData(align(len(data), defaultAlignment))
+	// 	copy(e.buf[first:], data)
+	// }
+	//
+	// See: https://codereview.chromium.org/1416433002/
+
 	responseHeader := bindings.MessageHeader{
 		Type:      message.Header.Type,
 		Flags:     bindings.MessageIsResponseFlag,
 		RequestId: message.Header.RequestId,
 	}
-	responseMessage, err := bindings.EncodeMessage(responseHeader, byteCopyingPayload(response))
-	if err != nil {
+	// responseMessage, err := bindings.EncodeMessage(responseHeader, byteCopyingPayload(response))
+	// if err != nil {
+	// 	return err
+	// }
+	// return s.connector.WriteMessage(responseMessage)
+
+	// TODO(alexfandrianto): Replace this block with the above.
+	encoder := bindings.NewEncoder()
+	if err := responseHeader.Encode(encoder); err != nil {
 		return err
 	}
-	return s.connector.WriteMessage(responseMessage)
+	if bytes, handles, err := encoder.Data(); err != nil {
+		return err
+	} else {
+		// response is our payload; append to the end of our slice.
+		bytes = append(bytes, response...)
+
+		// This is analogous to bindings.newMessage
+		responseMessage := &bindings.Message{
+			Header:  responseHeader,
+			Bytes:   bytes,
+			Handles: handles,
+			Payload: response,
+		}
+		return s.connector.WriteMessage(responseMessage)
+	}
 }
 
 func (s *genericStub) Call(name, method string, value []byte, inParamsType mojom_types.MojomStruct, outParamsType *mojom_types.MojomStruct) ([]byte, error) {

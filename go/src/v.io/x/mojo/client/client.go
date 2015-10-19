@@ -9,7 +9,19 @@ import (
 
 func ConnectToRemoteService(ctx application.Context, r application.ServiceRequest, v23Name string) {
 	v23r, v23p := v23proxy.CreateMessagePipeForV23()
-	ctx.ConnectToApplication("mojo:v23proxy").ConnectToService(&v23r)
+	ctx.ConnectToApplication("https://mojo.v.io/v23proxy.mojo").ConnectToService(&v23r)
 	prox := v23proxy.NewV23Proxy(v23p, bindings.GetAsyncWaiter())
-	prox.SetupProxy(v23Name, r.Type(), r.Desc(), r.Name(), r.PassMessagePipe())
+	sd := r.ServiceDescription()
+	mojomInterfaceType, err := sd.GetTopLevelInterface()
+	if err != nil {
+		// The service description must have the MojomInterface type.
+		panic(err)
+	}
+	desc, err := sd.GetAllTypeDefinitions()
+	if err != nil {
+		// The service description must have the map of UserDefinedTypes.
+		panic(err)
+	}
+
+	prox.SetupProxy(v23Name, mojomInterfaceType, *desc, r.Name(), r.PassMessagePipe())
 }

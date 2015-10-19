@@ -51,11 +51,7 @@ func (v *v23ServiceRequest) Name() string {
 	return v.name
 }
 
-func (v *v23ServiceRequest) Type() mojom_types.MojomInterface {
-	panic("not supported")
-}
-
-func (v *v23ServiceRequest) Desc() map[string]mojom_types.UserDefinedType {
+func (v *v23ServiceRequest) ServiceDescription() service_describer.ServiceDescription {
 	panic("not supported")
 }
 
