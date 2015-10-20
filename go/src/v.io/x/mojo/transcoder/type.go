@@ -38,13 +38,9 @@ func mojomToVDLTypeUDT(udt mojom_types.UserDefinedType, mp map[string]mojom_type
 		// TODO: Assumes that the maximum enum index is len(me.Values) - 1.
 		labels := make([]string, len(me.Values))
 		for _, ev := range me.Values { // per EnumValue...
-			// EnumValue contains a ConstantOccurrence
-			// ConstantOccurrence contains a ConstantValue
-			// ConstantValue is a union that contains an EnumConstantValue
-			ecv := ev.Value.Value.(*mojom_types.ConstantValueEnumValue).Value
-
-			// EnumConstantValue contains the EnumValueName and IntValue
-			labels[int(ecv.IntValue)] = *ecv.EnumValueName
+			// EnumValue has DeclData, EnumTypeKey, and IntValue.
+			// We just need the first and last.
+			labels[int(ev.IntValue)] = *ev.DeclData.ShortName
 		}
 
 		vt = vdl.NamedType(*me.DeclData.ShortName, vdl.EnumType(labels...))
