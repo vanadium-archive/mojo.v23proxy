@@ -16,6 +16,14 @@ build: $(BUILD_DIR)/v23proxy.mojo build-examples
 
 build-examples: $(BUILD_DIR)/echo_client.mojo $(BUILD_DIR)/echo_server.mojo $(BUILD_DIR)/fortune_client.mojo $(BUILD_DIR)/fortune_server.mojo
 
+# Go-based unit tests
+test: gen/go/src/mojom/tests/transcoder_testcases/transcoder_testcases.mojom.go
+	$(call MOGO_TEST,v.io/x/mojo/transcoder/...)
+
+gen/go/src/mojom/tests/transcoder_testcases/transcoder_testcases.mojom.go: mojom/mojom/tests/transcoder_testcases.mojom | mojo-env-check
+	$(call MOJOM_GEN,$<,mojom,gen,go)
+	gofmt -w $@
+
 $(BUILD_DIR)/echo_client.mojo: $(MOJO_SHARED_LIB) gen/go/src/mojom/examples/echo/echo.mojom.go
 	$(call MOGO_BUILD,examples/echo/client,$@)
 

@@ -13,99 +13,90 @@ import (
 // the desired value.  The datatype describes the type of the encoded data.
 // Returns an error if the data cannot be decoded into valptr, based on the VDL
 // value conversion rules.
-func Decode(data []byte, datatype *vdl.Type, valptr interface{}) error {
+func MojomToVdl(data []byte, datatype *vdl.Type, valptr interface{}) error {
 	target, err := vdl.ReflectTarget(reflect.ValueOf(valptr))
 	if err != nil {
 		return err
 	}
-	d := &decoder{dec: bindings.NewDecoder(data, nil)}
-	return d.decodeValue(datatype, target, true, false)
+	mtv := &mojomToVdlTranscoder{modec: bindings.NewDecoder(data, nil)}
+	return mtv.transcodeValue(datatype, target, true, false)
 }
 
-// DecodeValue is like Decode, but decodes mojom-encoded data into a vdl.Value.
-func DecodeValue(data []byte, datatype *vdl.Type) (*vdl.Value, error) {
-	v := new(vdl.Value)
-	if err := Decode(data, datatype, &v); err != nil {
-		return nil, err
-	}
-	return v, nil
-}
-
-type decoder struct {
-	dec       *bindings.Decoder
+type mojomToVdlTranscoder struct {
+	modec *bindings.Decoder
 	typeStack []*vdl.Type
 }
 
-func (d *decoder) decodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNullable bool) error {
+func (mtv *mojomToVdlTranscoder) transcodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNullable bool) error {
 	switch vt.Kind() {
 	case vdl.Bool:
-		value, err := d.dec.ReadBool()
+		value, err := mtv.modec.ReadBool()
 		if err != nil {
 			return err
 		}
 		return target.FromBool(value, vt)
 	case vdl.Int16:
-		value, err := d.dec.ReadInt16()
+		value, err := mtv.modec.ReadInt16()
 		if err != nil {
 			return err
 		}
 		return target.FromInt(int64(value), vt)
 	case vdl.Int32:
-		value, err := d.dec.ReadInt32()
+		value, err := mtv.modec.ReadInt32()
 		if err != nil {
 			return err
 		}
 		return target.FromInt(int64(value), vt)
 	case vdl.Int64:
-		value, err := d.dec.ReadInt64()
+		value, err := mtv.modec.ReadInt64()
 		if err != nil {
 			return err
 		}
 		return target.FromInt(value, vt)
 	case vdl.Byte:
-		value, err := d.dec.ReadUint8()
+		value, err := mtv.modec.ReadUint8()
 		if err != nil {
 			return err
 		}
 		return target.FromUint(uint64(value), vt)
 	case vdl.Uint16:
-		value, err := d.dec.ReadUint16()
+		value, err := mtv.modec.ReadUint16()
 		if err != nil {
 			return err
 		}
 		return target.FromUint(uint64(value), vt)
 	case vdl.Uint32:
-		value, err := d.dec.ReadUint32()
+		value, err := mtv.modec.ReadUint32()
 		if err != nil {
 			return err
 		}
 		return target.FromUint(uint64(value), vt)
 	case vdl.Uint64:
-		value, err := d.dec.ReadUint64()
+		value, err := mtv.modec.ReadUint64()
 		if err != nil {
 			return err
 		}
 		return target.FromUint(value, vt)
 	case vdl.Float32:
-		value, err := d.dec.ReadFloat32()
+		value, err := mtv.modec.ReadFloat32()
 		if err != nil {
 			return err
 		}
 		return target.FromFloat(float64(value), vt)
 	case vdl.Float64:
-		value, err := d.dec.ReadFloat64()
+		value, err := mtv.modec.ReadFloat64()
 		if err != nil {
 			return err
 		}
 		return target.FromFloat(value, vt)
 	case vdl.String:
-		switch ptr, err := d.dec.ReadPointer(); {
+		switch ptr, err := mtv.modec.ReadPointer(); {
 		case err != nil:
 			return err
 		case ptr == 0:
 			return fmt.Errorf("invalid null string pointer")
 		default:
-			value, err := d.dec.ReadString()
+			value, err := mtv.modec.ReadString()
 			if err != nil {
 				return err
 			}
@@ -113,7 +104,7 @@ func (d *decoder) decodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNull
 		}
 		return nil
 	case vdl.Enum:
-		index, err := d.dec.ReadInt32()
+		index, err := mtv.modec.ReadInt32()
 		if err != nil {
 			return err
 		}
@@ -127,7 +118,7 @@ func (d *decoder) decodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNull
 	case vdl.Complex128:
 		panic("unimplemented")
 	case vdl.Array, vdl.List:
-		switch ptr, err := d.dec.ReadPointer(); {
+		switch ptr, err := mtv.modec.ReadPointer(); {
 		case err != nil:
 			return err
 		case ptr == 0 && isNullable:
@@ -137,14 +128,14 @@ func (d *decoder) decodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNull
 		}
 
 		if vt.IsBytes() {
-			str, err := d.dec.ReadString()
+			str, err := mtv.modec.ReadString()
 			if err != nil {
 				return err
 			}
 			return target.FromBytes([]byte(str), vt)
 		} else {
 			elemBitSize := baseTypeSizeBits(vt.Elem())
-			numElems, err := d.dec.StartArray(elemBitSize)
+			numElems, err := mtv.modec.StartArray(elemBitSize)
 			if err != nil {
 				return err
 			}
@@ -157,7 +148,7 @@ func (d *decoder) decodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNull
 				if err != nil {
 					return err
 				}
-				if err := d.decodeValue(vt.Elem(), elemTarget, false, false); err != nil {
+				if err := mtv.transcodeValue(vt.Elem(), elemTarget, false, false); err != nil {
 					return err
 				}
 				if err := listTarget.FinishElem(elemTarget); err != nil {
@@ -168,7 +159,7 @@ func (d *decoder) decodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNull
 				return err
 			}
 		}
-		return d.dec.Finish()
+		return mtv.modec.Finish()
 	case vdl.Set:
 		panic("unimplemented")
 		/*switch ptr, err := d.dec.ReadPointer(); {
@@ -205,7 +196,7 @@ func (d *decoder) decodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNull
 		}
 		return d.dec.Finish()*/
 	case vdl.Map:
-		switch ptr, err := d.dec.ReadPointer(); {
+		switch ptr, err := mtv.modec.ReadPointer(); {
 		case err != nil:
 			return err
 		case ptr == 0 && isNullable:
@@ -213,7 +204,7 @@ func (d *decoder) decodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNull
 		case ptr == 0 && !isNullable:
 			return fmt.Errorf("invalid null struct pointer")
 		}
-		if err := d.dec.StartMap(); err != nil {
+		if err := mtv.modec.StartMap(); err != nil {
 			return err
 		}
 		var keys, values []*vdl.Value
@@ -222,7 +213,7 @@ func (d *decoder) decodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNull
 			return err
 		}
 		keysListType := vdl.ListType(vt.Key())
-		if err := d.decodeValue(keysListType, keysTarget, false, false); err != nil {
+		if err := mtv.transcodeValue(keysListType, keysTarget, false, false); err != nil {
 			return err
 		}
 		valuesTarget, err := vdl.ReflectTarget(reflect.ValueOf(&values))
@@ -230,7 +221,7 @@ func (d *decoder) decodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNull
 			return err
 		}
 		valuesListType := vdl.ListType(vt.Elem())
-		if err := d.decodeValue(valuesListType, valuesTarget, false, false); err != nil {
+		if err := mtv.transcodeValue(valuesListType, valuesTarget, false, false); err != nil {
 			return err
 		}
 
@@ -266,12 +257,12 @@ func (d *decoder) decodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNull
 			return err
 		}
 
-		return d.dec.Finish()
+		return mtv.modec.Finish()
 	case vdl.Struct:
 		// TODO(toddw): See the comment in encoder.mojomStructSize; we rely on the
 		// fields to be presented in the canonical mojom field ordering.
 		if !isTopType {
-			switch ptr, err := d.dec.ReadPointer(); {
+			switch ptr, err := mtv.modec.ReadPointer(); {
 			case err != nil:
 				return err
 			case ptr == 0 && isNullable:
@@ -280,7 +271,7 @@ func (d *decoder) decodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNull
 				return fmt.Errorf("invalid null struct pointer")
 			}
 		}
-		_, err := d.dec.StartStruct()
+		_, err := mtv.modec.StartStruct()
 		if err != nil {
 			return err
 		}
@@ -295,7 +286,7 @@ func (d *decoder) decodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNull
 			case err != nil:
 				return err
 			default:
-				if err := d.decodeValue(mfield.Type, vfield, false, false); err != nil {
+				if err := mtv.transcodeValue(mfield.Type, vfield, false, false); err != nil {
 					return err
 				}
 				if err := targetFields.FinishField(vkey, vfield); err != nil {
@@ -307,14 +298,14 @@ func (d *decoder) decodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNull
 		if err := target.FinishFields(targetFields); err != nil {
 			return err
 		}
-		return d.dec.Finish()
+		return mtv.modec.Finish()
 	case vdl.Union:
-		size, tag, err := d.dec.ReadUnionHeader()
+		size, tag, err := mtv.modec.ReadUnionHeader()
 		if err != nil {
 			return err
 		}
 		if size == 0 {
-			d.dec.SkipUnionValue()
+			mtv.modec.SkipUnionValue()
 			return target.FromNil(vdl.OptionalType(vt))
 		}
 		if int(tag) >= vt.NumField() {
@@ -330,7 +321,7 @@ func (d *decoder) decodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNull
 			return err
 		}
 		if fld.Type.Kind() == vdl.Union {
-			switch ptr, err := d.dec.ReadPointer(); {
+			switch ptr, err := mtv.modec.ReadPointer(); {
 			case err != nil:
 				return err
 			case ptr == 0 && isNullable:
@@ -338,15 +329,15 @@ func (d *decoder) decodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNull
 			case ptr == 0 && !isNullable:
 				return fmt.Errorf("invalid null union pointer")
 			}
-			if err := d.dec.StartNestedUnion(); err != nil {
+			if err := mtv.modec.StartNestedUnion(); err != nil {
 				return err
 			}
 		}
-		if err := d.decodeValue(fld.Type, vField, false, false); err != nil {
+		if err := mtv.transcodeValue(fld.Type, vField, false, false); err != nil {
 			return err
 		}
 		if fld.Type.Kind() == vdl.Union {
-			if err := d.dec.Finish(); err != nil {
+			if err := mtv.modec.Finish(); err != nil {
 				return err
 			}
 		}
@@ -356,10 +347,10 @@ func (d *decoder) decodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNull
 		if err := target.FinishFields(targetFields); err != nil {
 			return err
 		}
-		d.dec.FinishReadingUnionValue()
+		mtv.modec.FinishReadingUnionValue()
 		return nil
 	case vdl.Optional:
-		return d.decodeValue(vt.Elem(), target, false, true)
+		return mtv.transcodeValue(vt.Elem(), target, false, true)
 	case vdl.Any:
 		panic("unimplemented")
 	//case vdl.TypeObject:

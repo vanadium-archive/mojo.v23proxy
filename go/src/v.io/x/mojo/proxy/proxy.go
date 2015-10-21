@@ -161,9 +161,9 @@ func (s *genericStub) Call(name, method string, value []byte, inParamsType mojom
 	}
 
 	// Decode the vdl.Value from the mojom bytes and mojom type.
-	inVdlValue, err := transcoder.DecodeValue(value, inVType)
-	if err != nil {
-		return nil, fmt.Errorf("transcoder.DecodeValue failed: %v", err)
+	var inVdlValue *vdl.Value
+	if err := transcoder.MojomToVdl(value, inVType, &inVdlValue); err != nil {
+		return nil, fmt.Errorf("transcoder.MojoToVom failed: %v", err)
 	}
 
 	// inVdlValue is a struct, but we need to send []interface.
@@ -191,7 +191,7 @@ func (s *genericStub) Call(name, method string, value []byte, inParamsType mojom
 	outVdlValue := combineVdlValueByMojomType(outargs, outVType)
 
 	// Finally, encode this *vdl.Value (struct) into mojom bytes and send the response.
-	result, err := transcoder.Encode(outVdlValue)
+	result, err := transcoder.VdlToMojom(outVdlValue)
 	if err != nil {
 		return nil, fmt.Errorf("transcoder.Encode failed: %v", err)
 	}

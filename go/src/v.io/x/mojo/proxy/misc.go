@@ -6,8 +6,8 @@ import (
 
 	"mojo/public/go/bindings"
 
-	"v.io/x/mojo/transcoder"
 	"v.io/v23/vdl"
+	"v.io/x/mojo/transcoder"
 )
 
 // TODO(alexfandrianto): Since this function could panic, we should consider
@@ -49,7 +49,7 @@ func encodeMessageFromVom(header bindings.MessageHeader, argptrs []interface{}, 
 		return nil, err
 	} else {
 		// Encode here.
-		moreBytes, err := transcoder.Encode(vdlValue)
+		moreBytes, err := transcoder.VdlToMojom(vdlValue)
 		if err != nil {
 			return nil, fmt.Errorf("mojovdl.Encode failed: %v", err)
 		}

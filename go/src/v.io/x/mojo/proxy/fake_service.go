@@ -273,9 +273,9 @@ func (fs fakeService) callRemoteMethod(method string, mi mojom_types.MojomInterf
 
 	// Decode the *vdl.Value from the mojom bytes and mojom type.
 	outType := transcoder.MojomStructToVDLType(*mm.ResponseParams, desc)
-	outVdlValue, err := transcoder.DecodeValue(outMessage.Payload, outType)
-	if err != nil {
-		return nil, fmt.Errorf("transcoder.DecodeValue failed: %v", err)
+	var outVdlValue *vdl.Value
+	if err := transcoder.MojomToVdl(outMessage.Payload, outType, &outVdlValue); err != nil {
+		return nil, fmt.Errorf("transcoder.MojoToVom failed: %v", err)
 	}
 
 	// Then split the *vdl.Value (struct) into []*vdl.Value
