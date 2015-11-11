@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 
@@ -24,11 +23,6 @@ import (
 
 //#include "mojo/public/c/system/types.h"
 import "C"
-
-func init() {
-	flag.String("child-connection-id", "", "")
-	flag.String("mojo-platform-channel-handle", "", "")
-}
 
 type v23HeaderReceiver struct {
 	delegate    *V23ServerDelegate
@@ -210,7 +204,7 @@ func (delegate *V23ServerDelegate) Initialize(context application.Context) {
 	// Start up v23 whenever a v23proxy is begun.
 	// This is done regardless of whether we are initializing this v23proxy for use
 	// as a client or as a server.
-	ctx, shutdown := v23.Init()
+	ctx, shutdown := v23.Init(context)
 	delegate.ctx = ctx
 	delegate.shutdown = shutdown
 
