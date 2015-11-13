@@ -7,7 +7,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
+	"strings"
 
 	"mojo/public/go/application"
 	"mojo/public/go/bindings"
@@ -23,16 +23,27 @@ import "C"
 
 type RemoteEchoClientDelegate struct{}
 
+// When running echo_client, ctx.Args() should contain:
+// 0: mojo app name
+// 1: remote endpoint
+// 2+: string to echo
 func (delegate *RemoteEchoClientDelegate) Initialize(ctx application.Context) {
 	log.Printf("RemoteEchoClientDelegate.Initialize...")
-	remoteEndpoint := os.Getenv("REMOTE_ENDPOINT")
+
+	// Parse arguments. Note: May panic if not enough args are given.
+	remoteEndpoint := ctx.Args()[1]
+	echoString := "Hello, Go world!"
+	if len(ctx.Args()) > 2 {
+		echoString = strings.Join(ctx.Args()[2:], " ")
+	}
+
 	r, p := echo.CreateMessagePipeForRemoteEcho()
 
 	v23.ConnectToRemoteService(ctx, &r, remoteEndpoint)
 	echoProxy := echo.NewRemoteEchoProxy(p, bindings.GetAsyncWaiter())
 
 	log.Printf("RemoteEchoClientDelegate.Initialize calling EchoString...")
-	response, err := echoProxy.EchoString("Hello, Go world!")
+	response, err := echoProxy.EchoString(echoString)
 	if err == nil {
 		fmt.Printf("client: %s\n", response)
 	} else {

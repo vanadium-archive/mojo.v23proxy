@@ -7,7 +7,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
+	"strings"
 
 	"mojo/public/go/application"
 	"mojo/public/go/bindings"
@@ -23,11 +23,16 @@ import "C"
 
 type FortuneClientDelegate struct{}
 
-// Connects to the v23proxy and calls Get (or Add(ADD_FORTUNE) on REMOTE_ENDPOINT.
-// Receives a response, if relevant, then exits.
+// When running fortune_client, ctx.Args() should contain:
+// 0: mojo app name
+// 1: remote endpoint
+// 2+: (optional) fortune to add
+// If the fortune to add is omitted, then the fortune_client will Get a fortune.
+// Otherwise, it will Add the given fortune.
 func (delegate *FortuneClientDelegate) Initialize(ctx application.Context) {
-	remoteEndpoint := os.Getenv("REMOTE_ENDPOINT")
-	addFortune := os.Getenv("ADD_FORTUNE")
+	// Parse the arguments.
+	remoteEndpoint := ctx.Args()[1]
+	addFortune := strings.Join(ctx.Args()[2:], " ")
 
 	log.Printf("FortuneClientDelegate.Initialize... %s", remoteEndpoint)
 	fortuneRequest, fortunePointer := fortune.CreateMessagePipeForFortune()
