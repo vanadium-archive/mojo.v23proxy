@@ -210,7 +210,7 @@ func (delegate *V23ServerDelegate) Initialize(context application.Context) {
 	// Start up v23 whenever a v23proxy is begun.
 	// This is done regardless of whether we are initializing this v23proxy for use
 	// as a client or as a server.
-	ctx, shutdown := v23.Init()
+	ctx, shutdown := v23.Init(context)
 	delegate.ctx = ctx
 	delegate.shutdown = shutdown
 
