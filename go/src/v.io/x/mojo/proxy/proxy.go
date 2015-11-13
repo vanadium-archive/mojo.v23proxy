@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 
@@ -24,11 +23,6 @@ import (
 
 //#include "mojo/public/c/system/types.h"
 import "C"
-
-func init() {
-	flag.String("child-connection-id", "", "")
-	flag.String("mojo-platform-channel-handle", "", "")
-}
 
 type v23HeaderReceiver struct {
 	delegate    *V23ServerDelegate
