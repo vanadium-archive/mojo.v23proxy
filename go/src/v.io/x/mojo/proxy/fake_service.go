@@ -86,7 +86,7 @@ func (fs fakeService) Invoke(ctx *context.T, call rpc.StreamServerCall, method s
 	fs.router = bindings.NewRouter(p.PassMessagePipe(), bindings.GetAsyncWaiter())
 	defer fs.Close_Proxy()
 
-	log.Printf("Fake Service Invoke (Remote Signature)")
+	ctx.Infof("Fake Service Invoke (Remote Signature: %q -- %q)", mojourl, mojoname)
 
 	// Vanadium relies on type information, so we will retrieve that first.
 	mojomInterface, desc, err := fs.callRemoteSignature(mojourl, mojoname)
@@ -94,16 +94,17 @@ func (fs fakeService) Invoke(ctx *context.T, call rpc.StreamServerCall, method s
 		return nil, err
 	}
 
-	log.Printf("Fake Service Invoke Signature %v", mojomInterface)
-	log.Printf("Fake Service Invoke (Remote Method)")
+	ctx.Infof("Fake Service Invoke Signature %v", mojomInterface)
+	ctx.Infof("Fake Service Invoke (Remote Method: %v)", method)
 
 	// With the type information, we can make the method call to the remote interface.
-	methodResults, err := fs.callRemoteMethod(method, mojomInterface, desc, argptrs)
+	methodResults, err := fs.callRemoteMethod(ctx, method, mojomInterface, desc, argptrs)
 	if err != nil {
+		ctx.Errorf("Method called failed: %v", err)
 		return nil, err
 	}
 
-	log.Printf("Fake Service Invoke Results %v", methodResults)
+	ctx.Infof("Fake Service Invoke Results %v", methodResults)
 
 	// Convert methodResult to results.
 	results = make([]interface{}, len(methodResults))
@@ -183,15 +184,15 @@ func (fs fakeService) callRemoteSignature(mojourl string, mojoname string) (mojo
 }
 
 // A helper function that sends a remote message that expects a response.
-func (fs fakeService) callRemoteGeneric(message *bindings.Message) (outMessage *bindings.Message, err error) {
-	log.Printf("callRemoteGeneric: Send message along the router")
+func (fs fakeService) callRemoteGeneric(ctx *context.T, message *bindings.Message) (outMessage *bindings.Message, err error) {
+	ctx.Infof("callRemoteGeneric: Send message along the router")
 
 	readResult := <-fs.router.AcceptWithResponse(message)
 	if err = readResult.Error; err != nil {
 		return
 	}
 
-	log.Printf("callRemoteGeneric: Audit response message header flag")
+	ctx.Infof("callRemoteGeneric: Audit response message header flag")
 	// The message flag we receive back must be a bindings.MessageIsResponseFlag
 	if readResult.Message.Header.Flags != bindings.MessageIsResponseFlag {
 		err = &bindings.ValidationError{bindings.MessageHeaderInvalidFlags,
@@ -200,7 +201,7 @@ func (fs fakeService) callRemoteGeneric(message *bindings.Message) (outMessage *
 		return
 	}
 
-	log.Printf("callRemoteGeneric: Audit response message header type")
+	ctx.Infof("callRemoteGeneric: Audit response message header type")
 	// While the mojo service we called into will return a header whose
 	// type must match our outgoing one.
 	if got, want := readResult.Message.Header.Type, message.Header.Type; got != want {
@@ -215,7 +216,7 @@ func (fs fakeService) callRemoteGeneric(message *bindings.Message) (outMessage *
 
 // callRemoteMethod calls the method remotely in a generic way.
 // Produces []*vdl.Value at the end for the invoker to return.
-func (fs fakeService) callRemoteMethod(method string, mi mojom_types.MojomInterface, desc map[string]mojom_types.UserDefinedType, argptrs []interface{}) ([]*vdl.Value, error) {
+func (fs fakeService) callRemoteMethod(ctx *context.T, method string, mi mojom_types.MojomInterface, desc map[string]mojom_types.UserDefinedType, argptrs []interface{}) ([]*vdl.Value, error) {
 	// We need to parse the signature result to get the method relevant info out.
 	found := false
 	var ordinal uint32
@@ -266,7 +267,7 @@ func (fs fakeService) callRemoteMethod(method string, mi mojom_types.MojomInterf
 	}
 
 	// Otherwise, make a generic call with the message.
-	outMessage, err := fs.callRemoteGeneric(message)
+	outMessage, err := fs.callRemoteGeneric(ctx, message)
 	if err != nil {
 		return nil, err
 	}
@@ -285,13 +286,13 @@ func (fs fakeService) callRemoteMethod(method string, mi mojom_types.MojomInterf
 
 // The fake service has no signature.
 func (fs fakeService) Signature(ctx *context.T, call rpc.ServerCall) ([]signature.Interface, error) {
-	log.Printf("Fake Service Signature???")
+	ctx.Infof("Fake Service Signature???")
 	return nil, nil
 }
 
 // The fake service knows nothing about method signatures.
 func (fs fakeService) MethodSignature(ctx *context.T, call rpc.ServerCall, method string) (signature.Method, error) {
-	log.Printf("Fake Service Method Signature???")
+	ctx.Infof("Fake Service Method Signature???")
 	return signature.Method{}, nil
 }
 

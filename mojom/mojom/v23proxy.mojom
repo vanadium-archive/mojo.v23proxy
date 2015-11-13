@@ -3,5 +3,22 @@ module v23proxy;
 import "../mojo/public/interfaces/bindings/mojom_types.mojom";
 
 interface V23 {
-  SetupProxy(string v23Name, mojo.bindings.types.MojomInterface ifaceSig, map<string, mojo.bindings.types.UserDefinedType> mapping, string serviceName, handle<message_pipe> futureMessages);
+  // Sets up a communication channel between the caller and the mojo application
+  // running in a remote process.
+  //
+  // v23Name: Vanadium object name (i.e., "address") at which the remote mojo
+  //          application is running.
+  // ifaceSig: Interface that the remote mojo application is expected to
+  //           implement.
+  // mapping:  Type definitions (indexed by type name) of the various types
+  //           described in ifaceSig.
+  // serviceName: Name of the mojo application (i.e., the name that would be
+  //              used if connecting to the application locally).
+  // futureMessages: Pipe over which messages can be sent to/received from
+  //                 serviceName running on the remote service v23Name.
+  SetupProxy(string v23Name,
+             mojo.bindings.types.MojomInterface ifaceSig,
+             map<string, mojo.bindings.types.UserDefinedType> mapping,
+             string serviceName,
+             handle<message_pipe> futureMessages);
 };

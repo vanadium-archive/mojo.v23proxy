@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"v.io/v23"
 	"v.io/v23/context"
@@ -18,14 +17,14 @@ import (
 	"mojo/public/interfaces/bindings/mojom_types"
 
 	"v.io/x/mojo/transcoder"
-	_ "v.io/x/ref/runtime/factories/static"
+	_ "v.io/x/ref/runtime/factories/roaming"
 )
 
 //#include "mojo/public/c/system/types.h"
 import "C"
 
 type v23HeaderReceiver struct {
-	delegate    *V23ServerDelegate
+	delegate    *delegate
 	v23Name     string
 	ifaceSig    mojom_types.MojomInterface
 	desc        map[string]mojom_types.UserDefinedType
@@ -34,7 +33,8 @@ type v23HeaderReceiver struct {
 }
 
 func (r *v23HeaderReceiver) SetupProxy(v23Name string, ifaceSig mojom_types.MojomInterface, desc map[string]mojom_types.UserDefinedType, serviceName string, handle system.MessagePipeHandle) (err error) {
-	log.Printf("[server] In SetupProxy(%s, %v, %v, %s, %v)\n", v23Name, ifaceSig, desc, serviceName, handle)
+	log := r.delegate.ctx
+	log.Infof("[server] In SetupProxy(%s, %v, %v, %s, %v)", v23Name, ifaceSig, desc, serviceName, handle)
 	r.v23Name = v23Name
 	r.ifaceSig = ifaceSig
 	r.desc = desc
@@ -45,22 +45,22 @@ func (r *v23HeaderReceiver) SetupProxy(v23Name string, ifaceSig mojom_types.Mojo
 		connector := bindings.NewConnector(r.handle, bindings.GetAsyncWaiter())
 
 		// Read generic calls in a loop
-		stub := &genericStub{
+		receiver := &messageReceiver{
 			header:    r,
 			ctx:       r.delegate.ctx,
 			connector: connector,
 		}
-		bindingStub := bindings.NewStub(connector, stub)
+		stub := bindings.NewStub(connector, receiver)
 		for {
-			if err := bindingStub.ServeRequest(); err != nil {
+			if err := stub.ServeRequest(); err != nil {
 				connectionError, ok := err.(*bindings.ConnectionError)
 				if !ok || !connectionError.Closed() {
-					log.Println(err)
+					log.Errorf("%v", err)
 				}
 				break
 			}
 		}
-		r.delegate.stubs = append(r.delegate.stubs, bindingStub)
+		r.delegate.stubs = append(r.delegate.stubs, stub)
 	}()
 	return nil
 }
@@ -78,13 +78,13 @@ func (r *v23HeaderReceiver) SetupProxy(v23Name string, ifaceSig mojom_types.Mojo
 // 	panic("not supported")
 // }
 
-type genericStub struct {
+type messageReceiver struct {
 	header    *v23HeaderReceiver
 	ctx       *context.T
 	connector *bindings.Connector
 }
 
-func (s *genericStub) Accept(message *bindings.Message) (err error) {
+func (s *messageReceiver) Accept(message *bindings.Message) (err error) {
 	if _, ok := s.header.ifaceSig.Methods[message.Header.Type]; !ok {
 		return fmt.Errorf("Method had index %d, but interface only has %d methods",
 			message.Header.Type, len(s.header.ifaceSig.Methods))
@@ -97,7 +97,7 @@ func (s *genericStub) Accept(message *bindings.Message) (err error) {
 
 	messageBytes := message.Payload
 
-	response, err := s.Call(s.header.v23Name, methodName, messageBytes, methodSig.Parameters, methodSig.ResponseParams)
+	response, err := s.call(s.header.v23Name, methodName, messageBytes, methodSig.Parameters, methodSig.ResponseParams)
 	if err != nil {
 		return err
 	}
@@ -145,8 +145,8 @@ func (s *genericStub) Accept(message *bindings.Message) (err error) {
 	}
 }
 
-func (s *genericStub) Call(name, method string, value []byte, inParamsType mojom_types.MojomStruct, outParamsType *mojom_types.MojomStruct) ([]byte, error) {
-	log.Printf("server: %s.%s: %#v", name, method, inParamsType)
+func (s *messageReceiver) call(name, method string, value []byte, inParamsType mojom_types.MojomStruct, outParamsType *mojom_types.MojomStruct) ([]byte, error) {
+	s.ctx.Infof("server: %s.%s: %#v", name, method, inParamsType)
 
 	inVType := transcoder.MojomStructToVDLType(inParamsType, s.header.desc)
 	var outVType *vdl.Type
@@ -169,7 +169,7 @@ func (s *genericStub) Call(name, method string, value []byte, inParamsType mojom
 
 	// We know that the v23proxy (on the other side) will give us back a bunch of
 	// data in []interface{}. so we'll want to decode them into *vdl.Value.
-	log.Printf("%s %v\n", method, outParamsType)
+	s.ctx.Infof("%s %v", method, outParamsType)
 	outargs := make([]*vdl.Value, len(outParamsType.Fields))
 	outptrs := make([]interface{}, len(outargs))
 	for i := range outargs {
@@ -192,60 +192,12 @@ func (s *genericStub) Call(name, method string, value []byte, inParamsType mojom
 	return result, nil
 }
 
-type V23ServerDelegate struct {
-	ctx      *context.T
-	stubs    []*bindings.Stub
-	shutdown v23.Shutdown
-}
-
-func (delegate *V23ServerDelegate) Initialize(context application.Context) {
-	log.Printf("V23ServerDelegate.Initialize...")
-
-	// Start up v23 whenever a v23proxy is begun.
-	// This is done regardless of whether we are initializing this v23proxy for use
-	// as a client or as a server.
-	ctx, shutdown := v23.Init(context)
-	delegate.ctx = ctx
-	delegate.shutdown = shutdown
-
-	// TODO(alexfandrianto): Does Mojo stop us from creating too many v23proxy?
-	// Is it 1 per shell? Ideally, each device will only serve 1 of these v23proxy,
-	// but it is not problematic to have extra.
-	/*s := MakeServer(ctx)
-	err := s.ServeDispatcher("", &V23ProxyDispatcher{
-		appctx: context,
-	})*/
-	_, s, err := v23.WithNewDispatchingServer(ctx, "", &V23ProxyDispatcher{
-		appctx: context,
-	})
-	if err != nil {
-		log.Panic("Error serving service: ", err)
-	}
-
-	endpoints := s.Status().Endpoints
-	fmt.Printf("Listening at: /%v\n", endpoints[0])
-}
-
-/*func MakeServer(ctx *context.T) rpc.Server {
-	s, err := v23.NewServer(ctx)
-	if err != nil {
-		log.Panic("Failure creating server: ", err)
-	}
-
-	endpoints, err := s.Listen(v23.GetListenSpec(ctx))
-	if err != nil {
-		log.Panic("Error listening to service: ", err)
-	}
-	fmt.Printf("Listening at: /%v\n", endpoints[0])
-	return s
-}*/
-
-type V23ProxyDispatcher struct {
+type dispatcher struct {
 	appctx application.Context
 }
 
-func (v23pd *V23ProxyDispatcher) Lookup(ctx *context.T, suffix string) (interface{}, security.Authorizer, error) {
-	log.Printf("Dispatcher: %s", suffix)
+func (v23pd *dispatcher) Lookup(ctx *context.T, suffix string) (interface{}, security.Authorizer, error) {
+	ctx.Infof("Dispatcher: %s", suffix)
 	return fakeService{
 		appctx: v23pd.appctx,
 		suffix: suffix,
@@ -253,7 +205,34 @@ func (v23pd *V23ProxyDispatcher) Lookup(ctx *context.T, suffix string) (interfac
 	}, security.AllowEveryone(), nil
 }
 
-func (delegate *V23ServerDelegate) Create(request v23proxy.V23_Request) {
+type delegate struct {
+	ctx      *context.T
+	stubs    []*bindings.Stub
+	shutdown v23.Shutdown
+}
+
+func (delegate *delegate) Initialize(context application.Context) {
+	// Start up v23 whenever a v23proxy is begun.
+	// This is done regardless of whether we are initializing this v23proxy for use
+	// as a client or as a server.
+	ctx, shutdown := v23.Init(context)
+	delegate.ctx = ctx
+	delegate.shutdown = shutdown
+	ctx.Infof("delegate.Initialize...")
+
+	// TODO(alexfandrianto): Does Mojo stop us from creating too many v23proxy?
+	// Is it 1 per shell? Ideally, each device will only serve 1 of these v23proxy,
+	// but it is not problematic to have extra.
+	_, s, err := v23.WithNewDispatchingServer(ctx, "", &dispatcher{
+		appctx: context,
+	})
+	if err != nil {
+		ctx.Fatal("Error serving service: ", err)
+	}
+
+	fmt.Println("Listening at:", s.Status().Endpoints[0].Name())
+}
+func (delegate *delegate) Create(request v23proxy.V23_Request) {
 	headerReceiver := &v23HeaderReceiver{delegate: delegate}
 	v23Stub := v23proxy.NewV23Stub(request, headerReceiver, bindings.GetAsyncWaiter())
 	delegate.stubs = append(delegate.stubs, v23Stub)
@@ -263,30 +242,29 @@ func (delegate *V23ServerDelegate) Create(request v23proxy.V23_Request) {
 		if err := v23Stub.ServeRequest(); err != nil {
 			connectionError, ok := err.(*bindings.ConnectionError)
 			if !ok || !connectionError.Closed() {
-				log.Println(err)
+				delegate.ctx.Errorf("%v", err)
 			}
 			return
 		}
 	}()
 }
 
-func (delegate *V23ServerDelegate) AcceptConnection(connection *application.Connection) {
-	log.Printf("V23ServerDelegate.AcceptConnection...")
+func (delegate *delegate) AcceptConnection(connection *application.Connection) {
+	delegate.ctx.Infof("delegate.AcceptConnection...")
 	connection.ProvideServices(&v23proxy.V23_ServiceFactory{delegate})
 }
 
-func (delegate *V23ServerDelegate) Quit() {
-	log.Printf("V23ServerDelegate.Quit...")
+func (delegate *delegate) Quit() {
+	delegate.ctx.Infof("delegate.Quit...")
 	for _, stub := range delegate.stubs {
 		stub.Close()
 	}
-
 	delegate.shutdown()
 }
 
 //export MojoMain
 func MojoMain(handle C.MojoHandle) C.MojoResult {
-	application.Run(&V23ServerDelegate{}, system.MojoHandle(handle))
+	application.Run(&delegate{}, system.MojoHandle(handle))
 	return C.MOJO_RESULT_OK
 }
 
