@@ -93,33 +93,34 @@ var testCases = []transcodeTestCase{
 	// TODO(bprosnitz) MapKeyTypes?
 	// TODO(bprosnitz) MapValueTypes?
 	// TODO(bprosnitz) ArrayValueTypes?
-	{
-		Name: "UnsignedArrayValueTypes",
-		MojoValue: &test_structs.UnsignedArrayValueTypes{
-			[]uint8{1}, []uint16{2}, []uint32{3}, []uint64{4}, []float32{5}, []float64{6},
+	/*
+		{
+			Name: "UnsignedArrayValueTypes",
+			MojoValue: &test_structs.UnsignedArrayValueTypes{
+				[]uint8{1}, []uint16{2}, []uint32{3}, []uint64{4}, []float32{5}, []float64{6},
+			},
+			VdlValue: test_structs.UnsignedArrayValueTypes{
+				[]uint8{1}, []uint16{2}, []uint32{3}, []uint64{4}, []float32{5}, []float64{6},
+			},
 		},
-		VdlValue: test_structs.UnsignedArrayValueTypes{
-			[]uint8{1}, []uint16{2}, []uint32{3}, []uint64{4}, []float32{5}, []float64{6},
+		{
+			Name: "UnsignedFixedArrayValueTypes",
+			MojoValue: &test_structs.UnsignedFixedArrayValueTypes{
+				[3]uint8{1}, [2]uint16{2}, [2]uint32{3}, [2]uint64{4}, [2]float32{5}, [2]float64{6},
+			},
+			VdlValue: test_structs.UnsignedFixedArrayValueTypes{
+				[3]uint8{1}, [2]uint16{2}, [2]uint32{3}, [2]uint64{4}, [2]float32{5}, [2]float64{6},
+			},
 		},
-	},
-	{
-		Name: "UnsignedFixedArrayValueTypes",
-		MojoValue: &test_structs.UnsignedFixedArrayValueTypes{
-			[3]uint8{1}, [2]uint16{2}, [2]uint32{3}, [2]uint64{4}, [2]float32{5}, [2]float64{6},
-		},
-		VdlValue: test_structs.UnsignedFixedArrayValueTypes{
-			[3]uint8{1}, [2]uint16{2}, [2]uint32{3}, [2]uint64{4}, [2]float32{5}, [2]float64{6},
-		},
-	},
-	{
-		Name: "BoolArrayValueTypes",
-		MojoValue: &test_structs.BoolArrayValueTypes{
-			[]bool{false, true, true, false},
-		},
-		VdlValue: test_structs.BoolArrayValueTypes{
-			[]bool{false, true, true, false},
-		},
-	},
+		{
+			Name: "BoolArrayValueTypes",
+			MojoValue: &test_structs.BoolArrayValueTypes{
+				[]bool{false, true, true, false},
+			},
+			VdlValue: test_structs.BoolArrayValueTypes{
+				[]bool{false, true, true, false},
+			},
+		},*/
 	{
 		Name: "FloatNumberValues",
 		MojoValue: &test_structs.FloatNumberValues{

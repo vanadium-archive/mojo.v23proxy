@@ -25,4 +25,8 @@ interface V23 {
              map<string, mojo.bindings.types.UserDefinedType> mapping,
              string serviceName,
              handle<message_pipe> futureMessages);
+
+
+  // Endpoints gets the endpoints that the v23proxy serves at.
+  Endpoints() => (array<string> endpoints);
 };

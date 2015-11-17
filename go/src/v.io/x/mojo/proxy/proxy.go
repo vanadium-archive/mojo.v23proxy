@@ -10,6 +10,7 @@ import (
 	"v.io/v23"
 	"v.io/v23/context"
 	"v.io/v23/options"
+	"v.io/v23/rpc"
 	"v.io/v23/security"
 	"v.io/v23/vdl"
 
@@ -67,6 +68,15 @@ func (r *v23HeaderReceiver) SetupProxy(v23Name string, ifaceSig mojom_types.Mojo
 		r.delegate.stubs = append(r.delegate.stubs, stub)
 	}()
 	return nil
+}
+
+func (r *v23HeaderReceiver) Endpoints() (endpoints []string, err error) {
+	endpointObjs := r.delegate.v23Server.Status().Endpoints
+	endpoints = make([]string, len(endpointObjs))
+	for i, endpointObj := range endpointObjs {
+		endpoints[i] = endpointObj.String()
+	}
+	return endpoints, nil
 }
 
 // TODO(alexfandrianto): This assumes that bindings.Encoder has the method
@@ -210,9 +220,10 @@ func (v23pd *dispatcher) Lookup(ctx *context.T, suffix string) (interface{}, sec
 }
 
 type delegate struct {
-	ctx      *context.T
-	stubs    []*bindings.Stub
-	shutdown v23.Shutdown
+	ctx       *context.T
+	stubs     []*bindings.Stub
+	shutdown  v23.Shutdown
+	v23Server rpc.Server
 }
 
 func (delegate *delegate) Initialize(context application.Context) {
@@ -233,7 +244,7 @@ func (delegate *delegate) Initialize(context application.Context) {
 	if err != nil {
 		ctx.Fatal("Error serving service: ", err)
 	}
-
+	delegate.v23Server = s
 	fmt.Println("Listening at:", s.Status().Endpoints[0].Name())
 }
 func (delegate *delegate) Create(request v23proxy.V23_Request) {
