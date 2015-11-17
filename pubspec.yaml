@@ -1,0 +1,15 @@
+author: Vanadium Authors
+description: V23proxy is a proxy service between Mojo and Vanadium applications.
+homepage: https://github.com/vanadium/mojo.v23proxy
+name: v23proxy
+version: 0.0.1
+dependencies:
+  mojo: '>=0.3.0 <0.4.0'
+dev_dependencies:
+  dart_style: any
+  test: any
+environment:
+  sdk: '>=1.12.0 <2.0.0'
+dependency_overrides:
+  mojo:
+    path: ../../../../../mojo/src/out/Debug/gen/dart-pkg/mojo

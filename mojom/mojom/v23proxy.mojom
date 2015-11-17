@@ -21,8 +21,8 @@ interface V23 {
   // futureMessages: Pipe over which messages can be sent to/received from
   //                 serviceName running on the remote service v23Name.
   SetupProxy(string v23Name,
-             mojo.bindings.types.MojomInterface ifaceSig,
-             map<string, mojo.bindings.types.UserDefinedType> mapping,
+             mojo.MojomInterface ifaceSig,
+             map<string, mojo.UserDefinedType> mapping,
              string serviceName,
              handle<message_pipe> futureMessages);
 

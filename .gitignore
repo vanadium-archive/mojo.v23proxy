@@ -3,3 +3,7 @@
 *.iml
 gen/
 mojom/mojo/public/interfaces/bindings/mojom_types.mojom
+.packages
+.pub
+pubspec.lock
+packages/
