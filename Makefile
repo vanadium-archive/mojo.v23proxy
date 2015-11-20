@@ -90,12 +90,7 @@ gen/fortune.mojom.dart: mojom/mojom/examples/fortune.mojom | mojo-env-check
 $(BUILD_DIR)/v23proxy.mojo: $(MOJO_SHARED_LIB) gen/go/src/mojom/v23proxy/v23proxy.mojom.go | mojo-env-check
 	$(call MOGO_BUILD,v.io/x/mojo/proxy,$@)
 
-# Note: This file is needed to compile v23proxy.mojom, so we're symlinking it in from $MOJO_DIR.
-mojom/mojo/public/interfaces/bindings/mojom_types.mojom: $(MOJO_DIR)/src/mojo/public/interfaces/bindings/mojom_types.mojom
-	mkdir -p mojom/mojo/public/interfaces/bindings
-	ln -sf $(MOJO_DIR)/src/mojo/public/interfaces/bindings/mojom_types.mojom mojom/mojo/public/interfaces/bindings/mojom_types.mojom
-
-gen/go/src/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.go: mojom/mojo/public/interfaces/bindings/mojom_types.mojom | mojo-env-check
+gen/go/src/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.go: $(MOJO_DIR)/src/mojom/mojo/public/interfaces/bindings/mojom_types.mojom | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,gen,go)
 	gofmt -w $@
 
