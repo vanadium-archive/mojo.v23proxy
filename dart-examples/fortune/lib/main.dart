@@ -1,7 +1,7 @@
 #!mojo mojo:dart_content_handler
-// Copyright 2015 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// Copyright 2015 The Vanadium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 import 'dart:async';
 
@@ -35,14 +35,15 @@ class Fortune extends Application {
     // The phrase is join args[2:]
     String fortunestr = args.length <= 2 ? null : args.sublist(2).join(" ");
 
-
     v23proxy.connectToRemoteService(this, fortuneProxy, remoteEndpoint);
 
-    if (fortunestr == null) { // Get Fortune
+    if (fortunestr == null) {
+      // Get Fortune
       print("Asking fortune server for a fortune...");
       var response = await fortuneProxy.ptr.get(fortunestr);
       print("Received fortune: ${response.value}");
-    } else { // Add Fortune
+    } else {
+      // Add Fortune
       print("Adding '${fortunestr}' to the fortune server...");
       var response = await fortuneProxy.ptr.add(fortunestr);
       print("Added fortune successfully: ${response}");

@@ -1,7 +1,7 @@
 #!mojo mojo:dart_content_handler
-// Copyright 2015 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// Copyright 2015 The Vanadium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 import 'dart:async';
 
@@ -40,7 +40,9 @@ class Echo extends Application {
     print("Sending ${echostr} to echo server...");
     var response = await echoProxy.ptr.echoString(echostr);
     // The out arg is called value. It is a string.
-    print(response.value != null ? "Received: ${response.value}" : "Failed to get an echo back");
+    print(response.value != null
+        ? "Received: ${response.value}"
+        : "Failed to get an echo back");
 
     print("Attempting EchoX to echo server...");
     // The in args are a List<bool> and struct with str String field.
@@ -49,7 +51,9 @@ class Echo extends Application {
     response = await echoProxy.ptr.echoX(echoXParam1, echoXParam2);
     // The out arg is a single union called out.
     // out is of type OutArgTypes. Of the int64 and enum, it'll return the enum.
-    print(response.out != null ? "Received: ${response.out}" : "Failed to get an echoX back");
+    print(response.out != null
+        ? "Received: ${response.out}"
+        : "Failed to get an echoX back");
 
     await this.closeApplication();
   }
