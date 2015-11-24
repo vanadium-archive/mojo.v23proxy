@@ -5,14 +5,11 @@
 package transcoder_test
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
 	"mojo/public/go/bindings"
-
-	"fmt"
-
-	"bytes"
 
 	"v.io/v23/vdl"
 	"v.io/x/mojo/transcoder"
@@ -22,7 +19,7 @@ func TestMojoToVom(t *testing.T) {
 	for _, test := range testCases {
 		testName := test.Name + " mojo->vom"
 
-		data, err := computeExpectedMojomBytes(test.MojoValue)
+		data, err := mojoEncode(test.MojoValue)
 		if err != nil {
 			t.Errorf("%s: %v", testName, err)
 			continue
@@ -50,20 +47,20 @@ func TestVomToMojo(t *testing.T) {
 			continue
 		}
 
-		expectedData, err := computeExpectedMojomBytes(test.MojoValue)
-		if err != nil {
-			t.Errorf("%s: %v", testName, err)
+		out := reflect.New(reflect.TypeOf(test.MojoValue).Elem()).Interface()
+		if err := mojoDecode(data, out); err != nil {
+			t.Errorf("%s: error decoding mojo bytes %x: %v", testName, data, err)
 			continue
 		}
 
-		if got, want := data, expectedData; !bytes.Equal(got, want) {
-			t.Errorf("%s: got %x, but want %x", testName, got, want)
+		if got, want := out, test.MojoValue; !reflect.DeepEqual(got, want) {
+			t.Errorf("%s: result doesn't match expectation. got %#v, but want %#v", testName, got, want)
 		}
 	}
 }
 
-func computeExpectedMojomBytes(mojoValue interface{}) ([]byte, error) {
-	payload, ok := mojoValue.(bindings.Payload)
+func mojoEncode(mojoValue interface{}) ([]byte, error) {
+	payload, ok := mojoValue.(encodable)
 	if !ok {
 		return nil, fmt.Errorf("type %T lacks an Encode() method", mojoValue)
 	}
@@ -78,4 +75,21 @@ func computeExpectedMojomBytes(mojoValue interface{}) ([]byte, error) {
 		return nil, fmt.Errorf("error in Data()", err)
 	}
 	return data, nil
+}
+
+func mojoDecode(b []byte, outValue interface{}) error {
+	dec := bindings.NewDecoder(b, nil)
+	payload, ok := outValue.(decodable)
+	if !ok {
+		return fmt.Errorf("type %T lacks an Decode() method", outValue)
+	}
+	return payload.Decode(dec)
+}
+
+type encodable interface {
+	Encode(encoder *bindings.Encoder) error
+}
+
+type decodable interface {
+	Decode(decoder *bindings.Decoder) error
 }

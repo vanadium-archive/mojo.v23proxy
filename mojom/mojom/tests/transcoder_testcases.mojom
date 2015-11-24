@@ -4,9 +4,20 @@
 
 module tests;
 
+import "mojo/public/interfaces/bindings/tests/test_unions.mojom";
+
 struct UnnamedPrimitiveTestStruct {
     uint32 A;
     string B;
     bool C;
     float D;
+};
+
+struct PodUnionWrapper {
+  mojo.test.PodUnion pod_union;
+};
+
+
+struct ObjectUnionWrapper {
+  mojo.test.ObjectUnion object_union;
 };

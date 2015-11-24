@@ -81,10 +81,7 @@ func (vtm *vdlToMojomTranscoder) FinishMap(x vdl.MapTarget) error {
 }
 func (vtm *vdlToMojomTranscoder) StartFields(tt *vdl.Type) (vdl.FieldsTarget, error) {
 	if tt.Kind() == vdl.Union {
-		panic("not yet supported")
-	}
-	if tt.Kind() == vdl.Optional {
-		tt = tt.Elem()
+		panic("UNIMPLEMENTED")
 	}
 	block := vtm.allocator.Allocate(neededStructAllocationSize(tt), 0)
 	return fieldsTarget{

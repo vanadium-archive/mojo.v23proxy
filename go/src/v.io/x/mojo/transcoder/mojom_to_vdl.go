@@ -27,7 +27,7 @@ func MojomToVdl(data []byte, datatype *vdl.Type, valptr interface{}) error {
 }
 
 type mojomToVdlTranscoder struct {
-	modec *bindings.Decoder
+	modec     *bindings.Decoder
 	typeStack []*vdl.Type
 }
 
@@ -39,6 +39,12 @@ func (mtv *mojomToVdlTranscoder) transcodeValue(vt *vdl.Type, target vdl.Target,
 			return err
 		}
 		return target.FromBool(value, vt)
+	case vdl.Int8:
+		value, err := mtv.modec.ReadInt8()
+		if err != nil {
+			return err
+		}
+		return target.FromInt(int64(value), vt)
 	case vdl.Int16:
 		value, err := mtv.modec.ReadInt16()
 		if err != nil {

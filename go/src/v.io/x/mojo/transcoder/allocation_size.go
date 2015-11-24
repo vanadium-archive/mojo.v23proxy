@@ -19,7 +19,7 @@ func baseTypeSizeBits(vt *vdl.Type) uint32 {
 	switch vt.Kind() {
 	case vdl.Bool:
 		return 1
-	case vdl.Byte:
+	case vdl.Byte, vdl.Int8:
 		return 8
 	case vdl.Uint16, vdl.Int16:
 		return 16

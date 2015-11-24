@@ -112,15 +112,20 @@ func (bitListTarget) FinishKey(key vdl.Target) error {
 }
 
 type mapTarget struct {
-	listTarget vdl.ListTarget
-	setTarget  vdl.SetTarget
+	keys             vdl.SetTarget
+	valuePlaceholder vdl.Target
+	valueType        *vdl.Type
+	cachedValues     []*vdl.Value
 }
 
 func (mt *mapTarget) StartKey() (key vdl.Target, _ error) {
-	return mt.setTarget.StartKey()
+	return mt.keys.StartKey()
 }
-func (mt *mapTarget) FinishKeyStartField(key vdl.Target) (field vdl.Target, _ error) {
-	return mt.listTarget.StartElem(0)
+func (mt *mapTarget) FinishKeyStartField(key vdl.Target) (field vdl.Target, err error) {
+	val := vdl.ZeroValue(mt.valueType)
+	field, err = vdl.ValueTarget(val)
+	mt.cachedValues = append(mt.cachedValues, val)
+	return
 }
 func (mapTarget) FinishField(key, field vdl.Target) error {
 	return nil

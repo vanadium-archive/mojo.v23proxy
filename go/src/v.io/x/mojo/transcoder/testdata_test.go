@@ -7,6 +7,11 @@ package transcoder_test
 import (
 	"mojo/public/interfaces/bindings/tests/rect"
 	"mojo/public/interfaces/bindings/tests/test_structs"
+	"mojo/public/interfaces/bindings/tests/test_unions"
+
+	"mojom/tests/transcoder_testcases"
+
+	"v.io/x/mojo/transcoder/testtypes"
 )
 
 type transcodeTestCase struct {
@@ -68,7 +73,23 @@ var testCases = []transcodeTestCase{
 	// TODO(bprosnitz) HandleStruct?
 	// TODO(bprosnitz) NullableHandleStruct?
 	// TODO(bprosnitz) NoDefaultFieldValues?
-	// TODO(bprosnitz) DefaultFieldValues?
+	{
+		Name: "DefaultFieldValues",
+		MojoValue: &test_structs.DefaultFieldValues{
+			true, 100, 100, 100, 100, 100, 100, 100, 100,
+			100, 100, 100, 100,
+			"foo", stringPtr("foo"),
+			rect.Rect{X: 0, Y: 1, Height: 2, Width: 3},
+			&rect.Rect{X: 4, Y: 5, Height: 6, Width: 7},
+		},
+		VdlValue: test_structs.DefaultFieldValues{
+			true, 100, 100, 100, 100, 100, 100, 100, 100,
+			100, 100, 100, 100,
+			"foo", stringPtr("foo"),
+			rect.Rect{X: 0, Y: 1, Height: 2, Width: 3},
+			&rect.Rect{X: 4, Y: 5, Height: 6, Width: 7},
+		},
+	},
 	{
 		Name: "ScopedConstants",
 		MojoValue: &test_structs.ScopedConstants{
@@ -90,37 +111,57 @@ var testCases = []transcodeTestCase{
 			10,
 		},
 	},
-	// TODO(bprosnitz) MapKeyTypes?
+	{
+		Name: "MapKeyTypes",
+		MojoValue: &test_structs.MapKeyTypes{
+			map[bool]bool{true: false},
+			map[int8]int8{-1: 1},
+			map[uint8]uint8{1: 1},
+			map[int16]int16{-2: 2},
+			map[uint16]uint16{2: 2},
+			map[int32]int32{-4: 4},
+			map[uint32]uint32{4: 4},
+			map[int64]int64{-8: 8},
+			map[uint64]uint64{8: 8},
+			map[float32]float32{0.1: 0.1},
+			map[float64]float64{0.2: 0.2},
+			map[string]string{"A": "B", "C": "D"},
+		},
+		VdlValue: test_structs.MapKeyTypes{
+			map[bool]bool{true: false},
+			map[int8]int8{-1: 1},
+			map[uint8]uint8{1: 1},
+			map[int16]int16{-2: 2},
+			map[uint16]uint16{2: 2},
+			map[int32]int32{-4: 4},
+			map[uint32]uint32{4: 4},
+			map[int64]int64{-8: 8},
+			map[uint64]uint64{8: 8},
+			map[float32]float32{0.1: 0.1},
+			map[float64]float64{0.2: 0.2},
+			map[string]string{"A": "B", "C": "D"},
+		},
+	},
 	// TODO(bprosnitz) MapValueTypes?
-	// TODO(bprosnitz) ArrayValueTypes?
-	/*
-		{
-			Name: "UnsignedArrayValueTypes",
-			MojoValue: &test_structs.UnsignedArrayValueTypes{
-				[]uint8{1}, []uint16{2}, []uint32{3}, []uint64{4}, []float32{5}, []float64{6},
-			},
-			VdlValue: test_structs.UnsignedArrayValueTypes{
-				[]uint8{1}, []uint16{2}, []uint32{3}, []uint64{4}, []float32{5}, []float64{6},
-			},
+	{
+		Name: "ArrayValueTypes",
+		MojoValue: &test_structs.ArrayValueTypes{
+			[]int8{1},
+			[]int16{1, 2},
+			[]int32{1, 2, 3},
+			[]int64{1, 2, 3, 4},
+			[]float32{1},
+			[]float64{1, 2},
 		},
-		{
-			Name: "UnsignedFixedArrayValueTypes",
-			MojoValue: &test_structs.UnsignedFixedArrayValueTypes{
-				[3]uint8{1}, [2]uint16{2}, [2]uint32{3}, [2]uint64{4}, [2]float32{5}, [2]float64{6},
-			},
-			VdlValue: test_structs.UnsignedFixedArrayValueTypes{
-				[3]uint8{1}, [2]uint16{2}, [2]uint32{3}, [2]uint64{4}, [2]float32{5}, [2]float64{6},
-			},
+		VdlValue: test_structs.ArrayValueTypes{
+			[]int8{1},
+			[]int16{1, 2},
+			[]int32{1, 2, 3},
+			[]int64{1, 2, 3, 4},
+			[]float32{1},
+			[]float64{1, 2},
 		},
-		{
-			Name: "BoolArrayValueTypes",
-			MojoValue: &test_structs.BoolArrayValueTypes{
-				[]bool{false, true, true, false},
-			},
-			VdlValue: test_structs.BoolArrayValueTypes{
-				[]bool{false, true, true, false},
-			},
-		},*/
+	},
 	{
 		Name: "FloatNumberValues",
 		MojoValue: &test_structs.FloatNumberValues{
@@ -130,7 +171,15 @@ var testCases = []transcodeTestCase{
 			0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
 		},
 	},
-	// TODO(bprosnitz) IntegerNumberValues?
+	{
+		Name: "IntegerNumberValues",
+		MojoValue: &test_structs.IntegerNumberValues{
+			0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+		},
+		VdlValue: test_structs.IntegerNumberValues{
+			0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+		},
+	},
 	{
 		Name: "UnsignedNumberValues",
 		MojoValue: &test_structs.UnsignedNumberValues{
@@ -151,17 +200,71 @@ var testCases = []transcodeTestCase{
 			[][]bool{[]bool{true, false, true}}, []*[]bool{&[]bool{true, false, true}}, []*[2]bool{&[2]bool{true, false}},
 		},
 	},
-	// TODO(bprosnitz) MultiVersionStruct? + other versions
+	// TODO(bprosnitz) Multi-version structs are not yet supported because the version is specified in the
+	// struct header in the mojom bytes and we don't have any way to specify the version with VDL.
+	/*
+		{
+			Name: "MultiVersionStruct Full -> V3",
+			MojoValue: &test_structs.MultiVersionStruct{
+				FInt32:  8,
+				FRect:   &rect.Rect{1, 2, 3, 4},
+				FString: stringPtr("testStr"),
+			},
+			VdlValue: testtypes.MultiVersionStructV3{
+				FInt32:  8,
+				FRect:   testtypes.Rect{1, 2, 3, 4},
+				FString: "testStr",
+			},
+		},
+		{
+				Name: "MultiVersionStruct V3 -> Full",
+				MojoValue: &test_structs.MultiVersionStructV3{
+					FInt32:  8,
+					FRect:   &rect.Rect{1, 2, 3, 4},
+					FString: stringPtr("testStr"),
+				},
+				VdlValue: testtypes.MultiVersionStruct{
+					FInt32:  8,
+					FRect:   testtypes.Rect{1, 2, 3, 4},
+					FString: "testStr",
+				},
+			},*/
 	// from Mojo's test_unions
-	// TODO(bprosnitz) PodUnion?
-	// TODO(bprosnitz) ObjectUnion?
+	{
+		Name:      "PodUnionFInt8",
+		MojoValue: &transcoder_testcases.PodUnionWrapper{&test_unions.PodUnionFInt8{-1}},
+		VdlValue:  testtypes.PodUnionWrapper{testtypes.PodUnionFInt8{-1}},
+	},
+	{
+		Name:      "ObjectUnionFInt8",
+		MojoValue: &transcoder_testcases.ObjectUnionWrapper{&test_unions.ObjectUnionFInt8{5}},
+		VdlValue:  testtypes.ObjectUnionWrapper{testtypes.ObjectUnionFInt8{5}},
+	},
+	{
+		Name:      "ObjectUnionFDummy",
+		MojoValue: &transcoder_testcases.ObjectUnionWrapper{&test_unions.ObjectUnionFDummy{test_unions.DummyStruct{5}}},
+		VdlValue:  testtypes.ObjectUnionWrapper{testtypes.ObjectUnionFDummy{testtypes.DummyStruct{5}}},
+	},
+	{
+		Name:      "ObjectUnionFPodUnion",
+		MojoValue: &transcoder_testcases.ObjectUnionWrapper{&test_unions.ObjectUnionFPodUnion{&test_unions.PodUnionFDouble{1}}},
+		VdlValue:  testtypes.ObjectUnionWrapper{testtypes.ObjectUnionFPodUnion{testtypes.PodUnionFDouble{1}}},
+	},
 	// TODO(bprosnitz) HandleUnion?
 	// TODO(bprosnitz) WrapperStruct?
-	// TODO(bprosnitz) DummyStruct?
 	// TODO(bprosnitz) SmallStruct?
 	// TODO(bprosnitz) SmallStructNonNullableUnion?
 	// TODO(bprosnitz) SmallObjStruct?
-	// TODO(bprosnitz) TryNonNullStruct?
+	{
+		Name:      "TryNonNullStruct - nil optional",
+		MojoValue: &test_unions.TryNonNullStruct{},
+		VdlValue:  test_unions.TryNonNullStruct{},
+	},
+	{
+		Name:      "TryNonNullStruct - non nil optional",
+		MojoValue: &test_unions.TryNonNullStruct{&test_unions.DummyStruct{1}, test_unions.DummyStruct{2}},
+		VdlValue:  test_unions.TryNonNullStruct{&test_unions.DummyStruct{1}, test_unions.DummyStruct{2}},
+	},
 	// TODO(bprosnitz) OldUnion?
 	// TODO(bprosnitz) NewUnion?
 	// TODO(bprosnitz) IncludingStruct?

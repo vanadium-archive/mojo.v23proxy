@@ -45,6 +45,8 @@ func (t target) FromUint(src uint64, tt *vdl.Type) error {
 }
 func (t target) FromInt(src int64, tt *vdl.Type) error {
 	switch tt.Kind() {
+	case vdl.Int8:
+		t.current.Bytes()[0] = byte(src)
 	case vdl.Int16:
 		binary.LittleEndian.PutUint16(t.current.Bytes(), uint16(src))
 	case vdl.Int32:
@@ -170,23 +172,37 @@ func (t target) StartMap(tt *vdl.Type, len int) (vdl.MapTarget, error) {
 	st := target{
 		current: pointerBlock.Slice(0, 8),
 	}
-	setTarget, err := st.StartSet(vdl.SetType(tt.Key()), len)
+	keys, err := st.StartSet(vdl.SetType(tt.Key()), len)
 	if err != nil {
 		return nil, err
 	}
-	lt := target{
+	valuePlaceholder := target{
 		current: pointerBlock.Slice(8, 16),
 	}
-	listTarget, err := lt.StartList(vdl.ListType(tt.Elem()), len)
-	if err != nil {
-		return nil, err
-	}
 	return &mapTarget{
-		setTarget:  setTarget,
-		listTarget: listTarget,
+		keys:             keys,
+		valuePlaceholder: valuePlaceholder,
+		valueType:        tt.Elem(),
 	}, nil
 }
 func (t target) FinishMap(x vdl.MapTarget) error {
+	mt := x.(*mapTarget)
+	listTarget, err := mt.valuePlaceholder.StartList(vdl.ListType(mt.valueType), len(mt.cachedValues))
+	if err != nil {
+		return err
+	}
+	for i, val := range mt.cachedValues {
+		te, err := listTarget.StartElem(i)
+		if err != nil {
+			return err
+		}
+		if err := vdl.FromValue(te, val); err != nil {
+			return err
+		}
+		if err := listTarget.FinishElem(te); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 func (t target) StartFields(tt *vdl.Type) (vdl.FieldsTarget, error) {

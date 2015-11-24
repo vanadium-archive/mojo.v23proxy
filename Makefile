@@ -56,7 +56,7 @@ build-go-examples: $(BUILD_DIR)/echo_client.mojo $(BUILD_DIR)/echo_server.mojo $
 build-dart-examples: gen/echo.mojom.dart gen/fortune.mojom.dart
 
 # Go-based unit tests
-test: $(MOJO_SHARED_LIB) gen/go/src/mojom/tests/transcoder_testcases/transcoder_testcases.mojom.go
+test: $(MOJO_SHARED_LIB) gen/go/src/mojom/tests/transcoder_testcases/transcoder_testcases.mojom.go gen-vdl
 	$(call MOGO_TEST,v.io/x/mojo/transcoder/...)
 
 # Note:This file is needed to compile v23proxy.mojom, so we're symlinking it in from $MOJO_SDK.
@@ -130,6 +130,9 @@ gen/v23proxy.mojom.dart: mojom/mojom/v23proxy.mojom packages gen/mojo/public/int
 	# files, so we delete them.  Stop doing this once the generator is fixed.
 	# See https://github.com/domokit/mojo/issues/386
 	rm -f lib/gen/mojom/$(notdir $@)
+
+gen-vdl:
+	GOPATH=$(PWD)/go VDLPATH=$(PWD)/go vdl generate all
 
 # Run the Mojo shell with map-origin. This is common to Linux and Android since
 # the latter cannot accept a config-file.

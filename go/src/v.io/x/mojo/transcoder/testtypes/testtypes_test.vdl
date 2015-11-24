@@ -1,0 +1,66 @@
+// Copyright 2015 The Vanadium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package testtypes
+
+type AnEnum enum{
+  First; Second
+}
+
+type PodUnion union {
+  FInt8 int8
+  FInt8Other int8
+  FUint8 byte
+  FInt16 int16
+  FUint16 uint16
+  Fint32 int32
+  Fuint32 uint32
+  FInt64 int64
+  FUint64 uint64
+  FFloat float32
+  FDouble float64
+  FBool bool
+  FEnum AnEnum
+}
+
+type PodUnionWrapper struct {
+    PodUnion PodUnion
+}
+
+type DummyStruct struct {
+    FInt8 int8
+}
+
+type ObjectUnion union {
+    FInt8 int8
+    FString string
+    FDummy DummyStruct
+    FNullable ?DummyStruct
+    FArrayInt8 []int8
+    FMapInt8 map[string]int8
+    FPodUnion PodUnion
+}
+
+type ObjectUnionWrapper struct {
+    ObjectUnion ObjectUnion
+}
+
+type Rect struct {
+    X,Y,Width,Height int32
+}
+
+type MultiVersionStruct struct {
+	FInt32 int32
+	FRect Rect
+	FString string
+	FArray []int8
+	FBool bool
+	FInt16 int16
+}
+
+type MultiVersionStructV3 struct {
+	FInt32 int32
+	FRect Rect
+	FString string
+}
