@@ -5,17 +5,19 @@ include ../shared/mojo.mk
 # ANDROID needs to be any positive integer (e.g., 1, 2, 3, 4...)
 ifdef ANDROID
 	BUILD_DIR := $(PWD)/gen/mojo/android
-	MOJO_SHARED_LIB := $(PWD)/gen/lib/android/libsystem_thunk.a
 
-  # In order to determine the device id to target, we will parse the output of
-  # `adb devices`. The target id is present within the ANDROID+1'th line.
+	# For some reason we need to set the origin flag when running on Android,
+	# but setting it on Linux causes errors.
+	ORIGIN_FLAG = --origin $(MOJO_SERVICES)
+
+	# In order to determine the device id to target, we will parse the output
+	# of `adb devices`. The target id is present within the ANDROID+1'th line.
 	ANDROID_PLUS_ONE := $(shell echo $(ANDROID) \+ 1 | bc)
 	DEVICE_ID := $(shell adb devices | sed -n $(ANDROID_PLUS_ONE)p | awk '{ print $$1; }')
 	DEVICE_FLAG := --target-device $(DEVICE_ID)
 	ANDROID_FLAG := --android
 else
 	BUILD_DIR := $(PWD)/gen/mojo/linux_amd64
-	MOJO_SHARED_LIB := $(PWD)/gen/lib/linux_amd64/libsystem_thunk.a
 endif
 
 # If this is not the first mojo shell, then you must reuse the devservers
@@ -57,31 +59,31 @@ build-dart-examples: gen/echo.mojom.dart gen/fortune.mojom.dart
 test: $(MOJO_SHARED_LIB) gen/go/src/mojom/tests/transcoder_testcases/transcoder_testcases.mojom.go
 	$(call MOGO_TEST,v.io/x/mojo/transcoder/...)
 
-# Note:This file is needed to compile v23proxy.mojom, so we're symlinking it in from $MOJO_DIR.
-mojom/mojo/public/interfaces/bindings/mojom_types.mojom: $(MOJO_DIR)/src/mojo/public/interfaces/bindings/mojom_types.mojom
+# Note:This file is needed to compile v23proxy.mojom, so we're symlinking it in from $MOJO_SDK.
+mojom/mojo/public/interfaces/bindings/mojom_types.mojom: $(MOJO_SDK)/src/mojo/public/interfaces/bindings/mojom_types.mojom
 	mkdir -p mojom/mojo/public/interfaces/bindings
-	ln -sf $(MOJO_DIR)/src/mojo/public/interfaces/bindings/mojom_types.mojom mojom/mojo/public/interfaces/bindings/mojom_types.mojom
+	ln -sf $(MOJO_SDK)/src/mojo/public/interfaces/bindings/mojom_types.mojom mojom/mojo/public/interfaces/bindings/mojom_types.mojom
 
-mojom/mojo/public/interfaces/bindings/tests/test_unions.mojom: $(MOJO_DIR)/src/mojo/public/interfaces/bindings/tests/test_unions.mojom
+mojom/mojo/public/interfaces/bindings/tests/test_unions.mojom: $(MOJO_SDK)/src/mojo/public/interfaces/bindings/tests/test_unions.mojom
 	mkdir -p mojom/mojo/public/interfaces/bindings/tests
-	ln -sf $(MOJO_DIR)/src/mojo/public/interfaces/bindings/tests/test_unions.mojom mojom/mojo/public/interfaces/bindings/tests/test_unions.mojom
+	ln -sf $(MOJO_SDK)/src/mojo/public/interfaces/bindings/tests/test_unions.mojom mojom/mojo/public/interfaces/bindings/tests/test_unions.mojom
 
-mojom/mojo/public/interfaces/bindings/tests/test_included_unions.mojom: $(MOJO_DIR)/src/mojo/public/interfaces/bindings/tests/test_included_unions.mojom
+mojom/mojo/public/interfaces/bindings/tests/test_included_unions.mojom: $(MOJO_SDK)/src/mojo/public/interfaces/bindings/tests/test_included_unions.mojom
 	mkdir -p mojom/mojo/public/interfaces/bindings/tests
-	ln -sf $(MOJO_DIR)/src/mojo/public/interfaces/bindings/tests/test_included_unions.mojom mojom/mojo/public/interfaces/bindings/tests/test_included_unions.mojom
+	ln -sf $(MOJO_SDK)/src/mojo/public/interfaces/bindings/tests/test_included_unions.mojom mojom/mojo/public/interfaces/bindings/tests/test_included_unions.mojom
 
-mojom/mojo/public/interfaces/bindings/tests/test_structs.mojom: $(MOJO_DIR)/src/mojo/public/interfaces/bindings/tests/test_structs.mojom
+mojom/mojo/public/interfaces/bindings/tests/test_structs.mojom: $(MOJO_SDK)/src/mojo/public/interfaces/bindings/tests/test_structs.mojom
 	mkdir -p mojom/mojo/public/interfaces/bindings/tests
-	ln -sf $(MOJO_DIR)/src/mojo/public/interfaces/bindings/tests/test_structs.mojom mojom/mojo/public/interfaces/bindings/tests/test_structs.mojom
+	ln -sf $(MOJO_SDK)/src/mojo/public/interfaces/bindings/tests/test_structs.mojom mojom/mojo/public/interfaces/bindings/tests/test_structs.mojom
 
 gen/go/src/mojom/tests/transcoder_testcases/transcoder_testcases.mojom.go: mojom/mojom/tests/transcoder_testcases.mojom mojom/mojo/public/interfaces/bindings/tests/test_unions.mojom mojom/mojo/public/interfaces/bindings/tests/test_included_unions.mojom mojom/mojo/public/interfaces/bindings/tests/test_structs.mojom | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,gen,go)
 	gofmt -w $@
 
-$(BUILD_DIR)/echo_client.mojo: $(MOJO_SHARED_LIB) gen/go/src/mojom/examples/echo/echo.mojom.go
+$(BUILD_DIR)/echo_client.mojo: gen/go/src/mojom/examples/echo/echo.mojom.go
 	$(call MOGO_BUILD,examples/echo/client,$@)
 
-$(BUILD_DIR)/echo_server.mojo: $(MOJO_SHARED_LIB) gen/go/src/mojom/examples/echo/echo.mojom.go
+$(BUILD_DIR)/echo_server.mojo: gen/go/src/mojom/examples/echo/echo.mojom.go
 	$(call MOGO_BUILD,examples/echo/server,$@)
 
 gen/go/src/mojom/examples/echo/echo.mojom.go: mojom/mojom/examples/echo.mojom | mojo-env-check
@@ -91,10 +93,10 @@ gen/go/src/mojom/examples/echo/echo.mojom.go: mojom/mojom/examples/echo.mojom | 
 gen/echo.mojom.dart: mojom/mojom/examples/echo.mojom | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,dart-examples/echo/lib/gen,dart)
 
-$(BUILD_DIR)/fortune_client.mojo: $(MOJO_SHARED_LIB) gen/go/src/mojom/examples/fortune/fortune.mojom.go
+$(BUILD_DIR)/fortune_client.mojo: gen/go/src/mojom/examples/fortune/fortune.mojom.go
 	$(call MOGO_BUILD,examples/fortune/client,$@)
 
-$(BUILD_DIR)/fortune_server.mojo: $(MOJO_SHARED_LIB) gen/go/src/mojom/examples/fortune/fortune.mojom.go
+$(BUILD_DIR)/fortune_server.mojo: gen/go/src/mojom/examples/fortune/fortune.mojom.go
 	$(call MOGO_BUILD,examples/fortune/server,$@)
 
 gen/go/src/mojom/examples/fortune/fortune.mojom.go: mojom/mojom/examples/fortune.mojom | mojo-env-check
@@ -104,7 +106,7 @@ gen/go/src/mojom/examples/fortune/fortune.mojom.go: mojom/mojom/examples/fortune
 gen/fortune.mojom.dart: mojom/mojom/examples/fortune.mojom | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,dart-examples/fortune/lib/gen,dart)
 
-$(BUILD_DIR)/v23proxy.mojo: $(MOJO_SHARED_LIB) gen/go/src/mojom/v23proxy/v23proxy.mojom.go | mojo-env-check
+$(BUILD_DIR)/v23proxy.mojo: gen/go/src/mojom/v23proxy/v23proxy.mojom.go | mojo-env-check
 	$(call MOGO_BUILD,v.io/x/mojo/proxy,$@)
 
 gen/go/src/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.go: mojom/mojo/public/interfaces/bindings/mojom_types.mojom | mojo-env-check
@@ -138,12 +140,13 @@ gen/v23proxy.mojom.dart: mojom/mojom/v23proxy.mojom packages gen/mojo/public/int
 # TODO(alexfandrianto): Figure out how to make this mapping work without
 # needing a distinct URL.
 define RUN_MOJO_SHELL
-	$(MOJO_DIR)/src/mojo/devtools/common/mojo_run \
+	$(MOJO_DEVTOOLS)/mojo_run \
 	$1 \
 	$(ANDROID_FLAG) \
 	$(DEVICE_FLAG) \
 	--no-config-file \
 	$(REUSE_FLAG) \
+	$(ORIGIN_FLAG) \
 	--map-origin="https://mojo.v.io/=$(BUILD_DIR)" \
 	--map-origin="https://mojodart.v.io/=$(PWD)" \
 	--args-for="https://mojo$4.v.io/$2 $3" \
@@ -217,9 +220,9 @@ clean: clean-go clean-dart
 
 .PHONY: clean-go
 clean-go:
-	rm -r gen
+	rm -rf gen
 
 .PHONY: clean-dart
 clean-dart:
-	rm -r lib/gen
-	rm -r dart-examples/echo/lib/gen
+	rm -rf lib/gen
+	rm -rf dart-examples/echo/lib/gen
