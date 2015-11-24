@@ -54,10 +54,27 @@ build-go-examples: $(BUILD_DIR)/echo_client.mojo $(BUILD_DIR)/echo_server.mojo $
 build-dart-examples: gen/echo.mojom.dart gen/fortune.mojom.dart
 
 # Go-based unit tests
-test: gen/go/src/mojom/tests/transcoder_testcases/transcoder_testcases.mojom.go
+test: $(MOJO_SHARED_LIB) gen/go/src/mojom/tests/transcoder_testcases/transcoder_testcases.mojom.go
 	$(call MOGO_TEST,v.io/x/mojo/transcoder/...)
 
-gen/go/src/mojom/tests/transcoder_testcases/transcoder_testcases.mojom.go: mojom/mojom/tests/transcoder_testcases.mojom | mojo-env-check
+# Note:This file is needed to compile v23proxy.mojom, so we're symlinking it in from $MOJO_DIR.
+mojom/mojo/public/interfaces/bindings/mojom_types.mojom: $(MOJO_DIR)/src/mojo/public/interfaces/bindings/mojom_types.mojom
+	mkdir -p mojom/mojo/public/interfaces/bindings
+	ln -sf $(MOJO_DIR)/src/mojo/public/interfaces/bindings/mojom_types.mojom mojom/mojo/public/interfaces/bindings/mojom_types.mojom
+
+mojom/mojo/public/interfaces/bindings/tests/test_unions.mojom: $(MOJO_DIR)/src/mojo/public/interfaces/bindings/tests/test_unions.mojom
+	mkdir -p mojom/mojo/public/interfaces/bindings/tests
+	ln -sf $(MOJO_DIR)/src/mojo/public/interfaces/bindings/tests/test_unions.mojom mojom/mojo/public/interfaces/bindings/tests/test_unions.mojom
+
+mojom/mojo/public/interfaces/bindings/tests/test_included_unions.mojom: $(MOJO_DIR)/src/mojo/public/interfaces/bindings/tests/test_included_unions.mojom
+	mkdir -p mojom/mojo/public/interfaces/bindings/tests
+	ln -sf $(MOJO_DIR)/src/mojo/public/interfaces/bindings/tests/test_included_unions.mojom mojom/mojo/public/interfaces/bindings/tests/test_included_unions.mojom
+
+mojom/mojo/public/interfaces/bindings/tests/test_structs.mojom: $(MOJO_DIR)/src/mojo/public/interfaces/bindings/tests/test_structs.mojom
+	mkdir -p mojom/mojo/public/interfaces/bindings/tests
+	ln -sf $(MOJO_DIR)/src/mojo/public/interfaces/bindings/tests/test_structs.mojom mojom/mojo/public/interfaces/bindings/tests/test_structs.mojom
+
+gen/go/src/mojom/tests/transcoder_testcases/transcoder_testcases.mojom.go: mojom/mojom/tests/transcoder_testcases.mojom mojom/mojo/public/interfaces/bindings/tests/test_unions.mojom mojom/mojo/public/interfaces/bindings/tests/test_included_unions.mojom mojom/mojo/public/interfaces/bindings/tests/test_structs.mojom | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,gen,go)
 	gofmt -w $@
 
@@ -90,7 +107,7 @@ gen/fortune.mojom.dart: mojom/mojom/examples/fortune.mojom | mojo-env-check
 $(BUILD_DIR)/v23proxy.mojo: $(MOJO_SHARED_LIB) gen/go/src/mojom/v23proxy/v23proxy.mojom.go | mojo-env-check
 	$(call MOGO_BUILD,v.io/x/mojo/proxy,$@)
 
-gen/go/src/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.go: $(MOJO_DIR)/src/mojom/mojo/public/interfaces/bindings/mojom_types.mojom | mojo-env-check
+gen/go/src/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.go: mojom/mojo/public/interfaces/bindings/mojom_types.mojom | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,gen,go)
 	gofmt -w $@
 
@@ -101,7 +118,7 @@ gen/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.dart: mojom/mo
 	# See https://github.com/domokit/mojo/issues/386
 	rm -f lib/gen/mojom/$(notdir $@)
 
-gen/go/src/mojom/v23proxy/v23proxy.mojom.go: mojom/mojom/v23proxy.mojom gen/go/src/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.go | mojo-env-check
+gen/go/src/mojom/v23proxy/v23proxy.mojom.go: | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,gen,go)
 	gofmt -w $@
 

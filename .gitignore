@@ -2,7 +2,7 @@
 .idea/
 *.iml
 gen/
-mojom/mojo/public/interfaces/bindings/mojom_types.mojom
+mojom/mojo/
 .packages
 .pub
 pubspec.lock
