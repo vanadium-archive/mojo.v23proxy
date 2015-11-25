@@ -120,7 +120,7 @@ gen/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.dart: mojom/mo
 	# See https://github.com/domokit/mojo/issues/386
 	rm -f lib/gen/mojom/$(notdir $@)
 
-gen/go/src/mojom/v23proxy/v23proxy.mojom.go: | mojo-env-check
+gen/go/src/mojom/v23proxy/v23proxy.mojom.go: mojom/mojom/v23proxy.mojom | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,gen,go)
 	gofmt -w $@
 
@@ -145,6 +145,7 @@ gen-vdl:
 define RUN_MOJO_SHELL
 	$(MOJO_DEVTOOLS)/mojo_run \
 	$1 \
+	--shell-path $(MOJO_SHELL) \
 	$(ANDROID_FLAG) \
 	$(DEVICE_FLAG) \
 	--no-config-file \
@@ -229,3 +230,4 @@ clean-go:
 clean-dart:
 	rm -rf lib/gen
 	rm -rf dart-examples/echo/lib/gen
+	rm -rf dart-examples/fortune/lib/gen
