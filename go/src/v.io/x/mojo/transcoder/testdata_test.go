@@ -269,18 +269,27 @@ var testCases = []transcodeTestCase{
 	// TODO(bprosnitz) NewUnion?
 	// TODO(bprosnitz) IncludingStruct?
 	// test cases not from Mojo:
-	/*
-		// TODO(bprosnitz) These fail:
-		{
-			Name:      "UnnamedPrimitiveTestStruct",
-			MojoValue: &transcoder_testcases.UnnamedPrimitiveTestStruct{1, "A", true, 2},
-			VdlValue:  transcoder_testcases.UnnamedPrimitiveTestStruct{1, "A", true, 2},
-		},
-		{
-			Name:      "Transcode to Named Primitives",
-			MojoValue: &transcoder_testcases.UnnamedPrimitiveTestStruct{1, "A", true, 2},
-			VdlValue:  NamedPrimitiveTestStruct{1, "A", true, 2},
-		},*/
+	/* This doesn't currently work because VDL doesn't register the anonymous struct.
+	{
+		Name:      "Transcode to Anonymous Struct",
+		MojoValue: &transcoder_testcases.UnnamedPrimitiveTestStruct{1, "A", true, 2},
+		VdlValue: struct {
+			A uint32
+			B string
+			C bool
+			D float32
+		}{1, "A", true, 2},
+	},*/
+	{
+		Name:      "Transcode to struct of different name",
+		MojoValue: &transcoder_testcases.UnnamedPrimitiveTestStruct{1, "A", true, 2},
+		VdlValue:  NamedPrimitiveTestStruct{1, "A", true, 2},
+	},
+	{
+		Name:      "VarietyOfBitSizesStruct",
+		MojoValue: &transcoder_testcases.VarietyOfBitSizesStruct{false, 8, 16, 32, 64, "F", []int8{1, 2}, map[string]bool{"a": true}, 32, 16, 8, false, true, 12},
+		VdlValue:  transcoder_testcases.VarietyOfBitSizesStruct{false, 8, 16, 32, 64, "F", []int8{1, 2}, map[string]bool{"a": true}, 32, 16, 8, false, true, 12},
+	},
 	// TODO(bprosnitz) More tests of errors, named type conversions, unsupported types, etc
 }
 

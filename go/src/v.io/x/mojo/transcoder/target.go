@@ -215,14 +215,22 @@ func (t target) StartFields(tt *vdl.Type) (vdl.FieldsTarget, error) {
 			block:   t.current,
 		}, nil
 	}
-	block := t.allocator().Allocate(neededStructAllocationSize(tt), 0)
+	fieldsTarget, block, err := structFieldShared(tt, t.allocator(), true)
 	t.writePointer(block)
+	return fieldsTarget, err
+
+}
+
+func structFieldShared(tt *vdl.Type, allocator *allocator, writePointer bool) (vdl.FieldsTarget, bytesRef, error) {
+	block := allocator.Allocate(neededStructAllocationSize(tt), 0)
 	return fieldsTarget{
 			vdlType: tt,
 			block:   block,
+			layout:  computeStructLayout(tt),
 		},
-		nil
+		block, nil
 }
+
 func (t target) FinishFields(x vdl.FieldsTarget) error {
 	return nil
 }

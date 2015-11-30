@@ -14,11 +14,13 @@ import (
 type fieldsTarget struct {
 	vdlType *vdl.Type
 	block   bytesRef
+	layout  structLayout
 }
 
 func (fe fieldsTarget) StartField(name string) (key, field vdl.Target, _ error) {
 	fieldType, fieldIndex := fe.vdlType.FieldByName(name)
-	byteOffset, bitOffset := offsetInStruct(fieldIndex, fe.vdlType)
+	byteOffset, bitOffset := fe.layout.MojoOffsetsFromVdlIndex(fieldIndex)
+
 	numBits := baseTypeSizeBits(fieldType.Type)
 	refSize := (numBits + 7) / 8
 	newRef := fe.block.Slice(byteOffset, byteOffset+refSize)

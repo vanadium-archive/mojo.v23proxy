@@ -80,16 +80,14 @@ func (vtm *vdlToMojomTranscoder) FinishMap(x vdl.MapTarget) error {
 
 }
 func (vtm *vdlToMojomTranscoder) StartFields(tt *vdl.Type) (vdl.FieldsTarget, error) {
-	if tt.Kind() == vdl.Union {
+	if tt.Kind() != vdl.Struct {
+		// Top-level unions not currently supported
 		panic("UNIMPLEMENTED")
 	}
-	block := vtm.allocator.Allocate(neededStructAllocationSize(tt), 0)
-	return fieldsTarget{
-			vdlType: tt,
-			block:   block,
-		},
-		nil
+	fieldsTarget, _, err := structFieldShared(tt, vtm.allocator, false)
+	return fieldsTarget, err
 }
+
 func (vtm *vdlToMojomTranscoder) FinishFields(x vdl.FieldsTarget) error {
 	return nil
 }

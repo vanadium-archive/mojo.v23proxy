@@ -289,8 +289,8 @@ func (mtv *mojomToVdlTranscoder) transcodeValue(vt *vdl.Type, target vdl.Target,
 		if err != nil {
 			return err
 		}
-		for i := 0; i < vt.NumField(); i++ {
-			mfield := vt.Field(i)
+		for _, alloc := range computeStructLayout(vt) {
+			mfield := vt.Field(alloc.vdlStructIndex)
 			switch vkey, vfield, err := targetFields.StartField(mfield.Name); {
 			// TODO(toddw): Handle err == vdl.ErrFieldNoExist case?
 			case err != nil:

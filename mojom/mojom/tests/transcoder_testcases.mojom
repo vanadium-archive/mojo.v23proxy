@@ -13,6 +13,23 @@ struct UnnamedPrimitiveTestStruct {
     float D;
 };
 
+struct VarietyOfBitSizesStruct {
+ bool A;
+ uint8 B;
+ uint16 C;
+ uint32 D;
+ uint64 E;
+ string F;
+ array<int8> H;
+ map<string, bool> I;
+ int32 J;
+ int16 K;
+ int8 L;
+ bool M;
+ bool N;
+ uint32 O;
+};
+
 struct PodUnionWrapper {
   mojo.test.PodUnion pod_union;
 };
