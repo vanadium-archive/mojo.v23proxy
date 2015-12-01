@@ -59,6 +59,28 @@ func TestVomToMojo(t *testing.T) {
 	}
 }
 
+func TestVomToMojoToVom(t *testing.T) {
+	for _, test := range testCases {
+		testName := test.Name + " vom->mojo->vom"
+
+		data, err := transcoder.VdlToMojom(test.VdlValue)
+		if err != nil {
+			t.Errorf("%s: error in VomToMojo: %v", testName, err)
+			continue
+		}
+
+		var out interface{}
+		if err := transcoder.MojomToVdl(data, vdl.TypeOf(test.VdlValue), &out); err != nil {
+			t.Errorf("%s: error in MojoToVom: %v (was transcoding from %x)", testName, err, data)
+			continue
+		}
+
+		if got, want := out, test.VdlValue; !reflect.DeepEqual(got, want) {
+			t.Errorf("%s: result doesn't match expectation. got %#v, but want %#v", testName, got, want)
+		}
+	}
+}
+
 func mojoEncode(mojoValue interface{}) ([]byte, error) {
 	payload, ok := mojoValue.(encodable)
 	if !ok {

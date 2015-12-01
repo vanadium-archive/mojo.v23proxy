@@ -38,3 +38,18 @@ struct PodUnionWrapper {
 struct ObjectUnionWrapper {
   mojo.test.ObjectUnion object_union;
 };
+
+enum TestEnum {
+    A, B, C
+};
+
+struct TestBasicStruct {
+  TestEnum TestEnum;
+  int32 a;
+};
+
+struct TestCyclicStruct {
+    TestEnum TestEnum;
+    TestCyclicStruct? TestCyclicStruct;
+    int32 a;
+};

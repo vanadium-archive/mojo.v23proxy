@@ -93,11 +93,11 @@ func MojomToVDLType(mojomtype mojom_types.Type, mp map[string]mojom_types.UserDe
 		case mojom_types.SimpleType_Bool:
 			vt = vdl.BoolType
 		case mojom_types.SimpleType_Double:
-			vt = vdl.BoolType
+			vt = vdl.Float64Type
 		case mojom_types.SimpleType_Float:
-			vt = vdl.BoolType
+			vt = vdl.Float32Type
 		case mojom_types.SimpleType_InT8:
-			panic("int8 doesn't exist in vdl")
+			vt = vdl.Int8Type
 		case mojom_types.SimpleType_InT16:
 			vt = vdl.Int16Type
 		case mojom_types.SimpleType_InT32:
@@ -155,111 +155,164 @@ func MojomToVDLType(mojomtype mojom_types.Type, mp map[string]mojom_types.UserDe
 	return vt
 }
 
-/*func V2M(vt *vdl.Type, v2M map[string]string) mojom_types.Type {
-	if m, ok := v2M[vt.String()]; ok {
-		return mojom_types.TypeTypeReference{
-			Value: mojom_types.TypeReference{
-				Nullable:   nullable,
-				Identifier: m,
-				TypeKey:    m,
-			},
-		}
-	}
-	panic("vdl type %#v was not present in the mapping", vt)
+func VDLToMojomType(t *vdl.Type) (mojomtype mojom_types.Type, mp map[string]mojom_types.UserDefinedType) {
+	mp = map[string]mojom_types.UserDefinedType{}
+	mojomtype = vdlToMojomTypeInternal(t, false, mp)
+	return
 }
 
-// From the vdltype and the reverse mapping of the descriptor (hashcons vdltype string => typekey),
-// produce the corresponding mojom Type.
-func VDLToMojomType(vt *vdl.Type, v2M map[string]string) mojom_types.Type {
-	return vdlToMojomTypeImpl(vt, v2M, false)
-}
-
-func vdlToMojomTypeImpl(vt *vdl.Type, v2M map[string]string, bool nullable) mojom_types.Type {
-	if m, ok := v2M[vt.String()]; ok {
-		return mojom_types.TypeTypeReference{
-			Value: mojom_types.TypeReference{
-				Nullable:   nullable,
-				Identifier: m,
-				TypeKey:    m,
-			},
+func vdlToMojomTypeInternal(t *vdl.Type, nullable bool, mp map[string]mojom_types.UserDefinedType) (mojomtype mojom_types.Type) {
+	switch t.Kind() {
+	case vdl.Bool, vdl.Float64, vdl.Float32, vdl.Int8, vdl.Int16, vdl.Int32, vdl.Int64, vdl.Byte, vdl.Uint16, vdl.Uint32, vdl.Uint64:
+		return &mojom_types.TypeSimpleType{
+			simpleTypeCode(t.Kind()),
 		}
-	}
-
-	fmt.Println("Missed the vdl to mojom map")
-	// In the unlikely case where v2M was insufficient, we have the remaining logic.
-
-	switch vt.Kind() {
-	case vdl.Bool:
-		return mojom_types.TypeSimpleType{Value: mojom_types.SimpleType_Bool}
-	case vdl.Byte:
-		return mojom_types.TypeSimpleType{Value: mojom_types.SimpleType_UinT8}
-	case vdl.Uint16:
-		return mojom_types.TypeSimpleType{Value: mojom_types.SimpleType_UinT16}
-	case vdl.Uint32:
-		return mojom_types.TypeSimpleType{Value: mojom_types.SimpleType_UinT32}
-	case vdl.Uint64:
-		return mojom_types.TypeSimpleType{Value: mojom_types.SimpleType_UinT64}
-	case vdl.Int16:
-		return mojom_types.TypeSimpleType{Value: mojom_types.SimpleType_InT16}
-	case vdl.Int32:
-		return mojom_types.TypeSimpleType{Value: mojom_types.SimpleType_InT32}
-	case vdl.Int64:
-		return mojom_types.TypeSimpleType{Value: mojom_types.SimpleType_InT64}
-	case vdl.Float32:
-		return mojom_types.TypeSimpleType{Value: mojom_types.SimpleType_Float}
-	case vdl.Float64:
-		return mojom_types.TypeSimpleType{Value: mojom_types.SimpleType_Double}
-	case vdl.Complex64:
-		panic("complex float doesn't exist in mojom")
-	case vdl.Complex128:
-		panic("complex double doesn't exist in mojom")
 	case vdl.String:
-		return mojom_types.TypeStringType{Value: mojom_types.StringType{}}
+		return &mojom_types.TypeStringType{
+			stringType(nullable),
+		}
 	case vdl.Array:
-		elemType := VDLToMojomType(vt.Elem(), v2M)
-		return mojom_types.TypeArrayType{
-			Value: mojom_types.ArrayType{
-				FixedLength: int64(vt.Len()),
-				ElementType: elemType,
-			},
+		elem := vdlToMojomTypeInternal(t.Elem(), false, mp)
+		return &mojom_types.TypeArrayType{
+			arrayType(elem, nullable, t.Len()),
 		}
 	case vdl.List:
-		elemType := VDLToMojomType(vt.Elem(), v2M)
-		return mojom_types.TypeArrayType{
-			Value: mojom_types.ArrayType{
-				FixedLength: -1,
-				ElementType: elemType,
-			},
+		elem := vdlToMojomTypeInternal(t.Elem(), false, mp)
+		return &mojom_types.TypeArrayType{
+			listType(elem, nullable),
 		}
-	case vdl.Set:
-		panic("set doesn't exist in mojom")
 	case vdl.Map:
-		keyType := VDLToMojomType(vt.Key(), v2M)
-		elemType := VDLToMojomType(vt.Elem(), v2M)
-		return mojom_types.TypeMapType{
-			Value: mojom_types.MapType{
-				KeyType:   &keyType,
-				ValueType: &elemType,
-			},
+		key := vdlToMojomTypeInternal(t.Key(), false, mp)
+		elem := vdlToMojomTypeInternal(t.Elem(), false, mp)
+		return &mojom_types.TypeMapType{
+			mapType(key, elem, nullable),
 		}
 	case vdl.Struct, vdl.Union, vdl.Enum:
-		mt := mojom_types.TypeTypeReference{
-			Value: mojom_types.TypeReference{
-				Nullable:   nullable,
-				Identifier: v2M[vt.String()],
-				TypeKey:    v2M[vt.String()],
+		udtKey := userDefinedTypeKey(t, mp)
+		return &mojom_types.TypeTypeReference{
+			mojom_types.TypeReference{
+				Nullable: nullable,
+				TypeKey:  &udtKey,
 			},
 		}
-		return mt
-	case vdl.TypeObject:
-		panic("typeobject doesn't exist in mojom")
-	case vdl.Any:
-		panic("any doesn't exist in mojom")
 	case vdl.Optional:
-		// TODO(alexfandrianto): Unfortunately, without changing vdl, we can only
-		// manage optional (named) structs. This doesn't Nullify anything else.
-		return vdlToMojomTypeImpl(vt.Elem(), v2M, true)
+		return vdlToMojomTypeInternal(t.Elem(), true, mp)
+	default:
+		panic(fmt.Sprintf("conversion from VDL kind %v to mojom type not implemented", t.Kind()))
 	}
-	panic(fmt.Errorf("%v can't be converted to MojomType", vt))
 }
-*/
+
+func userDefinedTypeKey(t *vdl.Type, mp map[string]mojom_types.UserDefinedType) string {
+	key := t.String()
+	if _, ok := mp[key]; ok {
+		return key
+	}
+	mp[key] = nil // placeholder to stop recursion
+
+	var udt mojom_types.UserDefinedType
+	switch t.Kind() {
+	case vdl.Struct:
+		udt = structType(t, mp)
+	case vdl.Union:
+		udt = unionType(t, mp)
+	case vdl.Enum:
+		udt = enumType(t)
+	default:
+		panic(fmt.Sprintf("conversion from VDL kind %v to mojom user defined type not implemented", t.Kind()))
+	}
+
+	mp[key] = udt
+	return key
+}
+
+func simpleTypeCode(k vdl.Kind) mojom_types.SimpleType {
+	switch k {
+	case vdl.Bool:
+		return mojom_types.SimpleType_Bool
+	case vdl.Float64:
+		return mojom_types.SimpleType_Double
+	case vdl.Float32:
+		return mojom_types.SimpleType_Float
+	case vdl.Int8:
+		return mojom_types.SimpleType_InT8
+	case vdl.Int16:
+		return mojom_types.SimpleType_InT16
+	case vdl.Int32:
+		return mojom_types.SimpleType_InT32
+	case vdl.Int64:
+		return mojom_types.SimpleType_InT64
+	case vdl.Byte:
+		return mojom_types.SimpleType_UinT8
+	case vdl.Uint16:
+		return mojom_types.SimpleType_UinT16
+	case vdl.Uint32:
+		return mojom_types.SimpleType_UinT32
+	case vdl.Uint64:
+		return mojom_types.SimpleType_UinT64
+	default:
+		panic(fmt.Sprintf("kind %v does not represent a simple type", k))
+	}
+}
+
+func stringType(nullable bool) mojom_types.StringType {
+	return mojom_types.StringType{nullable}
+}
+
+func arrayType(elem mojom_types.Type, nullable bool, length int) mojom_types.ArrayType {
+	return mojom_types.ArrayType{nullable, int32(length), elem}
+}
+
+func listType(elem mojom_types.Type, nullable bool) mojom_types.ArrayType {
+	return mojom_types.ArrayType{nullable, -1, elem}
+}
+
+func mapType(key, value mojom_types.Type, nullable bool) mojom_types.MapType {
+	return mojom_types.MapType{nullable, key, value}
+}
+
+func structType(t *vdl.Type, mp map[string]mojom_types.UserDefinedType) mojom_types.UserDefinedType {
+	layout := computeStructLayout(t)
+	structFields := make([]mojom_types.StructField, t.NumField())
+	for i := 0; i < t.NumField(); i++ {
+		byteOffset, _ := layout.MojoOffsetsFromVdlIndex(i)
+		structFields[i] = mojom_types.StructField{
+			Type:   vdlToMojomTypeInternal(t.Field(i).Type, false, mp),
+			Offset: int32(byteOffset),
+		}
+	}
+	return &mojom_types.UserDefinedTypeStructType{
+		mojom_types.MojomStruct{
+			Fields: structFields,
+		},
+	}
+}
+
+func unionType(t *vdl.Type, mp map[string]mojom_types.UserDefinedType) mojom_types.UserDefinedType {
+	unionFields := make([]mojom_types.UnionField, t.NumField())
+	for i := 0; i < t.NumField(); i++ {
+		unionFields[i] = mojom_types.UnionField{
+			Type: vdlToMojomTypeInternal(t.Field(i).Type, false, mp),
+			Tag:  uint32(i),
+		}
+	}
+	return &mojom_types.UserDefinedTypeUnionType{
+		mojom_types.MojomUnion{
+			Fields: unionFields,
+		},
+	}
+}
+
+func enumType(t *vdl.Type) mojom_types.UserDefinedType {
+	enumValues := make([]mojom_types.EnumValue, t.NumEnumLabel())
+	for i := 0; i < t.NumEnumLabel(); i++ {
+		enumValues[i] = mojom_types.EnumValue{
+			EnumTypeKey: t.EnumLabel(i),
+			IntValue:    int32(i),
+		}
+	}
+	return &mojom_types.UserDefinedTypeEnumType{
+		mojom_types.MojomEnum{
+			Values: enumValues,
+		},
+	}
+}

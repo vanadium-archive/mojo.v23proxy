@@ -17,6 +17,8 @@ import (
 // the desired value.  The datatype describes the type of the encoded data.
 // Returns an error if the data cannot be decoded into valptr, based on the VDL
 // value conversion rules.
+// TODO(bprosnitz) Consider reimplementing this using mojom_type instead of vdl type
+// so that we can take advantage of the struct offset in the mojom type.
 func MojomToVdl(data []byte, datatype *vdl.Type, valptr interface{}) error {
 	target, err := vdl.ReflectTarget(reflect.ValueOf(valptr))
 	if err != nil {
