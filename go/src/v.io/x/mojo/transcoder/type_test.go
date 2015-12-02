@@ -6,8 +6,11 @@ package transcoder_test
 
 import (
 	"mojo/public/interfaces/bindings/mojom_types"
+	"mojom/tests/transcoder_testcases"
 	"reflect"
 	"testing"
+
+	"github.com/davecgh/go-spew/spew"
 
 	"v.io/v23/vdl"
 	"v.io/x/mojo/transcoder"
@@ -15,15 +18,14 @@ import (
 
 func TestVdlAndMojoTypeConversion(t *testing.T) {
 	// Create types.
-	/* Types are commented out pending the relevant tests being added.
-	enumType := vdl.NamedType("TestEnum", vdl.EnumType("A", "B", "C"))
+	enumType := vdl.NamedType("v23proxy/tests/transcoder_testcases.TestEnum", vdl.EnumType("A", "B", "C"))
 
-	basicStructType := vdl.NamedType("TestBasicStruct", vdl.StructType(vdl.Field{"TestEnum", enumType}, vdl.Field{"A", vdl.Int32Type}))
-
+	basicStructType := vdl.NamedType("v23proxy/tests/transcoder_testcases.TestBasicStruct", vdl.StructType(vdl.Field{"TestEnum", enumType}, vdl.Field{"A", vdl.Int32Type}))
+	/* disabled until recursive test is enabled
 	builder := vdl.TypeBuilder{}
 	strct := builder.Struct()
 	strct.AppendField("TestEnum", enumType)
-	namedStruct := builder.Named("TestStruct").AssignBase(strct)
+	namedStruct := builder.Named("v23proxy/tests/transcoder_testcases.TestStruct").AssignBase(strct)
 	strct.AppendField("TestStruct", builder.Optional().AssignElem(namedStruct))
 	strct.AppendField("A", vdl.Int32Type)
 	builder.Build()
@@ -116,24 +118,21 @@ func TestVdlAndMojoTypeConversion(t *testing.T) {
 			map[string]mojom_types.UserDefinedType{},
 		},
 		// ?map[int64]bool is currently disallowed in vdl, so skipping
-		/*
-			TODO(bprosnitz) We need a method to compare mojo types for equality
-			{
-				enumType,
-				&mojom_types.TypeTypeReference{mojom_types.TypeReference{Nullable: false, TypeKey: stringPtr("transcoder_testcases_TestEnum__")}},
-				map[string]mojom_types.UserDefinedType{
-					"transcoder_testcases_TestEnum__": transcoder_testcases.GetAllMojomTypeDefinitions()["transcoder_testcases_TestEnum__"],
-				},
+		{
+			enumType,
+			&mojom_types.TypeTypeReference{mojom_types.TypeReference{Nullable: false, TypeKey: stringPtr("transcoder_testcases_TestEnum__")}},
+			map[string]mojom_types.UserDefinedType{
+				"transcoder_testcases_TestEnum__": transcoder_testcases.GetAllMojomTypeDefinitions()["transcoder_testcases_TestEnum__"],
 			},
-			{
-				basicStructType,
-				&mojom_types.TypeTypeReference{mojom_types.TypeReference{Nullable: false, TypeKey: stringPtr("transcoder_testcases_TestBasicStruct__")}},
-				map[string]mojom_types.UserDefinedType{
-					"transcoder_testcases_TestBasicStruct__": transcoder_testcases.GetAllMojomTypeDefinitions()["transcoder_testcases_TestBasicStruct__"],
-					"transcoder_testcases_TestEnum__":        transcoder_testcases.GetAllMojomTypeDefinitions()["transcoder_testcases_TestEnum__"],
-				},
+		},
+		{
+			basicStructType,
+			&mojom_types.TypeTypeReference{mojom_types.TypeReference{Nullable: false, TypeKey: stringPtr("transcoder_testcases_TestBasicStruct__")}},
+			map[string]mojom_types.UserDefinedType{
+				"transcoder_testcases_TestBasicStruct__": transcoder_testcases.GetAllMojomTypeDefinitions()["transcoder_testcases_TestBasicStruct__"],
+				"transcoder_testcases_TestEnum__":        transcoder_testcases.GetAllMojomTypeDefinitions()["transcoder_testcases_TestEnum__"],
 			},
-		*/
+		},
 		/* mojo -> vdl currently doesn't handle cycles
 		{
 			cyclicStructType,
@@ -150,7 +149,7 @@ func TestVdlAndMojoTypeConversion(t *testing.T) {
 	for _, test := range tests {
 		mojomtype, mp := transcoder.VDLToMojomType(test.vdl)
 		if !reflect.DeepEqual(mojomtype, test.mojom) {
-			t.Errorf("vdl type %v, when converted to mojo type was %#v. expected %#v", test.vdl, mojomtype, test.mojom)
+			t.Errorf(spew.Sprintf("vdl type %v, when converted to mojo type was %#v. expected %#v", test.vdl, mojomtype, test.mojom))
 		}
 		if !reflect.DeepEqual(mp, test.mp) {
 			t.Errorf("vdl type %v, when converted to mojo type did not match expected user defined types. got %#v, expected %#v", test.vdl, mojomtype, test.mojom)

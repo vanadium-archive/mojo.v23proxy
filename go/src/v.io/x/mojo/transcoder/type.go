@@ -6,6 +6,7 @@ package transcoder
 
 import (
 	"fmt"
+	"strings"
 
 	"mojo/public/interfaces/bindings/mojom_types"
 
@@ -47,7 +48,7 @@ func mojomToVDLTypeUDT(udt mojom_types.UserDefinedType, mp map[string]mojom_type
 			labels[int(ev.IntValue)] = *ev.DeclData.ShortName
 		}
 
-		vt = vdl.NamedType(*me.DeclData.ShortName, vdl.EnumType(labels...))
+		vt = vdl.NamedType(mojomToVdlPath(*me.DeclData.FullIdentifier), vdl.EnumType(labels...))
 	case *mojom_types.UserDefinedTypeStructType: // struct
 		ms := u.Value
 
@@ -62,7 +63,7 @@ func mojomToVDLTypeUDT(udt mojom_types.UserDefinedType, mp map[string]mojom_type
 				Type: MojomToVDLType(mfield.Type, mp),
 			}
 		}
-		vt = vdl.NamedType(*mu.DeclData.ShortName, vdl.UnionType(vfields...))
+		vt = vdl.NamedType(mojomToVdlPath(*mu.DeclData.FullIdentifier), vdl.UnionType(vfields...))
 	case *mojom_types.UserDefinedTypeInterfaceType: // interface
 		panic("interfaces don't exist in vdl")
 	default: // unknown
@@ -79,7 +80,7 @@ func MojomStructToVDLType(ms mojom_types.MojomStruct, mp map[string]mojom_types.
 			Type: MojomToVDLType(mfield.Type, mp),
 		}
 	}
-	vt = vdl.NamedType(*ms.DeclData.ShortName, vdl.StructType(vfields...))
+	vt = vdl.NamedType(mojomToVdlPath(*ms.DeclData.FullIdentifier), vdl.StructType(vfields...))
 	return vt
 }
 
@@ -157,11 +158,11 @@ func MojomToVDLType(mojomtype mojom_types.Type, mp map[string]mojom_types.UserDe
 
 func VDLToMojomType(t *vdl.Type) (mojomtype mojom_types.Type, mp map[string]mojom_types.UserDefinedType) {
 	mp = map[string]mojom_types.UserDefinedType{}
-	mojomtype = vdlToMojomTypeInternal(t, false, mp)
+	mojomtype = vdlToMojomTypeInternal(t, true, false, mp)
 	return
 }
 
-func vdlToMojomTypeInternal(t *vdl.Type, nullable bool, mp map[string]mojom_types.UserDefinedType) (mojomtype mojom_types.Type) {
+func vdlToMojomTypeInternal(t *vdl.Type, outermostType bool, nullable bool, mp map[string]mojom_types.UserDefinedType) (mojomtype mojom_types.Type) {
 	switch t.Kind() {
 	case vdl.Bool, vdl.Float64, vdl.Float32, vdl.Int8, vdl.Int16, vdl.Int32, vdl.Int64, vdl.Byte, vdl.Uint16, vdl.Uint32, vdl.Uint64:
 		return &mojom_types.TypeSimpleType{
@@ -172,38 +173,44 @@ func vdlToMojomTypeInternal(t *vdl.Type, nullable bool, mp map[string]mojom_type
 			stringType(nullable),
 		}
 	case vdl.Array:
-		elem := vdlToMojomTypeInternal(t.Elem(), false, mp)
+		elem := vdlToMojomTypeInternal(t.Elem(), false, false, mp)
 		return &mojom_types.TypeArrayType{
 			arrayType(elem, nullable, t.Len()),
 		}
 	case vdl.List:
-		elem := vdlToMojomTypeInternal(t.Elem(), false, mp)
+		elem := vdlToMojomTypeInternal(t.Elem(), false, false, mp)
 		return &mojom_types.TypeArrayType{
 			listType(elem, nullable),
 		}
 	case vdl.Map:
-		key := vdlToMojomTypeInternal(t.Key(), false, mp)
-		elem := vdlToMojomTypeInternal(t.Elem(), false, mp)
+		key := vdlToMojomTypeInternal(t.Key(), false, false, mp)
+		elem := vdlToMojomTypeInternal(t.Elem(), false, false, mp)
 		return &mojom_types.TypeMapType{
 			mapType(key, elem, nullable),
 		}
 	case vdl.Struct, vdl.Union, vdl.Enum:
-		udtKey := userDefinedTypeKey(t, mp)
-		return &mojom_types.TypeTypeReference{
+		udtKey := addUserDefinedType(t, mp)
+		ret := &mojom_types.TypeTypeReference{
 			mojom_types.TypeReference{
 				Nullable: nullable,
 				TypeKey:  &udtKey,
 			},
 		}
+		if !outermostType {
+			// This is needed to match the output of the generator exactly, the outermost type
+			// is not given an identifier.
+			ret.Value.Identifier = ret.Value.TypeKey
+		}
+		return ret
 	case vdl.Optional:
-		return vdlToMojomTypeInternal(t.Elem(), true, mp)
+		return vdlToMojomTypeInternal(t.Elem(), false, true, mp)
 	default:
 		panic(fmt.Sprintf("conversion from VDL kind %v to mojom type not implemented", t.Kind()))
 	}
 }
 
-func userDefinedTypeKey(t *vdl.Type, mp map[string]mojom_types.UserDefinedType) string {
-	key := t.String()
+func addUserDefinedType(t *vdl.Type, mp map[string]mojom_types.UserDefinedType) string {
+	key := mojomTypeKey(t)
 	if _, ok := mp[key]; ok {
 		return key
 	}
@@ -271,17 +278,21 @@ func mapType(key, value mojom_types.Type, nullable bool) mojom_types.MapType {
 }
 
 func structType(t *vdl.Type, mp map[string]mojom_types.UserDefinedType) mojom_types.UserDefinedType {
-	layout := computeStructLayout(t)
 	structFields := make([]mojom_types.StructField, t.NumField())
 	for i := 0; i < t.NumField(); i++ {
-		byteOffset, _ := layout.MojoOffsetsFromVdlIndex(i)
 		structFields[i] = mojom_types.StructField{
-			Type:   vdlToMojomTypeInternal(t.Field(i).Type, false, mp),
-			Offset: int32(byteOffset),
+			DeclData: &mojom_types.DeclarationData{ShortName: strPtr(t.Field(i).Name)},
+			Type:     vdlToMojomTypeInternal(t.Field(i).Type, false, false, mp),
+			Offset:   0, // Despite the fact that we can calculated the offset, set it to zero to match the generator
 		}
 	}
+	_, name := vdl.SplitIdent(t.Name())
 	return &mojom_types.UserDefinedTypeStructType{
 		mojom_types.MojomStruct{
+			DeclData: &mojom_types.DeclarationData{
+				ShortName:      strPtr(name),
+				FullIdentifier: strPtr(mojomIdentifier(t)),
+			},
 			Fields: structFields,
 		},
 	}
@@ -291,12 +302,18 @@ func unionType(t *vdl.Type, mp map[string]mojom_types.UserDefinedType) mojom_typ
 	unionFields := make([]mojom_types.UnionField, t.NumField())
 	for i := 0; i < t.NumField(); i++ {
 		unionFields[i] = mojom_types.UnionField{
-			Type: vdlToMojomTypeInternal(t.Field(i).Type, false, mp),
-			Tag:  uint32(i),
+			DeclData: &mojom_types.DeclarationData{ShortName: strPtr(t.Field(i).Name)},
+			Type:     vdlToMojomTypeInternal(t.Field(i).Type, false, false, mp),
+			Tag:      uint32(i),
 		}
 	}
+	_, name := vdl.SplitIdent(t.Name())
 	return &mojom_types.UserDefinedTypeUnionType{
 		mojom_types.MojomUnion{
+			DeclData: &mojom_types.DeclarationData{
+				ShortName:      strPtr(name),
+				FullIdentifier: strPtr(mojomIdentifier(t)),
+			},
 			Fields: unionFields,
 		},
 	}
@@ -306,13 +323,44 @@ func enumType(t *vdl.Type) mojom_types.UserDefinedType {
 	enumValues := make([]mojom_types.EnumValue, t.NumEnumLabel())
 	for i := 0; i < t.NumEnumLabel(); i++ {
 		enumValues[i] = mojom_types.EnumValue{
-			EnumTypeKey: t.EnumLabel(i),
+			DeclData:    &mojom_types.DeclarationData{ShortName: strPtr(t.EnumLabel(i))},
 			IntValue:    int32(i),
+			EnumTypeKey: mojomTypeKey(t),
 		}
 	}
+	_, name := vdl.SplitIdent(t.Name())
 	return &mojom_types.UserDefinedTypeEnumType{
 		mojom_types.MojomEnum{
+			DeclData: &mojom_types.DeclarationData{
+				ShortName:      strPtr(name),
+				FullIdentifier: strPtr(mojomIdentifier(t)),
+			},
 			Values: enumValues,
 		},
 	}
+}
+
+func strPtr(x string) *string {
+	return &x
+}
+
+// mojomTypeKey creates a key from the vdl type's name that matches the generator's key.
+// The reason for exactly matching the generator is to simplify the tests.
+func mojomTypeKey(t *vdl.Type) string {
+	pkgPath, name := vdl.SplitIdent(t.Name())
+	pathComponents := strings.Split(pkgPath, "/")
+	return fmt.Sprintf("%s_%s__", pathComponents[len(pathComponents)-1], name)
+}
+
+func mojomIdentifier(t *vdl.Type) string {
+	return strings.Replace(t.Name(), "/", ".", -1)
+}
+
+// "a.b.c.D" -> "a/b/c.D"
+func mojomToVdlPath(path string) string {
+	lastDot := strings.LastIndex(path, ".")
+	if lastDot == -1 {
+		return path
+	}
+	return strings.Replace(path[:lastDot], ".", "/", -1) + path[lastDot:]
 }
