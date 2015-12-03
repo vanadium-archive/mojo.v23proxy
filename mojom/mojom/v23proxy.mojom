@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-module v23proxy;
+module mojo.bindings.types;
+//module v23proxy; // TODO(bprosnitz) Ideally, this would be in v23proxy. This is in mojo.bindings.types because importing across modules is broken in mojo.
 
-import "../mojo/public/interfaces/bindings/mojom_types.mojom";
+import "mojo/public/interfaces/bindings/mojom_types.mojom";
 
 interface V23 {
   // Sets up a communication channel between the caller and the mojo application
@@ -21,11 +22,10 @@ interface V23 {
   // futureMessages: Pipe over which messages can be sent to/received from
   //                 serviceName running on the remote service v23Name.
   SetupProxy(string v23Name,
-             mojo.MojomInterface ifaceSig,
-             map<string, mojo.UserDefinedType> mapping,
+             MojomInterface ifaceSig,
+             map<string, UserDefinedType> mapping,
              string serviceName,
              handle<message_pipe> futureMessages);
-
 
   // Endpoints gets the endpoints that the v23proxy serves at.
   Endpoints() => (array<string> endpoints);
