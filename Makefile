@@ -43,12 +43,16 @@ lint-dart:
 	dartanalyzer lib/client.dart | grep -v "\[warning\] The imported libraries"
 	dartanalyzer dart-examples/echo/lib/main.dart | grep -v "\[warning\] The imported libraries"
 
+.PHONY: link-mojo_sdk
+link-mojo_sdk:
+	ln -sf $(MOJO_SDK) .mojo_sdk
+
 # Installs dart dependencies.
-packages:
+packages: link-mojo_sdk
 	pub get
 
 .PHONY: upgrade-packages
-upgrade-packages:
+upgrade-packages: link-mojo_sdk
 	pub upgrade
 
 build-go-examples: $(BUILD_DIR)/echo_client.mojo $(BUILD_DIR)/echo_server.mojo $(BUILD_DIR)/fortune_client.mojo $(BUILD_DIR)/fortune_server.mojo
@@ -114,7 +118,7 @@ gen/go/src/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.go: moj
 	gofmt -w $@
 
 gen/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.dart: mojom/mojo/public/interfaces/bindings/mojom_types.mojom packages | mojo-env-check
-	$(call MOJOM_GEN,$<,.,lib/gen,dart)
+	$(call MOJOM_GEN,$<,mojom,lib/gen,dart)
 	# TODO(nlacasse): mojom_bindings_generator creates bad symlinks on dart
 	# files, so we delete them.  Stop doing this once the generator is fixed.
 	# See https://github.com/domokit/mojo/issues/386
@@ -125,7 +129,7 @@ gen/go/src/mojom/v23proxy/v23proxy.mojom.go: mojom/mojom/v23proxy.mojom | mojo-e
 	gofmt -w $@
 
 gen/v23proxy.mojom.dart: mojom/mojom/v23proxy.mojom packages gen/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.dart | mojo-env-check
-	$(call MOJOM_GEN,$<,.,lib/gen,dart)
+	$(call MOJOM_GEN,$<,mojom,lib/gen,dart)
 	# TODO(nlacasse): mojom_bindings_generator creates bad symlinks on dart
 	# files, so we delete them.  Stop doing this once the generator is fixed.
 	# See https://github.com/domokit/mojo/issues/386
@@ -136,25 +140,23 @@ gen-vdl:
 
 # Run the Mojo shell with map-origin. This is common to Linux and Android since
 # the latter cannot accept a config-file.
-# $1 is for any extra flags, like --enable-multiprocess.
-# $2 is for the name and/or path to the mojo or dart file.
-# $3 is for $ARGS, any arguments you might want to pass to the mojo program.
-# $4 is for 'dart'. This is temporary so that the --map-origin works out.
+# $1 is for the name and/or path to the mojo or dart file.
+# $2 is for $ARGS, any arguments you might want to pass to the mojo program.
 # TODO(alexfandrianto): Figure out how to make this mapping work without
 # needing a distinct URL.
 define RUN_MOJO_SHELL
 	$(MOJO_DEVTOOLS)/mojo_run \
-	$1 \
+	https://mojo.v.io/$1 \
+	--config-file $(PWD)/mojoconfig \
 	--shell-path $(MOJO_SHELL) \
 	$(ANDROID_FLAG) \
-	$(DEVICE_FLAG) \
-	--no-config-file \
-	$(REUSE_FLAG) \
-	$(ORIGIN_FLAG) \
-	--map-origin="https://mojo.v.io/=$(BUILD_DIR)" \
-	--map-origin="https://mojodart.v.io/=$(PWD)" \
-	--args-for="https://mojo$4.v.io/$2 $3" \
-	https://mojo$4.v.io/$2
+  	--enable-multiprocess \
+  	--config-alias V23PROXY_DIR=$(PWD) \
+  	--config-alias V23PROXY_BUILD_DIR=$(BUILD_DIR) \
+  	"--args-for=https://mojo.v.io/$1 $(ARGS) $(V23_MOJO_FLAGS)" \
+  	"--args-for=mojo:dart_content_handler --enable-strict-mode" \
+  	$(ORIGIN_FLAG)
+	$(MOJO_SHELL_FLAGS)
 endef
 
 # Start the v23proxy (server-side). This runs the v23proxy in its own shell and
@@ -168,7 +170,7 @@ endef
 # ANDROID={device number} make start-v23proxy
 .PHONY: start-v23proxy
 start-v23proxy: build-go
-	$(call RUN_MOJO_SHELL,--enable-multiprocess,v23proxy.mojo,,)
+	$(call RUN_MOJO_SHELL,v23proxy.mojo,)
 
 
 # Start the echo client. This uses the v23proxy (client-side) to speak Vanadium
@@ -184,7 +186,7 @@ start-v23proxy: build-go
 # Note2: Setting HOME ensures that we avoid a db LOCK that is created per mojo shell instance.
 .PHONY: start-echo-client
 start-echo-client: build-go
-	$(call RUN_MOJO_SHELL,,echo_client.mojo,${ARGS},)
+	$(call RUN_MOJO_SHELL,echo_client.mojo,${ARGS})
 
 # Like the start-echo-client but using a Dart client instead.
 # Note: Uses --enable-multiprocess since it looks like the Dart VM and Go VM
@@ -192,7 +194,7 @@ start-echo-client: build-go
 # is not used.
 .PHONY: start-dart-echo-client
 start-dart-echo-client: build-dart
-	$(call RUN_MOJO_SHELL,--enable-multiprocess,dart-examples/echo/lib/main.dart,${ARGS},dart)
+	$(call RUN_MOJO_SHELL,dart-examples/echo/lib/main.dart,${ARGS})
 
 
 # Start the fortune client. This uses the v23proxy (client-side) to speak Vanadium
@@ -208,7 +210,7 @@ start-dart-echo-client: build-dart
 # Note2: Setting HOME ensures that we avoid a db LOCK that is created per mojo shell instance.
 .PHONY: start-fortune-client
 start-fortune-client: build-go
-	$(call RUN_MOJO_SHELL,,fortune_client.mojo,${ARGS},)
+	$(call RUN_MOJO_SHELL,fortune_client.mojo,${ARGS})
 
 # Like the start-fortune-client but using a Dart client instead.
 # Note: Uses --enable-multiprocess since it looks like the Dart VM and Go VM
@@ -216,7 +218,7 @@ start-fortune-client: build-go
 # is not used.
 .PHONY: start-dart-fortune-client
 start-dart-fortune-client: build-dart
-	$(call RUN_MOJO_SHELL,--enable-multiprocess,dart-examples/fortune/lib/main.dart,${ARGS},dart)
+	$(call RUN_MOJO_SHELL,dart-examples/fortune/lib/main.dart,${ARGS})
 
 
 .PHONY: clean

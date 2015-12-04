@@ -1,0 +1,25 @@
+# Derived from $MOJO_DIR/mojoconfig.
+
+{
+  'dev_servers': [
+    {
+      'host': 'https://mojo.v.io/',
+      'port': 0,
+      'mappings': [
+        ('', [
+          # For v23proxy.mojo.
+          '@{V23PROXY_BUILD_DIR}',
+          # For examples.
+          '@{V23PROXY_DIR}/example'
+        ]),
+      ],
+    },
+    {
+      'host': 'https://test.mojo.v.io/',
+      'port': 0,
+      'mappings': [
+        ('', ['@{V23PROXY_DIR}/test']),
+      ],
+    },
+  ],
+}

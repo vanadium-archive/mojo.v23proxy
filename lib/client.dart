@@ -4,7 +4,7 @@
 
 library v23proxy;
 
-import 'gen/dart-gen/mojom/lib/v23proxy/v23proxy.mojom.dart';
+import 'gen/dart-gen/mojom/lib/mojo/bindings/types/v23proxy.mojom.dart';
 
 import 'package:mojo/application.dart' as application;
 import 'package:mojo/bindings.dart' as bindings;
