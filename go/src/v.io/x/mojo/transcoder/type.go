@@ -13,28 +13,37 @@ import (
 	"v.io/v23/vdl"
 )
 
-/*// Given a descriptor mapping, produce 2 maps.
-// The former maps from mojom identifiers to VDL Type.
-// The latter maps from VDL Type string (hash cons) to the mojom identifier.
-// These maps are used to interconvert more easily.
-func AnalyzeMojomDescriptors(mp map[string]mojom_types.UserDefinedType) map[string]*vdl.Type {
-	m2V := make(map[string]*vdl.Type)
-	for s, udt := range mp {
-		m2V[s] = mojomToVDLTypeUDT(udt, mp)
-	}
-	return m2V
-}*/
+func MojomStructToVDLType(ms mojom_types.MojomStruct, mp map[string]mojom_types.UserDefinedType) (*vdl.Type, error) {
+	builder := &vdl.TypeBuilder{}
+	// Note: The type key is "" below because if there is a cycle, it will have a separate reference under a separate
+	// type key and if there isn't the key is irrelevant.
+	pending := mojomStructToVDLType("", ms, mp, builder, map[string]vdl.TypeOrPending{})
+	builder.Build()
+	return pending.Built()
+}
 
-// Convert the known type reference to a vdl type.
-// Panics if the type reference was not known.
-/*func TypeReferenceToVDLType(tr mojom_types.TypeReference, mp map[string]mojom_types.UserDefinedType) *vdl.Type {
-	if udt, ok := mp[tr.TypeKey]; ok {
-		return mojomToVDLTypeUDT(udt, mp)
+func MojomToVDLType(mt mojom_types.Type, mp map[string]mojom_types.UserDefinedType) (*vdl.Type, error) {
+	builder := &vdl.TypeBuilder{}
+	t := mojomToVDLType(mt, mp, builder, map[string]vdl.TypeOrPending{})
+	builder.Build()
+	if vt, ok := t.(*vdl.Type); ok {
+		return vt, nil
 	}
-	panic("Type Key %s was not present in the mapping", tr.typeKey)
-}*/
+	return t.(vdl.PendingType).Built()
 
-func mojomToVDLTypeUDT(udt mojom_types.UserDefinedType, mp map[string]mojom_types.UserDefinedType) (vt *vdl.Type) {
+}
+
+func mojomStructToVDLType(typeKey string, ms mojom_types.MojomStruct, mp map[string]mojom_types.UserDefinedType, builder *vdl.TypeBuilder, pendingUdts map[string]vdl.TypeOrPending) (vt vdl.PendingType) {
+	strct := builder.Struct()
+	vt = builder.Named(mojomToVdlPath(*ms.DeclData.FullIdentifier)).AssignBase(strct)
+	pendingUdts[typeKey] = vt
+	for _, mfield := range ms.Fields {
+		strct.AppendField(*mfield.DeclData.ShortName, mojomToVDLType(mfield.Type, mp, builder, pendingUdts))
+	}
+	return
+}
+
+func mojomToVDLTypeUDT(typeKey string, udt mojom_types.UserDefinedType, mp map[string]mojom_types.UserDefinedType, builder *vdl.TypeBuilder, pendingUdts map[string]vdl.TypeOrPending) (vt vdl.TypeOrPending) {
 	u := interface{}(udt)
 	switch u := u.(type) { // To do the type switch, udt has to be converted to interface{}.
 	case *mojom_types.UserDefinedTypeEnumType: // enum
@@ -49,21 +58,18 @@ func mojomToVDLTypeUDT(udt mojom_types.UserDefinedType, mp map[string]mojom_type
 		}
 
 		vt = vdl.NamedType(mojomToVdlPath(*me.DeclData.FullIdentifier), vdl.EnumType(labels...))
+		pendingUdts[typeKey] = vt
 	case *mojom_types.UserDefinedTypeStructType: // struct
-		ms := u.Value
-
-		vt = MojomStructToVDLType(ms, mp)
+		vt = mojomStructToVDLType(typeKey, u.Value, mp, builder, pendingUdts)
 	case *mojom_types.UserDefinedTypeUnionType: // union
 		mu := u.Value
 
-		vfields := make([]vdl.Field, len(mu.Fields))
-		for ix, mfield := range mu.Fields {
-			vfields[ix] = vdl.Field{
-				Name: *mfield.DeclData.ShortName,
-				Type: MojomToVDLType(mfield.Type, mp),
-			}
+		union := builder.Union()
+		vt = builder.Named(mojomToVdlPath(*mu.DeclData.FullIdentifier)).AssignBase(union)
+		pendingUdts[typeKey] = vt
+		for _, mfield := range mu.Fields {
+			union = union.AppendField(*mfield.DeclData.ShortName, mojomToVDLType(mfield.Type, mp, builder, pendingUdts))
 		}
-		vt = vdl.NamedType(mojomToVdlPath(*mu.DeclData.FullIdentifier), vdl.UnionType(vfields...))
 	case *mojom_types.UserDefinedTypeInterfaceType: // interface
 		panic("interfaces don't exist in vdl")
 	default: // unknown
@@ -72,21 +78,8 @@ func mojomToVDLTypeUDT(udt mojom_types.UserDefinedType, mp map[string]mojom_type
 	return vt
 }
 
-func MojomStructToVDLType(ms mojom_types.MojomStruct, mp map[string]mojom_types.UserDefinedType) (vt *vdl.Type) {
-	vfields := make([]vdl.Field, len(ms.Fields))
-	for ix, mfield := range ms.Fields {
-		vfields[ix] = vdl.Field{
-			Name: *mfield.DeclData.ShortName,
-			Type: MojomToVDLType(mfield.Type, mp),
-		}
-	}
-	vt = vdl.NamedType(mojomToVdlPath(*ms.DeclData.FullIdentifier), vdl.StructType(vfields...))
-	return vt
-}
-
 // Given a mojom Type and the descriptor mapping, produce the corresponding vdltype.
-func MojomToVDLType(mojomtype mojom_types.Type, mp map[string]mojom_types.UserDefinedType) (vt *vdl.Type) {
-	// TODO(alexfandrianto): Cyclic types?
+func mojomToVDLType(mojomtype mojom_types.Type, mp map[string]mojom_types.UserDefinedType, builder *vdl.TypeBuilder, pendingUdts map[string]vdl.TypeOrPending) (vt vdl.TypeOrPending) {
 	mt := interface{}(mojomtype)
 	switch mt := interface{}(mt).(type) { // To do the type switch, mt has to be converted to interface{}.
 	case *mojom_types.TypeSimpleType: // TypeSimpleType
@@ -126,9 +119,12 @@ func MojomToVDLType(mojomtype mojom_types.Type, mp map[string]mojom_types.UserDe
 			panic("nullable arrays don't exist in vdl")
 		}
 		if at.FixedLength > 0 {
-			vt = vdl.ArrayType(int(at.FixedLength), MojomToVDLType(at.ElementType, mp))
+			vt = builder.Array().
+				AssignLen(int(at.FixedLength)).
+				AssignElem(mojomToVDLType(at.ElementType, mp, builder, pendingUdts))
 		} else {
-			vt = vdl.ListType(MojomToVDLType(at.ElementType, mp))
+			vt = builder.List().
+				AssignElem(mojomToVDLType(at.ElementType, mp, builder, pendingUdts))
 		}
 	case *mojom_types.TypeMapType: // TypeMapType
 		// Note that mojom doesn't have sets.
@@ -136,7 +132,9 @@ func MojomToVDLType(mojomtype mojom_types.Type, mp map[string]mojom_types.UserDe
 		if m.Nullable {
 			panic("nullable maps don't exist in vdl")
 		}
-		vt = vdl.MapType(MojomToVDLType(m.KeyType, mp), MojomToVDLType(m.ValueType, mp))
+		vt = builder.Map().
+			AssignKey(mojomToVDLType(m.KeyType, mp, builder, pendingUdts)).
+			AssignElem(mojomToVDLType(m.ValueType, mp, builder, pendingUdts))
 	case *mojom_types.TypeHandleType: // TypeHandleType
 		panic("handles don't exist in vdl")
 	case *mojom_types.TypeTypeReference: // TypeTypeReference
@@ -145,10 +143,17 @@ func MojomToVDLType(mojomtype mojom_types.Type, mp map[string]mojom_types.UserDe
 			panic("interface requests don't exist in vdl")
 		}
 		udt := mp[*tr.TypeKey]
-		if udt.Tag() != 1 && tr.Nullable {
-			panic("nullable non-struct type reference cannot be represented in vdl")
+		var ok bool
+		vt, ok = pendingUdts[*tr.TypeKey]
+		if !ok {
+			vt = mojomToVDLTypeUDT(*tr.TypeKey, udt, mp, builder, pendingUdts)
 		}
-		vt = mojomToVDLTypeUDT(udt, mp)
+		if tr.Nullable {
+			if udt.Tag() != 1 {
+				panic("nullable non-struct type reference cannot be represented in vdl")
+			}
+			vt = builder.Optional().AssignElem(vt)
+		}
 	default:
 		panic(fmt.Errorf("%#v has unknown tag %d", mojomtype, mojomtype.Tag()))
 	}

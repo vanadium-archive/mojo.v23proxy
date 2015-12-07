@@ -10,8 +10,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/davecgh/go-spew/spew"
-
 	"v.io/v23/vdl"
 	"v.io/x/mojo/transcoder"
 )
@@ -19,20 +17,19 @@ import (
 func TestVdlAndMojoTypeConversion(t *testing.T) {
 	// Create types.
 	enumType := vdl.NamedType("v23proxy/tests/transcoder_testcases.TestEnum", vdl.EnumType("A", "B", "C"))
-
 	basicStructType := vdl.NamedType("v23proxy/tests/transcoder_testcases.TestBasicStruct", vdl.StructType(vdl.Field{"TestEnum", enumType}, vdl.Field{"A", vdl.Int32Type}))
-	/* disabled until recursive test is enabled
+
 	builder := vdl.TypeBuilder{}
 	strct := builder.Struct()
 	strct.AppendField("TestEnum", enumType)
-	namedStruct := builder.Named("v23proxy/tests/transcoder_testcases.TestStruct").AssignBase(strct)
-	strct.AppendField("TestStruct", builder.Optional().AssignElem(namedStruct))
+	namedStruct := builder.Named("v23proxy/tests/transcoder_testcases.TestCyclicStruct").AssignBase(strct)
+	strct.AppendField("TestCyclicStruct", builder.Optional().AssignElem(namedStruct))
 	strct.AppendField("A", vdl.Int32Type)
 	builder.Build()
 	cyclicStructType, err := namedStruct.Built()
 	if err != nil {
 		t.Fatalf("error building struct: %v", err)
-	}*/
+	}
 
 	tests := []struct {
 		vdl   *vdl.Type
@@ -133,7 +130,6 @@ func TestVdlAndMojoTypeConversion(t *testing.T) {
 				"transcoder_testcases_TestEnum__":        transcoder_testcases.GetAllMojomTypeDefinitions()["transcoder_testcases_TestEnum__"],
 			},
 		},
-		/* mojo -> vdl currently doesn't handle cycles
 		{
 			cyclicStructType,
 			&mojom_types.TypeTypeReference{mojom_types.TypeReference{Nullable: false, TypeKey: stringPtr("transcoder_testcases_TestCyclicStruct__")}},
@@ -142,20 +138,21 @@ func TestVdlAndMojoTypeConversion(t *testing.T) {
 				"transcoder_testcases_TestEnum__":         transcoder_testcases.GetAllMojomTypeDefinitions()["transcoder_testcases_TestEnum__"],
 			},
 		},
-		*/
-		// TODO(bprosnitz) Are there any optional types in common between vdl and mojo?
 	}
 
 	for _, test := range tests {
 		mojomtype, mp := transcoder.VDLToMojomType(test.vdl)
 		if !reflect.DeepEqual(mojomtype, test.mojom) {
-			t.Errorf(spew.Sprintf("vdl type %v, when converted to mojo type was %#v. expected %#v", test.vdl, mojomtype, test.mojom))
+			t.Errorf("vdl type %v, when converted to mojo type was %#v. expected %#v", test.vdl, mojomtype, test.mojom)
 		}
 		if !reflect.DeepEqual(mp, test.mp) {
 			t.Errorf("vdl type %v, when converted to mojo type did not match expected user defined types. got %#v, expected %#v", test.vdl, mojomtype, test.mojom)
 		}
 
-		vt := transcoder.MojomToVDLType(test.mojom, test.mp)
+		vt, err := transcoder.MojomToVDLType(test.mojom, test.mp)
+		if err != nil {
+			t.Errorf("error converting mojo type %#v (with user defined types %v): %v", test.mojom, test.mp, err)
+		}
 		if !reflect.DeepEqual(vt, test.vdl) {
 			t.Errorf("mojom type %#v (with user defined types %v), when converted to vdl type was %v. expected %v", test.mojom, test.mp, vt, test.vdl)
 		}
