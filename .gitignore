@@ -3,6 +3,7 @@
 *.iml
 gen/
 mojom/mojo/
+.mojo_sdk
 .packages
 .pub
 pubspec.lock

@@ -47,7 +47,7 @@ func (delegate *RemoteEchoClientDelegate) Initialize(ctx application.Context) {
 	if err == nil {
 		fmt.Printf("client: %s\n", response)
 	} else {
-		log.Println(err)
+		fmt.Printf("error: %v\n", err)
 	}
 
 	log.Printf("RemoteEchoClientDelegate.Initialize calling EchoX...")

@@ -13,6 +13,6 @@ environment:
   sdk: '>=1.12.0 <2.0.0'
 dependency_overrides:
   mojo:
-    path: ../../../../../../../mojo/src/out/Debug/gen/dart-pkg/mojo
+    path: ../../.mojo_sdk/mojo/src/out/Debug/gen/dart-pkg/mojo
   v23proxy:
     path: ../..

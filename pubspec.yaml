@@ -5,6 +5,8 @@ name: v23proxy
 version: 0.0.1
 dependencies:
   mojo: '>=0.3.0 <0.4.0'
+  mojom:
+    path: lib/dart-pkg/mojom
 dev_dependencies:
   dart_style: any
   test: any
@@ -12,4 +14,4 @@ environment:
   sdk: '>=1.12.0 <2.0.0'
 dependency_overrides:
   mojo:
-    path: ../../../../../mojo/src/out/Debug/gen/dart-pkg/mojo
+    path: .mojo_sdk/src/out/Debug/gen/dart-pkg/mojo
