@@ -162,10 +162,16 @@ func (s *messageReceiver) Accept(message *bindings.Message) (err error) {
 func (s *messageReceiver) call(name, method string, value []byte, inParamsType mojom_types.MojomStruct, outParamsType *mojom_types.MojomStruct) ([]byte, error) {
 	s.ctx.Infof("server: %s.%s: %#v", name, method, inParamsType)
 
-	inVType := transcoder.MojomStructToVDLType(inParamsType, s.header.desc)
+	inVType, err := transcoder.MojomStructToVDLType(inParamsType, s.header.desc)
+	if err != nil {
+		return nil, err
+	}
 	var outVType *vdl.Type
 	if outParamsType != nil {
-		outVType = transcoder.MojomStructToVDLType(*outParamsType, s.header.desc)
+		outVType, err = transcoder.MojomStructToVDLType(*outParamsType, s.header.desc)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Decode the vdl.Value from the mojom bytes and mojom type.

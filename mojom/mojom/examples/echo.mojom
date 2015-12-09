@@ -19,6 +19,7 @@ struct aInArg {
   string str;
 };
 
+[ServiceName="mojo::examples::RemoteEcho"]
 interface RemoteEcho {
   EchoString(string value) => (string value);
   EchoX(array<bool> arg1, aInArg arg2) => (outArgTypes out);

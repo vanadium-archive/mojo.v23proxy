@@ -256,7 +256,10 @@ func (fs fakeService) callRemoteMethod(ctx *context.T, method string, mi mojom_t
 	}
 
 	// Now produce the *bindings.Message that we will send to the other side.
-	inType := transcoder.MojomStructToVDLType(mm.Parameters, desc)
+	inType, err := transcoder.MojomStructToVDLType(mm.Parameters, desc)
+	if err != nil {
+		return nil, err
+	}
 	message, err := encodeMessageFromVom(header, argptrs, inType)
 	if err != nil {
 		return nil, err
@@ -277,7 +280,10 @@ func (fs fakeService) callRemoteMethod(ctx *context.T, method string, mi mojom_t
 	}
 
 	// Decode the *vdl.Value from the mojom bytes and mojom type.
-	outType := transcoder.MojomStructToVDLType(*mm.ResponseParams, desc)
+	outType, err := transcoder.MojomStructToVDLType(*mm.ResponseParams, desc)
+	if err != nil {
+		return nil, err
+	}
 	var outVdlValue *vdl.Value
 	if err := transcoder.MojomToVdl(outMessage.Payload, outType, &outVdlValue); err != nil {
 		return nil, fmt.Errorf("transcoder.MojoToVom failed: %v", err)

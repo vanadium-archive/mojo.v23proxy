@@ -5,6 +5,7 @@
 [JavaPackage="org.chromium.mojo.examples.fortune"]
 module mojo.examples;
 
+[ServiceName="mojo::examples::Fortune"]
 interface Fortune {
   Get() => (string value);
   Add(string wisdom) => ();

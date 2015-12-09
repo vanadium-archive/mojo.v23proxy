@@ -7,6 +7,7 @@ module mojo.bindings.types;
 
 import "mojo/public/interfaces/bindings/mojom_types.mojom";
 
+[ServiceName="v23proxy::V23"]
 interface V23 {
   // Sets up a communication channel between the caller and the mojo application
   // running in a remote process.
