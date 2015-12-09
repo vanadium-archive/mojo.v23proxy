@@ -9,19 +9,17 @@ import (
 	"log"
 	"strings"
 
-	"v.io/v23/context"
-	"v.io/v23/rpc"
-
 	"mojo/public/go/application"
 	"mojo/public/go/bindings"
 	"mojo/public/go/system"
+	"mojo/public/interfaces/bindings/mojom_types"
+	"mojo/public/interfaces/bindings/service_describer"
 
+	"v.io/v23/context"
+	"v.io/v23/rpc"
 	"v.io/v23/vdl"
 	"v.io/v23/vdlroot/signature"
 	"v.io/x/mojo/transcoder"
-
-	"mojo/public/interfaces/bindings/mojom_types"
-	"mojo/public/interfaces/bindings/service_describer"
 )
 
 // As long as fakeService meets the Invoker interface, it is allowed to pass as

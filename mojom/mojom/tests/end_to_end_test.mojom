@@ -1,0 +1,23 @@
+// Copyright 2015 The Vanadium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+module mojo.v23proxy.tests;
+
+struct AStruct{
+ uint8 x;
+ int16 y;
+ uint8 z;
+};
+
+union AUnion{
+ uint8 a;
+ string b;
+};
+
+[ServiceName="mojo::v23proxy::tests::V23ProxyTest"]
+interface V23ProxyTest {
+  Simple(int32 a) => (string value);
+  MultiArgs(bool a, array<float> b, map<string, uint8> c, AStruct d) => (AUnion x, string y);
+  NoReturn();
+};

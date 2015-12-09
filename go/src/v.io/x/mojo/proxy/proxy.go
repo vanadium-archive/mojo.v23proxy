@@ -7,20 +7,19 @@ package main
 import (
 	"fmt"
 
+	"mojo/public/go/application"
+	"mojo/public/go/bindings"
+	"mojo/public/go/system"
+	"mojo/public/interfaces/bindings/mojom_types"
+
+	"mojom/v23proxy"
+
 	"v.io/v23"
 	"v.io/v23/context"
 	"v.io/v23/options"
 	"v.io/v23/rpc"
 	"v.io/v23/security"
 	"v.io/v23/vdl"
-
-	"mojom/v23proxy"
-
-	"mojo/public/go/application"
-	"mojo/public/go/bindings"
-	"mojo/public/go/system"
-	"mojo/public/interfaces/bindings/mojom_types"
-
 	"v.io/x/mojo/transcoder"
 	_ "v.io/x/ref/runtime/factories/roaming"
 )

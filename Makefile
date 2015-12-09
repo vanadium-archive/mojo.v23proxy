@@ -59,8 +59,12 @@ build-go-examples: $(BUILD_DIR)/echo_client.mojo $(BUILD_DIR)/echo_server.mojo $
 
 build-dart-examples: gen/echo.mojom.dart gen/fortune.mojom.dart
 
+.PHONY: test
+test: test-unit test-integration
+
 # Go-based unit tests
-test: $(MOJO_SHARED_LIB) gen/go/src/mojom/tests/transcoder_testcases/transcoder_testcases.mojom.go gen-vdl
+.PHONY: test-unit
+test-unit: $(MOJO_SHARED_LIB) gen/go/src/mojom/tests/transcoder_testcases/transcoder_testcases.mojom.go gen-vdl
 	$(call MOGO_TEST,v.io/x/mojo/transcoder/...)
 
 # Note:This file is needed to compile v23proxy.mojom, so we're symlinking it in from $MOJO_SDK.
@@ -90,6 +94,16 @@ $(BUILD_DIR)/echo_client.mojo: gen/go/src/mojom/examples/echo/echo.mojom.go
 $(BUILD_DIR)/echo_server.mojo: gen/go/src/mojom/examples/echo/echo.mojom.go
 	$(call MOGO_BUILD,examples/echo/server,$@)
 
+.PHONY: test-integration
+test-integration: $(BUILD_DIR)/test_client.mojo $(BUILD_DIR)/test_server.mojo $(BUILD_DIR)/v23proxy.mojo
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go
+
+$(BUILD_DIR)/test_client.mojo: go/src/v.io/x/mojo/tests/client/test_client.go gen/go/src/mojom/tests/end_to_end_test/end_to_end_test.mojom.go gen/go/src/mojom/v23proxy/v23proxy.mojom.go
+	$(call MOGO_BUILD,v.io/x/mojo/tests/client,$@)
+
+$(BUILD_DIR)/test_server.mojo: go/src/v.io/x/mojo/tests/server/test_server.go gen/go/src/mojom/tests/end_to_end_test/end_to_end_test.mojom.go
+	$(call MOGO_BUILD,v.io/x/mojo/tests/server,$@)
+
 gen/go/src/mojom/examples/echo/echo.mojom.go: mojom/mojom/examples/echo.mojom | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,gen,go)
 	gofmt -w $@
@@ -110,7 +124,7 @@ gen/go/src/mojom/examples/fortune/fortune.mojom.go: mojom/mojom/examples/fortune
 gen/fortune.mojom.dart: mojom/mojom/examples/fortune.mojom | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,dart-examples/fortune/lib/gen,dart)
 
-$(BUILD_DIR)/v23proxy.mojo: gen/go/src/mojom/v23proxy/v23proxy.mojom.go | mojo-env-check
+$(BUILD_DIR)/v23proxy.mojo: $(shell find $(PWD)/go/src/v.io/x/mojo/proxy -name *.go) | mojo-env-check
 	$(call MOGO_BUILD,v.io/x/mojo/proxy,$@)
 
 gen/go/src/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.go: mojom/mojo/public/interfaces/bindings/mojom_types.mojom | mojo-env-check
@@ -125,6 +139,10 @@ gen/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.dart: mojom/mo
 	rm -f lib/gen/mojom/$(notdir $@)
 
 gen/go/src/mojom/v23proxy/v23proxy.mojom.go: mojom/mojom/v23proxy.mojom | mojo-env-check
+	$(call MOJOM_GEN,$<,mojom,gen,go)
+	gofmt -w $@
+
+gen/go/src/mojom/tests/end_to_end_test/end_to_end_test.mojom.go: mojom/mojom/tests/end_to_end_test.mojom | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,gen,go)
 	gofmt -w $@
 
