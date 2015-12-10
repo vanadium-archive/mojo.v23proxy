@@ -14,6 +14,7 @@ import (
 	"v.io/jiri/jiri"
 	"v.io/jiri/profiles"
 	"v.io/x/lib/cmdline"
+	"v.io/x/lib/envvar"
 	"v.io/x/lib/timing"
 )
 
@@ -28,9 +29,11 @@ func RunMojoShell(mojoUrl, configFile string, configAliases map[string]string, a
 		panic(err)
 	}
 
-	env := profiles.EnvFromProfile(target, mojoProfileName())
+	envslice := profiles.EnvFromProfile(target, mojoProfileName())
+	env := envvar.VarsFromSlice(envslice)
+	jiri.ExpandEnv(jirix, env)
 	var mojoDevtools, mojoShell, mojoServices string
-	for _, e := range env {
+	for _, e := range env.ToSlice() {
 		parts := strings.SplitN(e, "=", 2)
 		switch parts[0] {
 		case "MOJO_DEVTOOLS":
