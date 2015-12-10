@@ -245,9 +245,11 @@ clean: clean-go clean-dart
 .PHONY: clean-go
 clean-go:
 	rm -rf gen
+	rm -rf mojom/mojo
 
 .PHONY: clean-dart
 clean-dart:
 	rm -rf lib/gen
 	rm -rf dart-examples/echo/lib/gen
 	rm -rf dart-examples/fortune/lib/gen
+	rm -rf packages
