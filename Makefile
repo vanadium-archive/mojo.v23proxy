@@ -138,7 +138,7 @@ gen/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.dart: mojom/mo
 	# See https://github.com/domokit/mojo/issues/386
 	rm -f lib/gen/mojom/$(notdir $@)
 
-gen/go/src/mojom/v23proxy/v23proxy.mojom.go: mojom/mojom/v23proxy.mojom | mojo-env-check
+gen/go/src/mojom/v23proxy/v23proxy.mojom.go: mojom/mojom/v23proxy.mojom mojom/mojo/public/interfaces/bindings/mojom_types.mojom | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,gen,go)
 	gofmt -w $@
 
