@@ -71,7 +71,7 @@ func RunMojoShellForV23ProxyTests(mojoFile, v23ProxyRoot string, args []string) 
 		"V23PROXY_BUILD_DIR": buildDir,
 	}
 	argsFor := map[string][]string{
-		mojoUrl:                     args,
+		mojoUrl:                     append(args, "--v23.tcp.address=127.0.0.1:0"),
 		"mojo:dart_content_handler": []string{"--enable-strict-mode"},
 	}
 	target := profiles.DefaultTarget()
