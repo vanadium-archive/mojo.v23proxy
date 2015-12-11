@@ -12,14 +12,14 @@ import (
 	"mojo/public/go/system"
 	"mojo/public/interfaces/bindings/mojom_types"
 
-	"mojom/v23proxy"
+	"mojom/v23clientproxy"
 
 	"v.io/v23"
 	"v.io/v23/context"
 	"v.io/v23/options"
-	"v.io/v23/rpc"
 	"v.io/v23/security"
 	"v.io/v23/vdl"
+	"v.io/x/mojo/proxy/util"
 	"v.io/x/mojo/transcoder"
 	_ "v.io/x/ref/runtime/factories/roaming"
 )
@@ -36,7 +36,7 @@ type v23HeaderReceiver struct {
 	handle      system.MessagePipeHandle
 }
 
-func (r *v23HeaderReceiver) SetupProxy(v23Name string, ifaceSig mojom_types.MojomInterface, desc map[string]mojom_types.UserDefinedType, serviceName string, handle system.MessagePipeHandle) (err error) {
+func (r *v23HeaderReceiver) SetupClientProxy(v23Name string, ifaceSig mojom_types.MojomInterface, desc map[string]mojom_types.UserDefinedType, serviceName string, handle system.MessagePipeHandle) (err error) {
 	log := r.delegate.ctx
 	log.Infof("[server] In SetupProxy(%s, %v, %v, %s, %v)", v23Name, ifaceSig, desc, serviceName, handle)
 	r.v23Name = v23Name
@@ -68,28 +68,6 @@ func (r *v23HeaderReceiver) SetupProxy(v23Name string, ifaceSig mojom_types.Mojo
 	}()
 	return nil
 }
-
-func (r *v23HeaderReceiver) Endpoints() (endpoints []string, err error) {
-	endpointObjs := r.delegate.v23Server.Status().Endpoints
-	endpoints = make([]string, len(endpointObjs))
-	for i, endpointObj := range endpointObjs {
-		endpoints[i] = endpointObj.String()
-	}
-	return endpoints, nil
-}
-
-// TODO(alexfandrianto): This assumes that bindings.Encoder has the method
-// WriteRawBytes. See the comment block below.
-// type byteCopyingPayload []byte
-
-// func (bcp byteCopyingPayload) Encode(encoder *bindings.Encoder) error {
-// 	encoder.WriteRawBytes(bcp)
-// 	return nil
-// }
-
-// func (bcp byteCopyingPayload) Decode(decoder *bindings.Decoder) error {
-// 	panic("not supported")
-// }
 
 type messageReceiver struct {
 	header    *v23HeaderReceiver
@@ -180,13 +158,13 @@ func (s *messageReceiver) call(name, method string, value []byte, inParamsType m
 	}
 
 	// inVdlValue is a struct, but we need to send []interface.
-	inargs := splitVdlValueByMojomType(inVdlValue, inVType)
+	inargs := util.SplitVdlValueByMojomType(inVdlValue, inVType)
 	inargsIfc := make([]interface{}, len(inargs))
 	for i := range inargs {
 		inargsIfc[i] = inargs[i]
 	}
 
-	// We know that the v23proxy (on the other side) will give us back a bunch of
+	// We know that the v23serverproxy will give us back a bunch of
 	// data in []interface{}. so we'll want to decode them into *vdl.Value.
 	s.ctx.Infof("%s %v", method, outParamsType)
 	outargs := make([]*vdl.Value, len(outParamsType.Fields))
@@ -201,7 +179,7 @@ func (s *messageReceiver) call(name, method string, value []byte, inParamsType m
 	}
 
 	// Now convert the []interface{} into a *vdl.Value (struct).
-	outVdlValue := combineVdlValueByMojomType(outargs, outVType)
+	outVdlValue := util.CombineVdlValueByMojomType(outargs, outVType)
 
 	// Finally, encode this *vdl.Value (struct) into mojom bytes and send the response.
 	result, err := transcoder.VdlToMojom(outVdlValue)
@@ -211,50 +189,22 @@ func (s *messageReceiver) call(name, method string, value []byte, inParamsType m
 	return result, nil
 }
 
-type dispatcher struct {
-	appctx application.Context
-}
-
-func (v23pd *dispatcher) Lookup(ctx *context.T, suffix string) (interface{}, security.Authorizer, error) {
-	ctx.Infof("Dispatcher: %s", suffix)
-	return fakeService{
-		appctx: v23pd.appctx,
-		suffix: suffix,
-		ids:    bindings.NewCounter(),
-	}, security.AllowEveryone(), nil
-}
-
 type delegate struct {
-	ctx       *context.T
-	stubs     []*bindings.Stub
-	shutdown  v23.Shutdown
-	v23Server rpc.Server
+	ctx      *context.T
+	stubs    []*bindings.Stub
+	shutdown v23.Shutdown
 }
 
 func (delegate *delegate) Initialize(context application.Context) {
-	// Start up v23 whenever a v23proxy is begun.
-	// This is done regardless of whether we are initializing this v23proxy for use
-	// as a client or as a server.
 	ctx, shutdown := v23.Init(context)
 	delegate.ctx = ctx
 	delegate.shutdown = shutdown
 	ctx.Infof("delegate.Initialize...")
-
-	// TODO(alexfandrianto): Does Mojo stop us from creating too many v23proxy?
-	// Is it 1 per shell? Ideally, each device will only serve 1 of these v23proxy,
-	// but it is not problematic to have extra.
-	_, s, err := v23.WithNewDispatchingServer(ctx, "", &dispatcher{
-		appctx: context,
-	})
-	if err != nil {
-		ctx.Fatal("Error serving service: ", err)
-	}
-	delegate.v23Server = s
-	fmt.Println("Listening at:", s.Status().Endpoints[0].Name())
 }
-func (delegate *delegate) Create(request v23proxy.V23_Request) {
+
+func (delegate *delegate) Create(request v23clientproxy.V23ClientProxy_Request) {
 	headerReceiver := &v23HeaderReceiver{delegate: delegate}
-	v23Stub := v23proxy.NewV23Stub(request, headerReceiver, bindings.GetAsyncWaiter())
+	v23Stub := v23clientproxy.NewV23ClientProxyStub(request, headerReceiver, bindings.GetAsyncWaiter())
 	delegate.stubs = append(delegate.stubs, v23Stub)
 
 	go func() {
@@ -271,7 +221,7 @@ func (delegate *delegate) Create(request v23proxy.V23_Request) {
 
 func (delegate *delegate) AcceptConnection(connection *application.Connection) {
 	delegate.ctx.Infof("delegate.AcceptConnection...")
-	connection.ProvideServices(&v23proxy.V23_ServiceFactory{delegate})
+	connection.ProvideServices(&v23clientproxy.V23ClientProxy_ServiceFactory{delegate})
 }
 
 func (delegate *delegate) Quit() {

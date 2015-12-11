@@ -7,8 +7,8 @@ module mojo.bindings.types;
 
 import "mojo/public/interfaces/bindings/mojom_types.mojom";
 
-[ServiceName="v23proxy::V23"]
-interface V23 {
+[ServiceName="v23::v23proxy::V23ClientProxy"]
+interface V23ClientProxy {
   // Sets up a communication channel between the caller and the mojo application
   // running in a remote process.
   //
@@ -22,12 +22,9 @@ interface V23 {
   //              used if connecting to the application locally).
   // futureMessages: Pipe over which messages can be sent to/received from
   //                 serviceName running on the remote service v23Name.
-  SetupProxy(string v23Name,
+  SetupClientProxy(string v23Name,
              MojomInterface ifaceSig,
              map<string, UserDefinedType> mapping,
              string serviceName,
              handle<message_pipe> futureMessages);
-
-  // Endpoints gets the endpoints that the v23proxy serves at.
-  Endpoints() => (array<string> endpoints);
 };

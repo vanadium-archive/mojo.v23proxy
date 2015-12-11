@@ -15,12 +15,21 @@ import (
 	"mojo/public/interfaces/bindings/mojom_types"
 	"mojo/public/interfaces/bindings/service_describer"
 
+	"mojom/v23serverproxy"
+
+	"v.io/v23"
 	"v.io/v23/context"
 	"v.io/v23/rpc"
+	"v.io/v23/security"
 	"v.io/v23/vdl"
 	"v.io/v23/vdlroot/signature"
+	"v.io/x/mojo/proxy/util"
 	"v.io/x/mojo/transcoder"
+	_ "v.io/x/ref/runtime/factories/roaming"
 )
+
+//#include "mojo/public/c/system/types.h"
+import "C"
 
 // As long as fakeService meets the Invoker interface, it is allowed to pass as
 // a universal v23 service.
@@ -123,39 +132,6 @@ func (fs fakeService) Close_Proxy() {
 // callRemoteSignature obtains type and header information from the remote
 // mojo service. Remote mojo interfaces all define a signature method.
 func (fs fakeService) callRemoteSignature(mojourl string, mojoname string) (mojomInterface mojom_types.MojomInterface, desc map[string]mojom_types.UserDefinedType, err error) {
-	/*log.Printf("callRemoteSignature: Prepare payload and header")
-
-	// Prepare the input for the mojo call.
-	// This consists of a payload and a header for the RemoteSignature.
-	payload := mojom_types.SignatureInput{}
-	header := bindings.MessageHeader{
-		Type:      0xffffffff,                          // Signature is always type 0xffffffff
-		Flags:     bindings.MessageExpectsResponseFlag, // It always has a response.
-		RequestId: fs.ids.Count(),
-	}
-
-	log.Printf("callRemoteSignature: Encode payload and header")
-
-	var message *bindings.Message
-	if message, err = bindings.EncodeMessage(header, &payload); err != nil {
-		return response, fmt.Errorf("can't encode request: %v", err.Error())
-	}
-
-	log.Printf("callRemoteSignature => callRemoteGeneric")
-
-	outMessage, err := fs.callRemoteGeneric(message)
-	if err != nil {
-		return response, err
-	}
-
-	log.Printf("callRemoteSignature: Decode response")
-
-	if err = outMessage.DecodePayload(&response); err != nil {
-		return
-	}
-
-	return response, nil*/
-
 	// TODO(afandria): The service_describer mojom file defines the constant, but
 	// it is not actually present in the generated code:
 	// https://github.com/domokit/mojo/issues/469
@@ -216,6 +192,19 @@ func (fs fakeService) callRemoteGeneric(ctx *context.T, message *bindings.Messag
 	return readResult.Message, nil
 }
 
+type mojoService struct {
+	delegate *delegate
+}
+
+func (r *mojoService) Endpoints() (endpoints []string, err error) {
+	endpointObjs := r.delegate.v23Server.Status().Endpoints
+	endpoints = make([]string, len(endpointObjs))
+	for i, endpointObj := range endpointObjs {
+		endpoints[i] = endpointObj.String()
+	}
+	return endpoints, nil
+}
+
 // callRemoteMethod calls the method remotely in a generic way.
 // Produces []*vdl.Value at the end for the invoker to return.
 func (fs fakeService) callRemoteMethod(ctx *context.T, method string, mi mojom_types.MojomInterface, desc map[string]mojom_types.UserDefinedType, argptrs []interface{}) ([]*vdl.Value, error) {
@@ -258,7 +247,7 @@ func (fs fakeService) callRemoteMethod(ctx *context.T, method string, mi mojom_t
 	if err != nil {
 		return nil, err
 	}
-	message, err := encodeMessageFromVom(header, argptrs, inType)
+	message, err := util.EncodeMessageFromVom(header, argptrs, inType)
 	if err != nil {
 		return nil, err
 	}
@@ -288,7 +277,7 @@ func (fs fakeService) callRemoteMethod(ctx *context.T, method string, mi mojom_t
 	}
 
 	// Then split the *vdl.Value (struct) into []*vdl.Value
-	response := splitVdlValueByMojomType(outVdlValue, outType)
+	response := util.SplitVdlValueByMojomType(outVdlValue, outType)
 	return response, nil
 }
 
@@ -308,4 +297,85 @@ func (fs fakeService) MethodSignature(ctx *context.T, call rpc.ServerCall, metho
 func (fs fakeService) Globber() *rpc.GlobState {
 	log.Printf("Fake Service Globber???")
 	return nil
+}
+
+type dispatcher struct {
+	appctx application.Context
+}
+
+func (v23pd *dispatcher) Lookup(ctx *context.T, suffix string) (interface{}, security.Authorizer, error) {
+	ctx.Infof("Dispatcher: %s", suffix)
+	return fakeService{
+		appctx: v23pd.appctx,
+		suffix: suffix,
+		ids:    bindings.NewCounter(),
+	}, security.AllowEveryone(), nil
+}
+
+type delegate struct {
+	ctx       *context.T
+	shutdown  v23.Shutdown
+	stubs     []*bindings.Stub
+	v23Server rpc.Server
+}
+
+func (delegate *delegate) Initialize(context application.Context) {
+	// Start up v23 whenever a v23proxy is begun.
+	// This is done regardless of whether we are initializing this v23proxy for use
+	// as a client or as a server.
+	ctx, shutdown := v23.Init(context)
+	delegate.ctx = ctx
+	delegate.shutdown = shutdown
+	ctx.Infof("delegate.Initialize...")
+
+	// TODO(alexfandrianto): Does Mojo stop us from creating too many v23proxy?
+	// Is it 1 per shell? Ideally, each device will only serve 1 of these v23proxy,
+	// but it is not problematic to have extra.
+	_, s, err := v23.WithNewDispatchingServer(ctx, "", &dispatcher{
+		appctx: context,
+	})
+	if err != nil {
+		ctx.Fatal("Error serving service: ", err)
+	}
+	delegate.v23Server = s
+	fmt.Println("Listening at:", s.Status().Endpoints[0].Name())
+}
+
+func (delegate *delegate) Create(request v23serverproxy.V23ServerProxy_Request) {
+	svc := &mojoService{delegate: delegate}
+	v23Stub := v23serverproxy.NewV23ServerProxyStub(request, svc, bindings.GetAsyncWaiter())
+	delegate.stubs = append(delegate.stubs, v23Stub)
+
+	go func() {
+		// Read header message
+		if err := v23Stub.ServeRequest(); err != nil {
+			connectionError, ok := err.(*bindings.ConnectionError)
+			if !ok || !connectionError.Closed() {
+				delegate.ctx.Errorf("%v", err)
+			}
+			return
+		}
+	}()
+}
+
+func (delegate *delegate) AcceptConnection(connection *application.Connection) {
+	delegate.ctx.Infof("delegate.AcceptConnection...")
+	connection.ProvideServices(&v23serverproxy.V23ServerProxy_ServiceFactory{delegate})
+}
+
+func (delegate *delegate) Quit() {
+	delegate.ctx.Infof("delegate.Quit...")
+	for _, stub := range delegate.stubs {
+		stub.Close()
+	}
+	delegate.shutdown()
+}
+
+//export MojoMain
+func MojoMain(handle C.MojoHandle) C.MojoResult {
+	application.Run(&delegate{}, system.MojoHandle(handle))
+	return C.MOJO_RESULT_OK
+}
+
+func main() {
 }

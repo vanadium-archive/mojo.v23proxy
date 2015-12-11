@@ -17,8 +17,8 @@ import (
 	"syscall"
 )
 
-func StartV23Proxy(v23ProxyRoot string) (*V23ProxyController, error) {
-	cmd := RunMojoShellForV23ProxyTests("v23proxy.mojo", v23ProxyRoot, []string{})
+func StartV23ServerProxy(v23ProxyRoot string) (*V23ProxyController, error) {
+	cmd := RunMojoShellForV23ProxyTests("v23serverproxy.mojo", v23ProxyRoot, []string{})
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err

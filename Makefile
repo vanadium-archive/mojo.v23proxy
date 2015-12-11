@@ -30,13 +30,13 @@ endif
 .PHONY: build
 build: build-go build-dart
 
-# Build the v23proxy.mojo, client, and associated go examples.
+# Build the v23 proxy mojo files, client, and associated go examples.
 .PHONY: build-go
-build-go: $(BUILD_DIR)/v23proxy.mojo build-go-examples
+build-go: $(BUILD_DIR)/v23clientproxy.mojo $(BUILD_DIR)/v23serverproxy.mojo build-go-examples
 
 # Build the v23proxy client and its associated dart examples.
 .PHONY: build-dart
-build-dart: gen/v23proxy.mojom.dart build-dart-examples lint-dart
+build-dart: gen/v23clientproxy.mojom.dart gen/v23serverproxy.mojom.dart build-dart-examples lint-dart
 
 .PHONY: lint-dart
 lint-dart:
@@ -67,7 +67,7 @@ test: test-unit test-integration
 test-unit: $(MOJO_SHARED_LIB) gen/go/src/mojom/tests/transcoder_testcases/transcoder_testcases.mojom.go gen-vdl
 	$(call MOGO_TEST,v.io/x/mojo/transcoder/...)
 
-# Note:This file is needed to compile v23proxy.mojom, so we're symlinking it in from $MOJO_SDK.
+# Note:This file is needed to compile v23proxy mojom files, so we're symlinking it in from $MOJO_SDK.
 mojom/mojo/public/interfaces/bindings/mojom_types.mojom: $(MOJO_SDK)/src/mojo/public/interfaces/bindings/mojom_types.mojom
 	mkdir -p mojom/mojo/public/interfaces/bindings
 	ln -sf $(MOJO_SDK)/src/mojo/public/interfaces/bindings/mojom_types.mojom mojom/mojo/public/interfaces/bindings/mojom_types.mojom
@@ -95,10 +95,10 @@ $(BUILD_DIR)/echo_server.mojo: gen/go/src/mojom/examples/echo/echo.mojom.go
 	$(call MOGO_BUILD,examples/echo/server,$@)
 
 .PHONY: test-integration
-test-integration: $(BUILD_DIR)/test_client.mojo $(BUILD_DIR)/test_server.mojo $(BUILD_DIR)/v23proxy.mojo
+test-integration: $(BUILD_DIR)/test_client.mojo $(BUILD_DIR)/test_server.mojo $(BUILD_DIR)/v23clientproxy.mojo $(BUILD_DIR)/v23serverproxy.mojo
 	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go
 
-$(BUILD_DIR)/test_client.mojo: go/src/v.io/x/mojo/tests/client/test_client.go gen/go/src/mojom/tests/end_to_end_test/end_to_end_test.mojom.go gen/go/src/mojom/v23proxy/v23proxy.mojom.go
+$(BUILD_DIR)/test_client.mojo: go/src/v.io/x/mojo/tests/client/test_client.go gen/go/src/mojom/tests/end_to_end_test/end_to_end_test.mojom.go gen/go/src/mojom/v23clientproxy/v23clientproxy.mojom.go
 	$(call MOGO_BUILD,v.io/x/mojo/tests/client,$@)
 
 $(BUILD_DIR)/test_server.mojo: go/src/v.io/x/mojo/tests/server/test_server.go gen/go/src/mojom/tests/end_to_end_test/end_to_end_test.mojom.go
@@ -124,8 +124,11 @@ gen/go/src/mojom/examples/fortune/fortune.mojom.go: mojom/mojom/examples/fortune
 gen/fortune.mojom.dart: mojom/mojom/examples/fortune.mojom | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,dart-examples/fortune/lib/gen,dart)
 
-$(BUILD_DIR)/v23proxy.mojo: $(shell find $(PWD)/go/src/v.io/x/mojo/proxy -name *.go) | mojo-env-check
-	$(call MOGO_BUILD,v.io/x/mojo/proxy,$@)
+$(BUILD_DIR)/v23clientproxy.mojo: $(shell find $(PWD)/go/src/v.io/x/mojo/proxy/clientproxy -name *.go) | mojo-env-check
+	$(call MOGO_BUILD,v.io/x/mojo/proxy/clientproxy,$@)
+
+$(BUILD_DIR)/v23serverproxy.mojo: $(shell find $(PWD)/go/src/v.io/x/mojo/proxy/serverproxy -name *.go) gen/go/src/mojom/v23serverproxy/v23serverproxy.mojom.go | mojo-env-check
+	$(call MOGO_BUILD,v.io/x/mojo/proxy/serverproxy,$@)
 
 gen/go/src/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.go: mojom/mojo/public/interfaces/bindings/mojom_types.mojom | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,gen,go)
@@ -138,7 +141,11 @@ gen/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.dart: mojom/mo
 	# See https://github.com/domokit/mojo/issues/386
 	rm -f lib/gen/mojom/$(notdir $@)
 
-gen/go/src/mojom/v23proxy/v23proxy.mojom.go: mojom/mojom/v23proxy.mojom mojom/mojo/public/interfaces/bindings/mojom_types.mojom | mojo-env-check
+gen/go/src/mojom/v23clientproxy/v23clientproxy.mojom.go: mojom/mojom/v23clientproxy.mojom mojom/mojo/public/interfaces/bindings/mojom_types.mojom | mojo-env-check
+	$(call MOJOM_GEN,$<,mojom,gen,go)
+	gofmt -w $@
+
+gen/go/src/mojom/v23serverproxy/v23serverproxy.mojom.go: mojom/mojom/v23serverproxy.mojom | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,gen,go)
 	gofmt -w $@
 
@@ -146,7 +153,14 @@ gen/go/src/mojom/tests/end_to_end_test/end_to_end_test.mojom.go: mojom/mojom/tes
 	$(call MOJOM_GEN,$<,mojom,gen,go)
 	gofmt -w $@
 
-gen/v23proxy.mojom.dart: mojom/mojom/v23proxy.mojom packages gen/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.dart | mojo-env-check
+gen/v23clientproxy.mojom.dart: mojom/mojom/v23clientproxy.mojom packages gen/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.dart | mojo-env-check
+	$(call MOJOM_GEN,$<,mojom,lib/gen,dart)
+	# TODO(nlacasse): mojom_bindings_generator creates bad symlinks on dart
+	# files, so we delete them.  Stop doing this once the generator is fixed.
+	# See https://github.com/domokit/mojo/issues/386
+	rm -f lib/gen/mojom/$(notdir $@)
+
+gen/v23serverproxy.mojom.dart: mojom/mojom/v23serverproxy.mojom packages | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,lib/gen,dart)
 	# TODO(nlacasse): mojom_bindings_generator creates bad symlinks on dart
 	# files, so we delete them.  Stop doing this once the generator is fixed.
@@ -181,14 +195,14 @@ endef
 # will print an endpoint to stdout. That endpoint needs to be passed to the clients.
 #
 # On Linux, run with
-# make start-v23proxy
+# make start-v23serverproxy
 # (Optionally, this can be prefixed with a HOME directory.)
 #
 # On Android, run with
-# ANDROID={device number} make start-v23proxy
-.PHONY: start-v23proxy
-start-v23proxy: build-go
-	$(call RUN_MOJO_SHELL,v23proxy.mojo,)
+# ANDROID={device number} make start-v23serverproxy
+.PHONY: start-v23serverproxy
+start-v23serverproxy: $(BUILD_DIR)/v23serverproxy.mojo
+	$(call RUN_MOJO_SHELL,v23serverproxy.mojo,)
 
 
 # Start the echo client. This uses the v23proxy (client-side) to speak Vanadium
@@ -203,7 +217,7 @@ start-v23proxy: build-go
 # Note1: Does not use --enable-multiprocess since small Go programs can omit it.
 # Note2: Setting HOME ensures that we avoid a db LOCK that is created per mojo shell instance.
 .PHONY: start-echo-client
-start-echo-client: build-go
+start-echo-client: $(BUILD_DIR)/echo_client.mojo $(BUILD_DIR)/v23clientproxy.mojo
 	$(call RUN_MOJO_SHELL,echo_client.mojo,${ARGS})
 
 # Like the start-echo-client but using a Dart client instead.
@@ -227,7 +241,7 @@ start-dart-echo-client: build-dart
 # Note1: Does not use --enable-multiprocess since small Go programs can omit it.
 # Note2: Setting HOME ensures that we avoid a db LOCK that is created per mojo shell instance.
 .PHONY: start-fortune-client
-start-fortune-client: build-go
+start-fortune-client: $(BUILD_DIR)/fortune_client.mojo $(BUILD_DIR)/v23clientproxy.mojo
 	$(call RUN_MOJO_SHELL,fortune_client.mojo,${ARGS})
 
 # Like the start-fortune-client but using a Dart client instead.

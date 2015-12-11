@@ -21,7 +21,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	v23proxy, err := util.StartV23Proxy(wd)
+	v23proxy, err := util.StartV23ServerProxy(wd)
 	if err != nil {
 		panic(err)
 	}

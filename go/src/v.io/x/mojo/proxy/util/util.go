@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main
+package util
 
-// Construct the proper *vdl.Value (as a struct) from the mojom type.
 import (
 	"fmt"
-
 	"mojo/public/go/bindings"
 
 	"v.io/v23/vdl"
@@ -16,7 +14,7 @@ import (
 
 // TODO(alexfandrianto): Since this function could panic, we should consider
 // handling that if it happens.
-func combineVdlValueByMojomType(values []*vdl.Value, t *vdl.Type) *vdl.Value {
+func CombineVdlValueByMojomType(values []*vdl.Value, t *vdl.Type) *vdl.Value {
 	outVdlValue := vdl.ZeroValue(t)
 	for i := 0; i < t.NumField(); i++ {
 		outVdlValue.StructField(i).Assign(values[i])
@@ -27,7 +25,7 @@ func combineVdlValueByMojomType(values []*vdl.Value, t *vdl.Type) *vdl.Value {
 // Construct []*vdl.Value from a *vdl.Value (as a struct) via its mojom type.
 // TODO(alexfandrianto): Since this function could panic, we should consider
 // handling that if it happens.
-func splitVdlValueByMojomType(value *vdl.Value, t *vdl.Type) []*vdl.Value {
+func SplitVdlValueByMojomType(value *vdl.Value, t *vdl.Type) []*vdl.Value {
 	outVdlValues := make([]*vdl.Value, t.NumField())
 	for i := 0; i < t.NumField(); i++ {
 		outVdlValues[i] = value.StructField(i)
@@ -35,7 +33,7 @@ func splitVdlValueByMojomType(value *vdl.Value, t *vdl.Type) []*vdl.Value {
 	return outVdlValues
 }
 
-func encodeMessageFromVom(header bindings.MessageHeader, argptrs []interface{}, t *vdl.Type) (*bindings.Message, error) {
+func EncodeMessageFromVom(header bindings.MessageHeader, argptrs []interface{}, t *vdl.Type) (*bindings.Message, error) {
 	// Convert argptrs into their true form: []*vdl.Value
 	inargs := make([]*vdl.Value, len(argptrs))
 	for i := range argptrs {
@@ -43,7 +41,7 @@ func encodeMessageFromVom(header bindings.MessageHeader, argptrs []interface{}, 
 	}
 
 	// Construct the proper *vdl.Value (as a struct) from the mojom type.
-	vdlValue := combineVdlValueByMojomType(inargs, t)
+	vdlValue := CombineVdlValueByMojomType(inargs, t)
 
 	encoder := bindings.NewEncoder()
 	if err := header.Encode(encoder); err != nil {
