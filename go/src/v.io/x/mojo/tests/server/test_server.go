@@ -46,11 +46,6 @@ func (i *V23ProxyTestImpl) MultiArgs(a bool, b []float32, c map[string]uint8, d 
 	return expected.MultiArgsResponseX, expected.MultiArgsResponseY, nil
 }
 
-func (i *V23ProxyTestImpl) NoReturn() error {
-	// TODO(bprosnitz) The test should fail if the message is not received.
-	return nil
-}
-
 type V23ProxyTestServerDelegate struct {
 	factory V23ProxyTestFactory
 }

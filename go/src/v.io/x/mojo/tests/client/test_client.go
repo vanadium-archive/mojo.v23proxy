@@ -62,16 +62,6 @@ func TestMultiArgs(t *testing.T, ctx application.Context) {
 	}
 }
 
-func TestNoReturn(t *testing.T, ctx application.Context) {
-	proxy := createProxy(ctx)
-	defer proxy.Close_Proxy()
-
-	err := proxy.NoReturn()
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
 func TestReuseProxy(t *testing.T, ctx application.Context) {
 	fmt.Printf("in test reuse\n")
 	proxy := createProxy(ctx)
@@ -129,7 +119,7 @@ func (delegate *TestClientDelegate) Initialize(ctx application.Context) {
 	log.Printf("TestClientDelegate.Initialize...")
 
 	tests := []func(*testing.T, application.Context){
-		TestSimple, TestMultiArgs, TestNoReturn, TestReuseProxy,
+		TestSimple, TestMultiArgs, TestReuseProxy,
 	}
 
 	matchAllTests := func(pat, str string) (bool, error) { return true, nil }
