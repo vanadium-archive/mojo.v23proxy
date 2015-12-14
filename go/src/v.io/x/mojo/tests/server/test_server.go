@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"time"
 
 	"mojo/public/go/application"
 	"mojo/public/go/bindings"
@@ -21,7 +22,15 @@ import (
 //#include "mojo/public/c/system/types.h"
 import "C"
 
-type V23ProxyTestImpl struct{}
+const noReturnReceiveTimeout = 1 * time.Second
+
+type V23ProxyTestImpl struct {
+	noReturnMsgChan chan string
+}
+
+func NewV23ProxyTestImpl() *V23ProxyTestImpl {
+	return &V23ProxyTestImpl{noReturnMsgChan: make(chan string, 1)}
+}
 
 func (i *V23ProxyTestImpl) Simple(a int32) (value string, err error) {
 	if a != expected.SimpleRequestA {
@@ -46,21 +55,37 @@ func (i *V23ProxyTestImpl) MultiArgs(a bool, b []float32, c map[string]uint8, d 
 	return expected.MultiArgsResponseX, expected.MultiArgsResponseY, nil
 }
 
+func (i *V23ProxyTestImpl) NoOutArgsPut(storedMsg string) error {
+	i.noReturnMsgChan <- storedMsg
+	return nil
+}
+
+func (i *V23ProxyTestImpl) FetchMsgFromNoOutArgsPut() (string, error) {
+	select {
+	case msg := <-i.noReturnMsgChan:
+		return msg, nil
+	case <-time.After(noReturnReceiveTimeout):
+		return "", fmt.Errorf("timed out waiting for no return message")
+	}
+}
+
 type V23ProxyTestServerDelegate struct {
 	factory V23ProxyTestFactory
 }
 
 type V23ProxyTestFactory struct {
-	stubs []*bindings.Stub
+	stubs    []*bindings.Stub
+	testImpl *V23ProxyTestImpl
 }
 
 func (delegate *V23ProxyTestServerDelegate) Initialize(context application.Context) {
 	log.Printf("V23ProxyTestServerDelegate.Initialize...")
+	delegate.factory.testImpl = NewV23ProxyTestImpl()
 }
 
 func (factory *V23ProxyTestFactory) Create(request end_to_end_test.V23ProxyTest_Request) {
 	log.Printf("V23ProxyTestServer's V23ProxyTestFactory.Create...")
-	stub := end_to_end_test.NewV23ProxyTestStub(request, &V23ProxyTestImpl{}, bindings.GetAsyncWaiter())
+	stub := end_to_end_test.NewV23ProxyTestStub(request, factory.testImpl, bindings.GetAsyncWaiter())
 	factory.stubs = append(factory.stubs, stub)
 	go func() {
 		for {

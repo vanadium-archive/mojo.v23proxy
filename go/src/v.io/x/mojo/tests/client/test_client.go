@@ -63,7 +63,6 @@ func TestMultiArgs(t *testing.T, ctx application.Context) {
 }
 
 func TestReuseProxy(t *testing.T, ctx application.Context) {
-	fmt.Printf("in test reuse\n")
 	proxy := createProxy(ctx)
 	defer proxy.Close_Proxy()
 
@@ -74,17 +73,38 @@ func TestReuseProxy(t *testing.T, ctx application.Context) {
 	if value != expected.SimpleResponseValue {
 		t.Errorf("expected %v, but got %v", expected.SimpleResponseValue, value)
 	}
-	fmt.Printf("about to call second f\n")
 	x, y, err := proxy.MultiArgs(expected.MultiArgsRequestA, expected.MultiArgsRequestB, expected.MultiArgsRequestC, expected.MultiArgsRequestD)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("called second f\n")
 	if !reflect.DeepEqual(x, expected.MultiArgsResponseX) {
 		t.Errorf("expected %v, but got %v", expected.MultiArgsResponseX, x)
 	}
 	if y != expected.MultiArgsResponseY {
 		t.Errorf("expected %v, but got %v", expected.MultiArgsResponseY, y)
+	}
+}
+
+// This test stores a value on the server (through a no-out args RPC)
+// and calls a no-in args RPC to retrieve the value and confirm
+// it matches the value originally sent.
+func TestNoOutArgs(t *testing.T, ctx application.Context) {
+	const msg = "message-for-no-return"
+
+	proxy := createProxy(ctx)
+	defer proxy.Close_Proxy()
+
+	err := proxy.NoOutArgsPut(msg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	outMsg, err := proxy.FetchMsgFromNoOutArgsPut()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if outMsg != msg {
+		t.Errorf("expected %v, but got %v", msg, outMsg)
 	}
 }
 
@@ -119,7 +139,7 @@ func (delegate *TestClientDelegate) Initialize(ctx application.Context) {
 	log.Printf("TestClientDelegate.Initialize...")
 
 	tests := []func(*testing.T, application.Context){
-		TestSimple, TestMultiArgs, TestReuseProxy,
+		TestSimple, TestMultiArgs, TestReuseProxy, TestNoOutArgs,
 	}
 
 	matchAllTests := func(pat, str string) (bool, error) { return true, nil }

@@ -88,6 +88,16 @@ func (s *messageReceiver) Accept(message *bindings.Message) (err error) {
 
 	messageBytes := message.Payload
 
+	if methodSig.ResponseParams == nil {
+		// This may be complicated to support because of a race on the server side.
+		// When we send the no-response message through mojo we don't know when it has been received
+		// and we can close the pipe (one is opened per incoming message).
+
+		// Note that because the client expects no response, it will not receive the following
+		// error.
+		return fmt.Errorf("this error not received")
+	}
+
 	response, err := s.call(s.header.v23Name, methodName, messageBytes, methodSig.Parameters, methodSig.ResponseParams)
 	if err != nil {
 		return err
@@ -143,13 +153,6 @@ func (s *messageReceiver) call(name, method string, value []byte, inParamsType m
 	if err != nil {
 		return nil, err
 	}
-	var outVType *vdl.Type
-	if outParamsType != nil {
-		outVType, err = transcoder.MojomStructToVDLType(*outParamsType, s.header.desc)
-		if err != nil {
-			return nil, err
-		}
-	}
 
 	// Decode the vdl.Value from the mojom bytes and mojom type.
 	var inVdlValue *vdl.Value
@@ -167,7 +170,11 @@ func (s *messageReceiver) call(name, method string, value []byte, inParamsType m
 	// We know that the v23serverproxy will give us back a bunch of
 	// data in []interface{}. so we'll want to decode them into *vdl.Value.
 	s.ctx.Infof("%s %v", method, outParamsType)
-	outargs := make([]*vdl.Value, len(outParamsType.Fields))
+	var numParams int
+	if outParamsType != nil {
+		numParams = len(outParamsType.Fields)
+	}
+	outargs := make([]*vdl.Value, numParams)
 	outptrs := make([]interface{}, len(outargs))
 	for i := range outargs {
 		outptrs[i] = &outargs[i]
@@ -175,6 +182,15 @@ func (s *messageReceiver) call(name, method string, value []byte, inParamsType m
 
 	// Now, run the call without any authorization.
 	if err := v23.GetClient(s.ctx).Call(s.ctx, name, method, inargsIfc, outptrs, options.ServerAuthorizer{security.AllowEveryone()}); err != nil {
+		return nil, err
+	}
+
+	if outParamsType == nil {
+		return nil, nil
+	}
+
+	outVType, err := transcoder.MojomStructToVDLType(*outParamsType, s.header.desc)
+	if err != nil {
 		return nil, err
 	}
 

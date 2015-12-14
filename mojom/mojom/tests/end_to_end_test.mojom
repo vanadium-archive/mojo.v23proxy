@@ -19,4 +19,6 @@ union AUnion{
 interface V23ProxyTest {
   Simple(int32 a) => (string value);
   MultiArgs(bool a, array<float> b, map<string, uint8> c, AStruct d) => (AUnion x, string y);
+  NoOutArgsPut(string storedMsg) => ();
+  FetchMsgFromNoOutArgsPut() => (string storedMsg);
 };

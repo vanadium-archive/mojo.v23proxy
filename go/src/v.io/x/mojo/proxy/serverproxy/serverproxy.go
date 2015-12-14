@@ -162,7 +162,7 @@ func (fs fakeService) callRemoteSignature(mojourl string, mojoname string) (mojo
 }
 
 // A helper function that sends a remote message that expects a response.
-func (fs fakeService) callRemoteGeneric(ctx *context.T, message *bindings.Message) (outMessage *bindings.Message, err error) {
+func (fs fakeService) callRemoteWithResponse(ctx *context.T, message *bindings.Message) (outMessage *bindings.Message, err error) {
 	ctx.Infof("callRemoteGeneric: Send message along the router")
 
 	readResult := <-fs.router.AcceptWithResponse(message)
@@ -227,19 +227,10 @@ func (fs fakeService) callRemoteMethod(ctx *context.T, method string, mi mojom_t
 
 	// A void function must have request id of 0, whereas one with response params
 	// should  have a unique request id.
-	var rqId uint64
-	var flag uint32
-	if mm.ResponseParams != nil {
-		rqId = fs.ids.Count()
-		flag = bindings.MessageExpectsResponseFlag
-	} else {
-		flag = bindings.MessageNoFlag
-	}
-
 	header := bindings.MessageHeader{
 		Type:      ordinal,
-		Flags:     flag,
-		RequestId: rqId,
+		Flags:     bindings.MessageExpectsResponseFlag,
+		RequestId: fs.ids.Count(),
 	}
 
 	// Now produce the *bindings.Message that we will send to the other side.
@@ -252,16 +243,8 @@ func (fs fakeService) callRemoteMethod(ctx *context.T, method string, mi mojom_t
 		return nil, err
 	}
 
-	// Handle the 0 out-arg case first.
-	if mm.ResponseParams == nil {
-		if err = fs.router.Accept(message); err != nil {
-			return nil, err
-		}
-		return make([]*vdl.Value, 0), nil
-	}
-
 	// Otherwise, make a generic call with the message.
-	outMessage, err := fs.callRemoteGeneric(ctx, message)
+	outMessage, err := fs.callRemoteWithResponse(ctx, message)
 	if err != nil {
 		return nil, err
 	}
@@ -304,7 +287,7 @@ type dispatcher struct {
 }
 
 func (v23pd *dispatcher) Lookup(ctx *context.T, suffix string) (interface{}, security.Authorizer, error) {
-	ctx.Infof("Dispatcher: %s", suffix)
+	ctx.Infof("dispatcher.Lookup for suffix: %s", suffix)
 	return fakeService{
 		appctx: v23pd.appctx,
 		suffix: suffix,
