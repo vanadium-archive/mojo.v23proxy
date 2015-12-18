@@ -13,6 +13,7 @@ import (
 
 	"v.io/jiri/jiri"
 	"v.io/jiri/profiles"
+	"v.io/jiri/profiles/reader"
 	"v.io/x/lib/cmdline"
 	"v.io/x/lib/envvar"
 	"v.io/x/lib/timing"
@@ -24,12 +25,12 @@ func RunMojoShell(mojoUrl, configFile string, configAliases map[string]string, a
 	if err != nil {
 		panic(err)
 	}
-	_, err = profiles.NewConfigHelper(jirix, profiles.UseProfiles, filepath.Join(jirix.Root, ".jiri_v23_profiles"))
+	rd, err := reader.NewReader(jirix, reader.UseProfiles, filepath.Join(jirix.Root, ".jiri_v23_profiles"))
 	if err != nil {
 		panic(err)
 	}
 
-	envslice := profiles.EnvFromProfile(target, mojoProfileName())
+	envslice := rd.EnvFromProfile(mojoProfileName(), target)
 	env := envvar.VarsFromSlice(envslice)
 	jiri.ExpandEnv(jirix, env)
 	var mojoDevtools, mojoShell, mojoServices string
