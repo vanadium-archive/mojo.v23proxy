@@ -13,7 +13,7 @@ import (
 
 	"v.io/jiri/jiri"
 	"v.io/jiri/profiles"
-	"v.io/jiri/profiles/reader"
+	"v.io/jiri/profiles/profilesreader"
 	"v.io/x/lib/cmdline"
 	"v.io/x/lib/envvar"
 	"v.io/x/lib/timing"
@@ -25,7 +25,7 @@ func RunMojoShell(mojoUrl, configFile string, configAliases map[string]string, a
 	if err != nil {
 		panic(err)
 	}
-	rd, err := reader.NewReader(jirix, reader.UseProfiles, filepath.Join(jirix.Root, ".jiri_v23_profiles"))
+	rd, err := profilesreader.NewReader(jirix, profilesreader.UseProfiles, filepath.Join(jirix.Root, ".jiri_v23_profiles"))
 	if err != nil {
 		panic(err)
 	}
