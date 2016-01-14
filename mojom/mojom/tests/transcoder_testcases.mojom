@@ -53,3 +53,54 @@ struct TestCyclicStruct {
     TestCyclicStruct? TestCyclicStruct;
     int32 a;
 };
+
+
+// Mirrors the Customer benchmark type from the VOM benchmarks (see v.io/v23/vom/internal/perf_test.go).
+struct Customer {
+	string Name;
+	int64 Id;
+	bool Active;
+	AddressInfo Address;
+	CreditReport Credit;
+};
+
+struct AddressInfo {
+	string Street;
+	string City;
+	string State;
+	string Zip;
+};
+
+enum CreditAgency {
+	Equifax,
+	Experian,
+	TransUnion,
+};
+
+enum ExperianRating {
+	Good,
+	Bad,
+};
+
+struct EquifaxCreditReport {
+	uint8 Rating;
+};
+
+struct ExperianCreditReport {
+	ExperianRating Rating;
+};
+
+struct TransUnionCreditReport {
+	int16 Rating;
+};
+
+union AgencyReport {
+	EquifaxCreditReport EquifaxReport;
+	ExperianCreditReport ExperianReport;
+	TransUnionCreditReport TransUnionReport;
+};
+
+struct CreditReport {
+	CreditAgency Agency;
+	AgencyReport Report;
+};

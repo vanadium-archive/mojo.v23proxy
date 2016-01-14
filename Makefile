@@ -62,6 +62,10 @@ build-dart-examples: gen/echo.mojom.dart gen/fortune.mojom.dart
 .PHONY: test
 test: test-unit test-integration
 
+.PHONY: benchmark
+benchmark:
+	$(call MOGO_TEST,-bench . -run XXX v.io/x/mojo/transcoder/internal)
+
 # Go-based unit tests
 .PHONY: test-unit
 test-unit: $(MOJO_SHARED_LIB) gen/go/src/mojom/tests/transcoder_testcases/transcoder_testcases.mojom.go gen-vdl
