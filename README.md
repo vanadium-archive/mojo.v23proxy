@@ -4,8 +4,16 @@ This repository implements the proposal outlined
 [here](https://docs.google.com/a/google.com/document/d/17cMUkwolbQphimAYdyVNBCzA_f-HZy3YcxEpKOAmw48/edit?usp=sharing)
 that enables communication between Mojo applications on different devices.
 
+## Prerequisites
+
+You must have the `jiri` tool installed with the `base` and `mojo` v23-profiles.
+
+To update v23proxy to the latest version of mojo, you will need to also have
+the `mojo-dev` profile.
+
 ## Quick start
 
+You must always `make build` first. (The Makefile is not very good currently.)
 - For desktop: `make build`
 - For android: `ANDROID=1 make build`
 
@@ -18,3 +26,8 @@ You can also run these with Android devices. Use an `ANDROID={N}` prefix to run 
 the `Nth` Android device connected to your machine. `N` must be a positive integer.
 
 Note: To run these examples, the devices used must run mojo_shell on the same local network.
+
+## Updating v23proxy to the latest version of mojo
+
+Prefix all commands with `USE_MOJO_DEV_PROFILE=1` in order to run with the
+`mojo-dev` profile instead of `mojo`.

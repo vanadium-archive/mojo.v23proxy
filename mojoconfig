@@ -9,8 +9,8 @@
         ('', [
           # For v23proxy.mojo.
           '@{V23PROXY_BUILD_DIR}',
-          # For examples.
-          '@{V23PROXY_DIR}/example'
+          # For dart examples.
+          '@{V23PROXY_DIR}'
         ]),
       ],
     },

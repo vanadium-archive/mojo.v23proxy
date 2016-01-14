@@ -8,7 +8,6 @@ import 'dart:async';
 import 'gen/dart-gen/mojom/lib/mojo/examples/echo.mojom.dart';
 import 'package:v23proxy/client.dart' as v23proxy;
 import 'package:mojo/application.dart';
-import 'package:mojo/bindings.dart';
 import 'package:mojo/core.dart';
 
 class Echo extends Application {

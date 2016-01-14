@@ -4,7 +4,7 @@
 
 library v23proxy;
 
-import 'gen/dart-gen/mojom/lib/mojo/bindings/types/v23proxy.mojom.dart';
+import 'gen/dart-gen/mojom/lib/mojo/bindings/types/v23clientproxy.mojom.dart';
 
 import 'package:mojo/application.dart' as application;
 import 'package:mojo/bindings.dart' as bindings;
@@ -17,8 +17,8 @@ void connectToRemoteService(application.Application app,
   core.MojoMessagePipe pipe = new core.MojoMessagePipe();
   proxy.impl.bind(pipe.endpoints[0]);
 
-  V23Proxy v23proxy = new V23Proxy.unbound();
-  app.connectToService("https://mojo.v.io/v23proxy.mojo", v23proxy);
+  V23ClientProxyProxy v23proxy = new V23ClientProxyProxy.unbound();
+  app.connectToService("https://mojo.v.io/v23clientproxy.mojo", v23proxy);
 
   // Due to mojom type generation limitations, the proxy may not always have
   // a service description. To avoid issues with dartanalyzer, we use 'dynamic'.
@@ -28,7 +28,10 @@ void connectToRemoteService(application.Application app,
   // This is a service_describer.ServiceDescription.
   var serviceDescription = dynproxyimpl.serviceDescription;
 
-  v23proxy.ptr.setupProxy(v23Name, serviceDescription.getTopLevelInterface(),
-    serviceDescription.getAllTypeDefinitions(), proxy.name,
+  v23proxy.ptr.setupClientProxy(
+    v23Name,
+    serviceDescription.getTopLevelInterface(),
+    serviceDescription.getAllTypeDefinitions(),
+    proxy.serviceName,
     pipe.endpoints[1]);
 }

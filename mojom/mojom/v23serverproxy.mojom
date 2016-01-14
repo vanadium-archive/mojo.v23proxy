@@ -5,8 +5,6 @@
 module mojo.bindings.types;
 //module v23proxy; // TODO(bprosnitz) Ideally, this would be in v23proxy. This is in mojo.bindings.types because importing across modules is broken in mojo.
 
-import "mojo/public/interfaces/bindings/mojom_types.mojom";
-
 [ServiceName="v23::v23proxy::V23ServerProxy"]
 interface V23ServerProxy {
   // Endpoints gets the endpoints that the v23proxy serves at.

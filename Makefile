@@ -113,6 +113,7 @@ gen/go/src/mojom/examples/echo/echo.mojom.go: mojom/mojom/examples/echo.mojom | 
 	gofmt -w $@
 
 gen/echo.mojom.dart: mojom/mojom/examples/echo.mojom | mojo-env-check
+	cd dart-examples/echo && pub get
 	$(call MOJOM_GEN,$<,mojom,dart-examples/echo/lib/gen,dart,--generate-type-info)
 
 $(BUILD_DIR)/fortune_client.mojo: gen/go/src/mojom/examples/fortune/fortune.mojom.go
@@ -126,9 +127,10 @@ gen/go/src/mojom/examples/fortune/fortune.mojom.go: mojom/mojom/examples/fortune
 	gofmt -w $@
 
 gen/fortune.mojom.dart: mojom/mojom/examples/fortune.mojom | mojo-env-check
+	cd dart-examples/fortune && pub get
 	$(call MOJOM_GEN,$<,mojom,dart-examples/fortune/lib/gen,dart,--generate-type-info)
 
-$(BUILD_DIR)/v23clientproxy.mojo: $(shell find $(PWD)/go/src/v.io/x/mojo/proxy/clientproxy -name *.go) | mojo-env-check
+$(BUILD_DIR)/v23clientproxy.mojo: $(shell find $(PWD)/go/src/v.io/x/mojo/proxy/clientproxy -name *.go) gen/go/src/mojom/v23clientproxy/v23clientproxy.mojom.go gen/go/src/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.go | mojo-env-check
 	$(call MOGO_BUILD,v.io/x/mojo/proxy/clientproxy,$@)
 
 $(BUILD_DIR)/v23serverproxy.mojo: $(shell find $(PWD)/go/src/v.io/x/mojo/proxy/serverproxy -name *.go) gen/go/src/mojom/v23serverproxy/v23serverproxy.mojom.go | mojo-env-check
@@ -186,13 +188,12 @@ define RUN_MOJO_SHELL
 	--config-file $(PWD)/mojoconfig \
 	--shell-path $(MOJO_SHELL) \
 	$(ANDROID_FLAG) \
-  	--enable-multiprocess \
-  	--config-alias V23PROXY_DIR=$(PWD) \
-  	--config-alias V23PROXY_BUILD_DIR=$(BUILD_DIR) \
-  	"--args-for=https://mojo.v.io/$1 $(ARGS) $(V23_MOJO_FLAGS)" \
-  	"--args-for=mojo:dart_content_handler --enable-strict-mode" \
-  	$(ORIGIN_FLAG)
-	$(MOJO_SHELL_FLAGS)
+	$(MOJO_SHELL_FLAGS) \
+	--config-alias V23PROXY_DIR=$(PWD) \
+	--config-alias V23PROXY_BUILD_DIR=$(BUILD_DIR) \
+	--args-for="https://mojo.v.io/$1 $(ARGS) $(V23_MOJO_FLAGS)" \
+	--args-for="mojo:dart_content_handler --enable-strict-mode" \
+	$(ORIGIN_FLAG)
 endef
 
 # Start the v23proxy (server-side). This runs the v23proxy in its own shell and
