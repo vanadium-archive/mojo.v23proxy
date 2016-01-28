@@ -89,7 +89,7 @@ mojom/mojo/public/interfaces/bindings/tests/test_structs.mojom: $(MOJO_SDK)/src/
 	ln -sf $(MOJO_SDK)/src/mojo/public/interfaces/bindings/tests/test_structs.mojom mojom/mojo/public/interfaces/bindings/tests/test_structs.mojom
 
 gen/go/src/mojom/tests/transcoder_testcases/transcoder_testcases.mojom.go: mojom/mojom/tests/transcoder_testcases.mojom mojom/mojo/public/interfaces/bindings/tests/test_unions.mojom mojom/mojo/public/interfaces/bindings/tests/test_included_unions.mojom mojom/mojo/public/interfaces/bindings/tests/test_structs.mojom | mojo-env-check
-	$(call MOJOM_GEN,$<,mojom,gen,go)
+	$(call MOJOM_GEN,$<,mojom,gen,go,--generate-type-info)
 	gofmt -w $@
 
 $(BUILD_DIR)/echo_client.mojo: gen/go/src/mojom/examples/echo/echo.mojom.go
@@ -109,11 +109,11 @@ $(BUILD_DIR)/test_server.mojo: go/src/v.io/x/mojo/tests/server/test_server.go ge
 	$(call MOGO_BUILD,v.io/x/mojo/tests/server,$@)
 
 gen/go/src/mojom/examples/echo/echo.mojom.go: mojom/mojom/examples/echo.mojom | mojo-env-check
-	$(call MOJOM_GEN,$<,mojom,gen,go)
+	$(call MOJOM_GEN,$<,mojom,gen,go,--generate-type-info)
 	gofmt -w $@
 
 gen/echo.mojom.dart: mojom/mojom/examples/echo.mojom | mojo-env-check
-	$(call MOJOM_GEN,$<,mojom,dart-examples/echo/lib/gen,dart)
+	$(call MOJOM_GEN,$<,mojom,dart-examples/echo/lib/gen,dart,--generate-type-info)
 
 $(BUILD_DIR)/fortune_client.mojo: gen/go/src/mojom/examples/fortune/fortune.mojom.go
 	$(call MOGO_BUILD,examples/fortune/client,$@)
@@ -122,11 +122,11 @@ $(BUILD_DIR)/fortune_server.mojo: gen/go/src/mojom/examples/fortune/fortune.mojo
 	$(call MOGO_BUILD,examples/fortune/server,$@)
 
 gen/go/src/mojom/examples/fortune/fortune.mojom.go: mojom/mojom/examples/fortune.mojom | mojo-env-check
-	$(call MOJOM_GEN,$<,mojom,gen,go)
+	$(call MOJOM_GEN,$<,mojom,gen,go,--generate-type-info)
 	gofmt -w $@
 
 gen/fortune.mojom.dart: mojom/mojom/examples/fortune.mojom | mojo-env-check
-	$(call MOJOM_GEN,$<,mojom,dart-examples/fortune/lib/gen,dart)
+	$(call MOJOM_GEN,$<,mojom,dart-examples/fortune/lib/gen,dart,--generate-type-info)
 
 $(BUILD_DIR)/v23clientproxy.mojo: $(shell find $(PWD)/go/src/v.io/x/mojo/proxy/clientproxy -name *.go) | mojo-env-check
 	$(call MOGO_BUILD,v.io/x/mojo/proxy/clientproxy,$@)
@@ -135,11 +135,11 @@ $(BUILD_DIR)/v23serverproxy.mojo: $(shell find $(PWD)/go/src/v.io/x/mojo/proxy/s
 	$(call MOGO_BUILD,v.io/x/mojo/proxy/serverproxy,$@)
 
 gen/go/src/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.go: mojom/mojo/public/interfaces/bindings/mojom_types.mojom | mojo-env-check
-	$(call MOJOM_GEN,$<,mojom,gen,go)
+	$(call MOJOM_GEN,$<,mojom,gen,go,--generate-type-info)
 	gofmt -w $@
 
 gen/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.dart: mojom/mojo/public/interfaces/bindings/mojom_types.mojom packages | mojo-env-check
-	$(call MOJOM_GEN,$<,mojom,lib/gen,dart)
+	$(call MOJOM_GEN,$<,mojom,lib/gen,dart,--generate-type-info)
 	# TODO(nlacasse): mojom_bindings_generator creates bad symlinks on dart
 	# files, so we delete them.  Stop doing this once the generator is fixed.
 	# See https://github.com/domokit/mojo/issues/386
@@ -154,7 +154,7 @@ gen/go/src/mojom/v23serverproxy/v23serverproxy.mojom.go: mojom/mojom/v23serverpr
 	gofmt -w $@
 
 gen/go/src/mojom/tests/end_to_end_test/end_to_end_test.mojom.go: mojom/mojom/tests/end_to_end_test.mojom | mojo-env-check
-	$(call MOJOM_GEN,$<,mojom,gen,go)
+	$(call MOJOM_GEN,$<,mojom,gen,go,--generate-type-info)
 	gofmt -w $@
 
 gen/v23clientproxy.mojom.dart: mojom/mojom/v23clientproxy.mojom packages gen/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.dart | mojo-env-check
