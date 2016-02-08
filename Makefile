@@ -42,6 +42,9 @@ build-dart: gen/v23clientproxy.mojom.dart gen/v23serverproxy.mojom.dart build-da
 lint-dart:
 	dartanalyzer lib/client.dart | grep -v "\[warning\] The imported libraries"
 	dartanalyzer dart-examples/echo/lib/main.dart | grep -v "\[warning\] The imported libraries"
+	dartanalyzer dart-examples/echo_server/lib/main.dart | grep -v "\[warning\] The imported libraries"
+	dartanalyzer dart-examples/fortune/lib/main.dart | grep -v "\[warning\] The imported libraries"
+	dartanalyzer dart-examples/fortune_server/lib/main.dart | grep -v "\[warning\] The imported libraries"
 
 .PHONY: link-mojo_sdk
 link-mojo_sdk:
@@ -114,7 +117,9 @@ gen/go/src/mojom/examples/echo/echo.mojom.go: mojom/mojom/examples/echo.mojom | 
 
 gen/echo.mojom.dart: mojom/mojom/examples/echo.mojom | mojo-env-check
 	cd dart-examples/echo && pub get
+	cd dart-examples/echo_server && pub get
 	$(call MOJOM_GEN,$<,mojom,dart-examples/echo/lib/gen,dart,--generate-type-info)
+	$(call MOJOM_GEN,$<,mojom,dart-examples/echo_server/lib/gen,dart,--generate-type-info)
 
 $(BUILD_DIR)/fortune_client.mojo: gen/go/src/mojom/examples/fortune/fortune.mojom.go
 	$(call MOGO_BUILD,examples/fortune/client,$@)
@@ -128,7 +133,9 @@ gen/go/src/mojom/examples/fortune/fortune.mojom.go: mojom/mojom/examples/fortune
 
 gen/fortune.mojom.dart: mojom/mojom/examples/fortune.mojom | mojo-env-check
 	cd dart-examples/fortune && pub get
+	cd dart-examples/fortune_server && pub get
 	$(call MOJOM_GEN,$<,mojom,dart-examples/fortune/lib/gen,dart,--generate-type-info)
+	$(call MOJOM_GEN,$<,mojom,dart-examples/fortune_server/lib/gen,dart,--generate-type-info)
 
 $(BUILD_DIR)/v23clientproxy.mojo: $(shell find $(PWD)/go/src/v.io/x/mojo/proxy/clientproxy -name *.go) gen/go/src/mojom/v23clientproxy/v23clientproxy.mojom.go gen/go/src/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.go | mojo-env-check
 	$(call MOGO_BUILD,v.io/x/mojo/proxy/clientproxy,$@)
@@ -219,6 +226,8 @@ start-v23serverproxy: $(BUILD_DIR)/v23serverproxy.mojo
 # On Android, run with
 # ANDROID={device number} make ARGS="{remote endpoint}//https://mojo.v.io/echo_server.mojo/mojo::examples::RemoteEcho [optional: a string to echo]" start-echo-client
 #
+# To run this versus the dart echo server, use https://mojo.v.io/dart-examples/echo_server/lib/main.dart instead.
+#
 # Note1: Does not use --enable-multiprocess since small Go programs can omit it.
 # Note2: Setting HOME ensures that we avoid a db LOCK that is created per mojo shell instance.
 .PHONY: start-echo-client
@@ -242,6 +251,8 @@ start-dart-echo-client: build-dart
 #
 # On Android, run with
 # ANDROID={device number} make ARGS="{remote endpoint}//https://mojo.v.io/fortune_server.mojo/mojo::examples::Fortune [optional: a fortune to add]" start-fortune-client
+#
+# To run this versus the dart echo server, use https://mojo.v.io/dart-examples/fortune_server/lib/main.dart instead.
 #
 # Note1: Does not use --enable-multiprocess since small Go programs can omit it.
 # Note2: Setting HOME ensures that we avoid a db LOCK that is created per mojo shell instance.
@@ -270,5 +281,7 @@ clean-go:
 clean-dart:
 	rm -rf lib/gen
 	rm -rf dart-examples/echo/lib/gen
+	rm -rf dart-examples/echo_server/lib/gen
 	rm -rf dart-examples/fortune/lib/gen
+	rm -rf dart-examples/fortune_server/lib/gen
 	rm -rf packages

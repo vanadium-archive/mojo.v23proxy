@@ -27,11 +27,12 @@ void connectToRemoteService(application.Application app,
 
   // This is a service_describer.ServiceDescription.
   var serviceDescription = dynproxyimpl.serviceDescription;
+  Function identityResponseFactory = (v) => v;
 
   v23proxy.ptr.setupClientProxy(
     v23Name,
-    serviceDescription.getTopLevelInterface(),
-    serviceDescription.getAllTypeDefinitions(),
+    serviceDescription.getTopLevelInterface(identityResponseFactory),
+    serviceDescription.getAllTypeDefinitions(identityResponseFactory),
     proxy.serviceName,
     pipe.endpoints[1]);
 }

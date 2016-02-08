@@ -39,7 +39,7 @@ class Fortune extends Application {
     if (fortunestr == null) {
       // Get Fortune
       print("Asking fortune server for a fortune...");
-      var response = await fortuneProxy.ptr.get(fortunestr);
+      var response = await fortuneProxy.ptr.get();
       print("Received fortune: ${response.value}");
     } else {
       // Add Fortune

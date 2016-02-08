@@ -1,7 +1,7 @@
 author: Vanadium Authors
-description: Fortune is an example Mojo Dart application that uses the v23proxy.
+description: Echo Server is an example Mojo Dart application that uses the v23proxy.
 homepage: https://github.com/vanadium/mojo.v23proxy
-name: v23proxy-fortune
+name: v23proxy-echo-server
 version: 0.0.1
 dependencies:
   mojo: '>=0.3.0 <0.4.0'
