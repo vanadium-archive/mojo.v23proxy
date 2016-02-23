@@ -27,6 +27,11 @@ import (
 //#include "mojo/public/c/system/types.h"
 import "C"
 
+var (
+	mojoFlag *flag.FlagSet
+	endpointFlag *string
+)
+
 func init() {
 	// Add flag placeholders to suppress warnings on unhandled mojo flags.
 	flag.String("child-connection-id", "", "")
@@ -108,9 +113,18 @@ func TestNoOutArgs(t *testing.T, ctx application.Context) {
 	}
 }
 
+func BenchmarkSimpleRpc(b *testing.B, ctx application.Context) {
+	proxy := createProxy(ctx)
+	defer proxy.Close_Proxy()
+
+	for i := 0; i < b.N; i++ {
+		proxy.Simple(expected.SimpleRequestA)
+	}
+}
+
 func createProxy(ctx application.Context) *end_to_end_test.V23ProxyTest_Proxy {
 	// Parse arguments. Note: May panic if not enough args are given.
-	remoteName := ctx.Args()[1]
+	remoteName := *endpointFlag
 
 	r, p := end_to_end_test.CreateMessagePipeForV23ProxyTest()
 	v23.ConnectToRemoteService(ctx, &r, remoteName)
@@ -119,7 +133,7 @@ func createProxy(ctx application.Context) *end_to_end_test.V23ProxyTest_Proxy {
 
 type TestClientDelegate struct{}
 
-func funcName(f func(*testing.T, application.Context)) string {
+func testFuncName(f func(*testing.T, application.Context)) string {
 	qualified := runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
 	return qualified[strings.LastIndex(qualified, ".")+1:]
 }
@@ -128,22 +142,52 @@ func convertTests(testFuncs []func(*testing.T, application.Context), ctx applica
 	for i, _ := range testFuncs {
 		f := testFuncs[i]
 		tests[i] = testing.InternalTest{
-			Name: funcName(f),
+			Name: testFuncName(f),
 			F:    func(t *testing.T) { f(t, ctx) },
 		}
 	}
 	return tests
 }
+func benchFuncName(f func(*testing.B, application.Context)) string {
+	qualified := runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
+	return qualified[strings.LastIndex(qualified, ".")+1:]
+}
+func convertBenchmarks(benchmarkFuncs []func(*testing.B, application.Context), ctx application.Context) []testing.InternalBenchmark {
+	benchmarks := make([]testing.InternalBenchmark, len(benchmarkFuncs))
+	for i, _ := range benchmarkFuncs {
+		f := benchmarkFuncs[i]
+		benchmarks[i] = testing.InternalBenchmark{
+			Name: benchFuncName(f),
+			F:    func(b *testing.B) { f(b, ctx) },
+		}
+	}
+	return benchmarks
+}
 
 func (delegate *TestClientDelegate) Initialize(ctx application.Context) {
 	log.Printf("TestClientDelegate.Initialize...")
 
+	// Set the necessary flags using the mojo args.
+	args := ctx.Args()
+	mojoFlag = flag.NewFlagSet(args[0], flag.ExitOnError)
+	mojoRun := mojoFlag.String("test.run", "", "")
+	mojoBench := mojoFlag.String("test.bench", "", "")
+	endpointFlag = mojoFlag.String("endpoint", "", "")
+	v23TcpAddr := mojoFlag.String("v23.tcp.address", "", "")
+	mojoFlag.Parse(args[1:])
+	flag.Set("test.run", *mojoRun)
+	flag.Set("test.bench", *mojoBench)
+	flag.Set("v23.tcp.address", *v23TcpAddr)
+
 	tests := []func(*testing.T, application.Context){
 		TestSimple, TestMultiArgs, TestReuseProxy, TestNoOutArgs,
 	}
+	benchmarks := []func(*testing.B, application.Context){
+		BenchmarkSimpleRpc,
+	}
 
 	matchAllTests := func(pat, str string) (bool, error) { return true, nil }
-	exitCode := testing.MainStart(matchAllTests, convertTests(tests, ctx), nil, nil).Run()
+	exitCode := testing.MainStart(matchAllTests, convertTests(tests, ctx), convertBenchmarks(benchmarks, ctx), nil).Run()
 	if exitCode == 0 {
 		fmt.Printf("%s\n", expected.SuccessMessage)
 	} else {

@@ -26,7 +26,7 @@ func TestMojoToVom(t *testing.T) {
 		}
 
 		var out interface{}
-		if err := transcoder.MojomToVdl(data, vdl.TypeOf(test.VdlValue), &out); err != nil {
+		if err := transcoder.ValueFromMojo(&out, data, vdl.TypeOf(test.VdlValue)); err != nil {
 			t.Errorf("%s: error in MojoToVom: %v (was transcoding from %x)", testName, err, data)
 			continue
 		}
@@ -41,7 +41,7 @@ func TestVomToMojo(t *testing.T) {
 	for _, test := range testCases {
 		testName := test.Name + " vom->mojo"
 
-		data, err := transcoder.VdlToMojom(test.VdlValue)
+		data, err := transcoder.ToMojom(test.VdlValue)
 		if err != nil {
 			t.Errorf("%s: error in VomToMojo: %v", testName, err)
 			continue
@@ -63,14 +63,14 @@ func TestVomToMojoToVom(t *testing.T) {
 	for _, test := range testCases {
 		testName := test.Name + " vom->mojo->vom"
 
-		data, err := transcoder.VdlToMojom(test.VdlValue)
+		data, err := transcoder.ToMojom(test.VdlValue)
 		if err != nil {
 			t.Errorf("%s: error in VomToMojo: %v", testName, err)
 			continue
 		}
 
 		var out interface{}
-		if err := transcoder.MojomToVdl(data, vdl.TypeOf(test.VdlValue), &out); err != nil {
+		if err := transcoder.ValueFromMojo(&out, data, vdl.TypeOf(test.VdlValue)); err != nil {
 			t.Errorf("%s: error in MojoToVom: %v (was transcoding from %x)", testName, err, data)
 			continue
 		}

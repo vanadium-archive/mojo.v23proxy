@@ -18,7 +18,7 @@ import (
 )
 
 func StartV23ServerProxy(v23ProxyRoot string) (*V23ProxyController, error) {
-	cmd := RunMojoShellForV23ProxyTests("v23serverproxy.mojo", v23ProxyRoot, []string{})
+	cmd := RunMojoShellForV23ProxyTests("v23serverproxy.mojo", v23ProxyRoot, []string{"--v23.tcp.address=127.0.0.1:0"})
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err

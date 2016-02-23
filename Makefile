@@ -66,8 +66,9 @@ build-dart-examples: gen/echo.mojom.dart gen/fortune.mojom.dart
 test: test-unit test-integration
 
 .PHONY: benchmark
-benchmark:
+benchmark: $(BUILD_DIR)/test_client.mojo $(BUILD_DIR)/test_server.mojo $(BUILD_DIR)/v23clientproxy.mojo $(BUILD_DIR)/v23serverproxy.mojo
 	$(call MOGO_TEST,-bench . -run XXX v.io/x/mojo/transcoder/internal)
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -bench
 
 # Go-based unit tests
 .PHONY: test-unit

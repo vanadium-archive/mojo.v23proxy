@@ -6,63 +6,69 @@ package util
 
 import (
 	"fmt"
-	"mojo/public/go/bindings"
 
 	"v.io/v23/vdl"
-	"v.io/x/mojo/transcoder"
+	"v.io/v23/vom"
 )
 
-// TODO(alexfandrianto): Since this function could panic, we should consider
-// handling that if it happens.
-func CombineVdlValueByMojomType(values []*vdl.Value, t *vdl.Type) *vdl.Value {
-	outVdlValue := vdl.ZeroValue(t)
-	for i := 0; i < t.NumField(); i++ {
-		outVdlValue.StructField(i).Assign(values[i])
-	}
-	return outVdlValue
+type structSplitTarget struct {
+	tt *vdl.Type
+	fields []*vom.RawBytes
+	vdl.Target
 }
 
-// Construct []*vdl.Value from a *vdl.Value (as a struct) via its mojom type.
-// TODO(alexfandrianto): Since this function could panic, we should consider
-// handling that if it happens.
-func SplitVdlValueByMojomType(value *vdl.Value, t *vdl.Type) []*vdl.Value {
-	outVdlValues := make([]*vdl.Value, t.NumField())
-	for i := 0; i < t.NumField(); i++ {
-		outVdlValues[i] = value.StructField(i)
-	}
-	return outVdlValues
+func (targ *structSplitTarget) StartFields(tt *vdl.Type) (vdl.FieldsTarget, error) {
+	targ.tt = tt
+	targ.fields = make([]*vom.RawBytes, tt.NumField())
+	return &structSplitFieldsTarget{targ}, nil
 }
 
-func EncodeMessageFromVom(header bindings.MessageHeader, argptrs []interface{}, t *vdl.Type) (*bindings.Message, error) {
-	// Convert argptrs into their true form: []*vdl.Value
-	inargs := make([]*vdl.Value, len(argptrs))
-	for i := range argptrs {
-		inargs[i] = *argptrs[i].(**vdl.Value)
-	}
+func (targ *structSplitTarget) FinishFields(x vdl.FieldsTarget) error {
+	return nil
+}
 
-	// Construct the proper *vdl.Value (as a struct) from the mojom type.
-	vdlValue := CombineVdlValueByMojomType(inargs, t)
+func (targ *structSplitTarget) Fields() []*vom.RawBytes {
+	return targ.fields
+}
 
-	encoder := bindings.NewEncoder()
-	if err := header.Encode(encoder); err != nil {
-		return nil, err
+type structSplitFieldsTarget struct {
+	targ *structSplitTarget
+}
+
+func (ft *structSplitFieldsTarget) StartField(name string) (key, field vdl.Target, _ error) {
+	_, index := ft.targ.tt.FieldByName(name)
+	ft.targ.fields[index] = &vom.RawBytes{}
+	return nil, vom.RawBytesTarget(ft.targ.fields[index]), nil
+}
+
+func (ft *structSplitFieldsTarget) FinishField(key, field vdl.Target) error {
+	return nil
+}
+
+func StructSplitTarget() *structSplitTarget {
+	return &structSplitTarget{}
+}
+
+func JoinRawBytesAsStruct(targ vdl.Target, structType *vdl.Type, fields []*vom.RawBytes) error {
+	st, err := targ.StartFields(structType)
+	if err != nil {
+		return err
 	}
-	if bytes, handles, err := encoder.Data(); err != nil {
-		return nil, err
-	} else {
-		// Encode here.
-		moreBytes, err := transcoder.VdlToMojom(vdlValue)
+	if structType.NumField() != len(fields) {
+		return fmt.Errorf("received %d fields, but %v has %d fields", len(fields), structType, structType.NumField())
+	}
+	for i := 0; i < structType.NumField(); i++ {
+		f := structType.Field(i)
+		k, t, err := st.StartField(f.Name)
 		if err != nil {
-			return nil, fmt.Errorf("mojovdl.Encode failed: %v", err)
+			return err
 		}
-		// Append the encoded "payload" to the end of the slice.
-		bytes = append(bytes, moreBytes...)
-
-		return &bindings.Message{
-			Header:  header,
-			Bytes:   bytes,
-			Handles: handles,
-			Payload: moreBytes,
-		}, nil
+		if err := fields[i].ToTarget(t); err != nil {
+			return err
+		}
+		if err := st.FinishField(k, t); err != nil {
+			return err
+		}
 	}
+	return targ.FinishFields(st)
 }

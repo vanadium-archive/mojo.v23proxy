@@ -47,7 +47,7 @@ var vdlCustomer Customer = Customer{
 
 func BenchmarkVdlToMojomTranscoding(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		transcoder.VdlToMojom(customer)
+		transcoder.ToMojom(customer)
 	}
 }
 
@@ -56,7 +56,7 @@ func BenchmarkMojomToVdlTranscoding(b *testing.B) {
 	t := vdl.TypeOf(customer)
 	for i := 0; i < b.N; i++ {
 		var c Customer
-		transcoder.MojomToVdl(data, t, &c)
+		transcoder.ValueFromMojo(&c, data, t)
 	}
 }
 

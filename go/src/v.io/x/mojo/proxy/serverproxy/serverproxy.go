@@ -26,6 +26,7 @@ import (
 	"v.io/x/mojo/proxy/util"
 	"v.io/x/mojo/transcoder"
 	_ "v.io/x/ref/runtime/factories/roaming"
+	"v.io/v23/vom"
 )
 
 //#include "mojo/public/c/system/types.h"
@@ -44,7 +45,7 @@ type fakeService struct {
 // Prepare is used by the Fake Service to prepare the placeholders for the
 // input data.
 func (fs fakeService) Prepare(ctx *context.T, method string, numArgs int) (argptrs []interface{}, tags []*vdl.Value, _ error) {
-	inargs := make([]*vdl.Value, numArgs)
+	inargs := make([]*vom.RawBytes, numArgs)
 	inptrs := make([]interface{}, len(inargs))
 	for i := range inargs {
 		inptrs[i] = &inargs[i]
@@ -71,7 +72,7 @@ func (v *v23ServiceRequest) PassMessagePipe() system.MessagePipeHandle {
 }
 
 // Invoke calls the mojom service based on the suffix and converts the mojom
-// results (a struct) to Vanadium results (a slice of *vdl.Value).
+// results (a struct) to Vanadium results (a slice of *vom.RawBytes).
 // Note: The argptrs from Prepare are reused here. The vom bytes should have
 // been decoded into these argptrs, so there are actual values inside now.
 func (fs fakeService) Invoke(ctx *context.T, call rpc.StreamServerCall, method string, argptrs []interface{}) (results []interface{}, _ error) {
@@ -206,8 +207,8 @@ func (r *mojoService) Endpoints() (endpoints []string, err error) {
 }
 
 // callRemoteMethod calls the method remotely in a generic way.
-// Produces []*vdl.Value at the end for the invoker to return.
-func (fs fakeService) callRemoteMethod(ctx *context.T, method string, mi mojom_types.MojomInterface, desc map[string]mojom_types.UserDefinedType, argptrs []interface{}) ([]*vdl.Value, error) {
+// Produces []*vom.RawBytes at the end for the invoker to return.
+func (fs fakeService) callRemoteMethod(ctx *context.T, method string, mi mojom_types.MojomInterface, desc map[string]mojom_types.UserDefinedType, argptrs []interface{}) ([]*vom.RawBytes, error) {
 	// We need to parse the signature result to get the method relevant info out.
 	found := false
 	var ordinal uint32
@@ -238,7 +239,7 @@ func (fs fakeService) callRemoteMethod(ctx *context.T, method string, mi mojom_t
 	if err != nil {
 		return nil, err
 	}
-	message, err := util.EncodeMessageFromVom(header, argptrs, inType)
+	message, err := encodeMessageFromVom(header, argptrs, inType)
 	if err != nil {
 		return nil, err
 	}
@@ -249,19 +250,48 @@ func (fs fakeService) callRemoteMethod(ctx *context.T, method string, mi mojom_t
 		return nil, err
 	}
 
-	// Decode the *vdl.Value from the mojom bytes and mojom type.
+	// Decode the *vom.RawBytes from the mojom bytes and mojom type.
 	outType, err := transcoder.MojomStructToVDLType(*mm.ResponseParams, desc)
 	if err != nil {
 		return nil, err
 	}
-	var outVdlValue *vdl.Value
-	if err := transcoder.MojomToVdl(outMessage.Payload, outType, &outVdlValue); err != nil {
-		return nil, fmt.Errorf("transcoder.MojoToVom failed: %v", err)
+	target := util.StructSplitTarget()
+	if err := transcoder.FromMojo(target, outMessage.Payload, outType); err != nil {
+		return nil, fmt.Errorf("transcoder.FromMojo failed: %v", err)
+	}
+	return target.Fields(), nil
+}
+
+
+func encodeMessageFromVom(header bindings.MessageHeader, argptrs []interface{}, t *vdl.Type) (*bindings.Message, error) {
+	// Convert argptrs into their true form: []*vom.RawBytes
+	inargs := make([]*vom.RawBytes, len(argptrs))
+	for i := range argptrs {
+		inargs[i] = *argptrs[i].(**vom.RawBytes)
 	}
 
-	// Then split the *vdl.Value (struct) into []*vdl.Value
-	response := util.SplitVdlValueByMojomType(outVdlValue, outType)
-	return response, nil
+	encoder := bindings.NewEncoder()
+	if err := header.Encode(encoder); err != nil {
+		return nil, err
+	}
+	if bytes, handles, err := encoder.Data(); err != nil {
+		return nil, err
+	} else {
+		target := transcoder.ToMojomTarget()
+		if err := util.JoinRawBytesAsStruct(target, t, inargs); err != nil {
+			return nil, err
+		}
+		moreBytes := target.Bytes()
+		// Append the encoded "payload" to the end of the slice.
+		bytes = append(bytes, moreBytes...)
+
+		return &bindings.Message{
+			Header:  header,
+			Bytes:   bytes,
+			Handles: handles,
+			Payload: moreBytes,
+		}, nil
+	}
 }
 
 // The fake service has no signature.

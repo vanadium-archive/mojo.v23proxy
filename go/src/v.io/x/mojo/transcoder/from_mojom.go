@@ -13,27 +13,31 @@ import (
 	"v.io/v23/vdl"
 )
 
-// Decode decodes the mojom-encoded data into valptr, which must be a pointer to
+// FromMojo decodes the mojom-encoded data into valptr, which must be a pointer to
 // the desired value.  The datatype describes the type of the encoded data.
 // Returns an error if the data cannot be decoded into valptr, based on the VDL
 // value conversion rules.
 // TODO(bprosnitz) Consider reimplementing this using mojom_type instead of vdl type
 // so that we can take advantage of the struct offset in the mojom type.
-func MojomToVdl(data []byte, datatype *vdl.Type, valptr interface{}) error {
+func ValueFromMojo(valptr interface{}, data []byte, datatype *vdl.Type) error {
 	target, err := vdl.ReflectTarget(reflect.ValueOf(valptr))
 	if err != nil {
 		return err
 	}
-	mtv := &mojomToVdlTranscoder{modec: bindings.NewDecoder(data, nil)}
+	return FromMojo(target, data, datatype)
+}
+
+func FromMojo(target vdl.Target, data []byte, datatype *vdl.Type) error  {
+	mtv := &mojomToTargetTranscoder{modec: bindings.NewDecoder(data, nil)}
 	return mtv.transcodeValue(datatype, target, true, false)
 }
 
-type mojomToVdlTranscoder struct {
+type mojomToTargetTranscoder struct {
 	modec     *bindings.Decoder
 	typeStack []*vdl.Type
 }
 
-func (mtv *mojomToVdlTranscoder) transcodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNullable bool) error {
+func (mtv *mojomToTargetTranscoder) transcodeValue(vt *vdl.Type, target vdl.Target, isTopType, isNullable bool) error {
 	switch vt.Kind() {
 	case vdl.Bool:
 		value, err := mtv.modec.ReadBool()

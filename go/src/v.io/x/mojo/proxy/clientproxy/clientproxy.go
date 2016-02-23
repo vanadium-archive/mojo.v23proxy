@@ -18,10 +18,10 @@ import (
 	"v.io/v23/context"
 	"v.io/v23/options"
 	"v.io/v23/security"
-	"v.io/v23/vdl"
 	"v.io/x/mojo/proxy/util"
 	"v.io/x/mojo/transcoder"
 	_ "v.io/x/ref/runtime/factories/roaming"
+	"v.io/v23/vom"
 )
 
 //#include "mojo/public/c/system/types.h"
@@ -154,27 +154,27 @@ func (s *messageReceiver) call(name, method string, value []byte, inParamsType m
 		return nil, err
 	}
 
-	// Decode the vdl.Value from the mojom bytes and mojom type.
-	var inVdlValue *vdl.Value
-	if err := transcoder.MojomToVdl(value, inVType, &inVdlValue); err != nil {
-		return nil, fmt.Errorf("transcoder.MojoToVom failed: %v", err)
+	// Decode the vom.RawBytes from the mojom bytes and mojom type.
+	target := util.StructSplitTarget()
+	if err := transcoder.FromMojo(target, value, inVType); err != nil {
+		return nil, fmt.Errorf("transcoder.FromMojo failed: %v", err)
 	}
 
 	// inVdlValue is a struct, but we need to send []interface.
-	inargs := util.SplitVdlValueByMojomType(inVdlValue, inVType)
+	inargs := target.Fields()
 	inargsIfc := make([]interface{}, len(inargs))
 	for i := range inargs {
 		inargsIfc[i] = inargs[i]
 	}
 
 	// We know that the v23serverproxy will give us back a bunch of
-	// data in []interface{}. so we'll want to decode them into *vdl.Value.
+	// data in []interface{}. so we'll want to decode them into *vom.RawBytes.
 	s.ctx.Infof("%s %v", method, outParamsType)
 	var numParams int
 	if outParamsType != nil {
 		numParams = len(outParamsType.Fields)
 	}
-	outargs := make([]*vdl.Value, numParams)
+	outargs := make([]*vom.RawBytes, numParams)
 	outptrs := make([]interface{}, len(outargs))
 	for i := range outargs {
 		outptrs[i] = &outargs[i]
@@ -194,15 +194,11 @@ func (s *messageReceiver) call(name, method string, value []byte, inParamsType m
 		return nil, err
 	}
 
-	// Now convert the []interface{} into a *vdl.Value (struct).
-	outVdlValue := util.CombineVdlValueByMojomType(outargs, outVType)
-
-	// Finally, encode this *vdl.Value (struct) into mojom bytes and send the response.
-	result, err := transcoder.VdlToMojom(outVdlValue)
-	if err != nil {
-		return nil, fmt.Errorf("transcoder.Encode failed: %v", err)
+	toMojoTarget := transcoder.ToMojomTarget()
+	if err := util.JoinRawBytesAsStruct(toMojoTarget, outVType, outargs); err != nil {
+		return nil, err
 	}
-	return result, nil
+	return toMojoTarget.Bytes(), nil
 }
 
 type delegate struct {
