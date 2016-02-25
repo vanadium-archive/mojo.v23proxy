@@ -12,7 +12,7 @@ import (
 )
 
 type structSplitTarget struct {
-	tt *vdl.Type
+	tt     *vdl.Type
 	fields []*vom.RawBytes
 	vdl.Target
 }
@@ -37,8 +37,9 @@ type structSplitFieldsTarget struct {
 
 func (ft *structSplitFieldsTarget) StartField(name string) (key, field vdl.Target, _ error) {
 	_, index := ft.targ.tt.FieldByName(name)
-	ft.targ.fields[index] = &vom.RawBytes{}
-	return nil, vom.RawBytesTarget(ft.targ.fields[index]), nil
+	rb := new(vom.RawBytes)
+	ft.targ.fields[index] = rb
+	return nil, rb.MakeVDLTarget(), nil
 }
 
 func (ft *structSplitFieldsTarget) FinishField(key, field vdl.Target) error {
@@ -63,7 +64,7 @@ func JoinRawBytesAsStruct(targ vdl.Target, structType *vdl.Type, fields []*vom.R
 		if err != nil {
 			return err
 		}
-		if err := fields[i].ToTarget(t); err != nil {
+		if err := fields[i].FillVDLTarget(t); err != nil {
 			return err
 		}
 		if err := st.FinishField(k, t); err != nil {
