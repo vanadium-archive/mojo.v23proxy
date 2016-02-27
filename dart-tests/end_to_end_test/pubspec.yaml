@@ -1,12 +1,13 @@
 author: Vanadium Authors
-description: V23proxy is a proxy service between Mojo and Vanadium applications.
+description: End To End Test
 homepage: https://github.com/vanadium/mojo.v23proxy
-name: v23proxy
+name: v23proxy-end-to-end-test
 version: 0.0.1
 dependencies:
   mojo_sdk: 0.2.15
-dev_dependencies:
-  dart_style: any
-  test: any
+  v23proxy: '>=0.0.1'
 environment:
   sdk: '>=1.12.0 <2.0.0'
+dependency_overrides:
+  v23proxy:
+    path: ../..

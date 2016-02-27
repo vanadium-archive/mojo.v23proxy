@@ -7,17 +7,33 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"flag"
 	"fmt"
 	"io"
 	"os"
 	"strings"
-	"flag"
 
 	"v.io/x/mojo/tests/expected"
 	"v.io/x/mojo/tests/util"
 )
 
 var runBench *bool = flag.Bool("bench", false, "run benchmarks instead of tests")
+var clientType *string = flag.String("client", "go", "run test with a different client")
+var serverType *string = flag.String("server", "go", "run test with a different server")
+
+var (
+	// Maps the client type to client mojo files.
+	clientMap = map[string]string{
+		"go":   "test_client.mojo",
+		"dart": "dart-tests/end_to_end_test/lib/client.dart",
+	}
+
+	// Maps the server type to server mojo files.
+	serverMap = map[string]string{
+		"go":   "test_server.mojo",
+		"dart": "dart-tests/end_to_end_test/lib/server.dart",
+	}
+)
 
 func main() {
 	flag.Parse()
@@ -33,7 +49,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	endpointFlag := "-endpoint=" + endpoint + "//https://mojo.v.io/test_server.mojo/mojo::v23proxy::tests::V23ProxyTest"
+	endpointFlag := fmt.Sprintf("-endpoint=%s/https://mojo.v.io/%s/mojo::v23proxy::tests::V23ProxyTest", endpoint, serverMap[*serverType])
 	args := []string{endpointFlag, "--v23.tcp.address=127.0.0.1:0"}
 	if *runBench {
 		args = append(args, "-test.run=XXXX", "-test.bench=.")
@@ -48,7 +64,7 @@ func main() {
 }
 
 func runTestClient(v23ProxyRoot string, args ...string) error {
-	cmd := util.RunMojoShellForV23ProxyTests("test_client.mojo", v23ProxyRoot, args)
+	cmd := util.RunMojoShellForV23ProxyTests(clientMap[*clientType], v23ProxyRoot, args)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return err

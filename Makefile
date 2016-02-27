@@ -41,10 +41,10 @@ build-dart: gen/v23clientproxy.mojom.dart gen/v23serverproxy.mojom.dart build-da
 .PHONY: lint-dart
 lint-dart:
 	dartanalyzer lib/client.dart | grep -v "\[warning\] The imported libraries"
-	dartanalyzer dart-examples/echo/lib/main.dart | grep -v "\[warning\] The imported libraries"
-	dartanalyzer dart-examples/echo_server/lib/main.dart | grep -v "\[warning\] The imported libraries"
-	dartanalyzer dart-examples/fortune/lib/main.dart | grep -v "\[warning\] The imported libraries"
-	dartanalyzer dart-examples/fortune_server/lib/main.dart | grep -v "\[warning\] The imported libraries"
+	cd dart-examples/echo && dartanalyzer lib/main.dart | grep -v "\[warning\] The imported libraries"
+	cd dart-examples/echo_server && dartanalyzer lib/main.dart | grep -v "\[warning\] The imported libraries"
+	cd dart-examples/fortune && dartanalyzer lib/main.dart | grep -v "\[warning\] The imported libraries"
+	cd dart-examples/fortune_server && dartanalyzer lib/main.dart | grep -v "\[warning\] The imported libraries"
 
 .PHONY: link-mojo_sdk
 link-mojo_sdk:
@@ -66,9 +66,34 @@ build-dart-examples: gen/echo.mojom.dart gen/fortune.mojom.dart
 test: test-unit test-integration
 
 .PHONY: benchmark
-benchmark: $(BUILD_DIR)/test_client.mojo $(BUILD_DIR)/test_server.mojo $(BUILD_DIR)/v23clientproxy.mojo $(BUILD_DIR)/v23serverproxy.mojo
-	$(call MOGO_TEST,-bench . -run XXX v.io/x/mojo/transcoder/internal)
-	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -bench
+benchmark: mock packages $(BUILD_DIR)/test_client.mojo $(BUILD_DIR)/test_server.mojo $(BUILD_DIR)/v23clientproxy.mojo $(BUILD_DIR)/v23serverproxy.mojo
+	$(call MOGO_TEST,-bench . -run XXX v.io/x/mojo/transcoder/internal) || ($(MAKE) unmock && exit 1)
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -bench || ($(MAKE) unmock && exit 1)
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -bench -client dart || ($(MAKE) unmock && exit 1)
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -bench -server dart || ($(MAKE) unmock && exit 1)
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -bench -client dart -server dart || ($(MAKE) unmock && exit 1)
+	$(MAKE) unmock
+
+.PHONY: mock
+mock: link-mojo_sdk
+ifdef USE_MOJO_DEV_PROFILE
+	cp pubspec.yaml pubspec-normal.yaml
+	cp pubspec-dev.yaml pubspec.yaml
+	pub get
+	cp dart-tests/end_to_end_test/pubspec.yaml dart-tests/end_to_end_test/pubspec-normal.yaml
+	cp dart-tests/end_to_end_test/pubspec-dev.yaml dart-tests/end_to_end_test/pubspec.yaml
+	cd dart-tests/end_to_end_test && pub get
+endif
+
+.PHONY: unmock
+unmock:
+ifdef USE_MOJO_DEV_PROFILE
+	mv pubspec-normal.yaml pubspec.yaml
+	pub get
+	mv dart-tests/end_to_end_test/pubspec-normal.yaml dart-tests/end_to_end_test/pubspec.yaml
+	cd dart-tests/end_to_end_test && pub get
+endif
+
 
 # Go-based unit tests
 .PHONY: test-unit
@@ -103,23 +128,32 @@ $(BUILD_DIR)/echo_server.mojo: gen/go/src/mojom/examples/echo/echo.mojom.go
 	$(call MOGO_BUILD,examples/echo/server,$@)
 
 .PHONY: test-integration
-test-integration: $(BUILD_DIR)/test_client.mojo $(BUILD_DIR)/test_server.mojo $(BUILD_DIR)/v23clientproxy.mojo $(BUILD_DIR)/v23serverproxy.mojo
-	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go
+test-integration: mock packages $(BUILD_DIR)/test_client.mojo $(BUILD_DIR)/test_server.mojo $(BUILD_DIR)/v23clientproxy.mojo $(BUILD_DIR)/v23serverproxy.mojo
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go || ($(MAKE) unmock && exit 1)
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -client dart || ($(MAKE) unmock && exit 1)
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -server dart || ($(MAKE) unmock && exit 1)
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -client dart -server dart || ($(MAKE) unmock && exit 1)
+	$(MAKE) unmock
 
-$(BUILD_DIR)/test_client.mojo: go/src/v.io/x/mojo/tests/client/test_client.go gen/go/src/mojom/tests/end_to_end_test/end_to_end_test.mojom.go gen/go/src/mojom/v23clientproxy/v23clientproxy.mojom.go
+$(BUILD_DIR)/test_client.mojo: go/src/v.io/x/mojo/tests/client/test_client.go gen/go/src/mojom/tests/end_to_end_test/end_to_end_test.mojom.go dart-tests/end_to_end_test/lib/gen/dart-gen/mojom/lib/mojo/v23proxy/tests/end_to_end_test.mojom.dart gen/go/src/mojom/v23clientproxy/v23clientproxy.mojom.go
 	$(call MOGO_BUILD,v.io/x/mojo/tests/client,$@)
 
-$(BUILD_DIR)/test_server.mojo: go/src/v.io/x/mojo/tests/server/test_server.go gen/go/src/mojom/tests/end_to_end_test/end_to_end_test.mojom.go
+$(BUILD_DIR)/test_server.mojo: go/src/v.io/x/mojo/tests/server/test_server.go gen/go/src/mojom/tests/end_to_end_test/end_to_end_test.mojom.go dart-tests/end_to_end_test/lib/gen/dart-gen/mojom/lib/mojo/v23proxy/tests/end_to_end_test.mojom.dart
 	$(call MOGO_BUILD,v.io/x/mojo/tests/server,$@)
 
 gen/go/src/mojom/examples/echo/echo.mojom.go: mojom/mojom/examples/echo.mojom | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,gen,go,--generate-type-info)
 	gofmt -w $@
 
-gen/echo.mojom.dart: mojom/mojom/examples/echo.mojom | mojo-env-check
+.PHONY: gen/echo.mojom.dart
+gen/echo.mojom.dart: dart-examples/echo/lib/gen/dart-gen/mojom/lib/mojo/examples/echo.mojom.dart dart-examples/echo_server/lib/gen/dart-gen/mojom/lib/mojo/examples/echo.mojom.dart | mojo-env-check
+
+dart-examples/echo/lib/gen/dart-gen/mojom/lib/mojo/examples/echo.mojom.dart: mojom/mojom/examples/echo.mojom
 	cd dart-examples/echo && pub get
-	cd dart-examples/echo_server && pub get
 	$(call MOJOM_GEN,$<,mojom,dart-examples/echo/lib/gen,dart,--generate-type-info)
+
+dart-examples/echo_server/lib/gen/dart-gen/mojom/lib/mojo/examples/echo.mojom.dart: mojom/mojom/examples/echo.mojom
+	cd dart-examples/echo_server && pub get
 	$(call MOJOM_GEN,$<,mojom,dart-examples/echo_server/lib/gen,dart,--generate-type-info)
 
 $(BUILD_DIR)/fortune_client.mojo: gen/go/src/mojom/examples/fortune/fortune.mojom.go
@@ -132,22 +166,28 @@ gen/go/src/mojom/examples/fortune/fortune.mojom.go: mojom/mojom/examples/fortune
 	$(call MOJOM_GEN,$<,mojom,gen,go,--generate-type-info)
 	gofmt -w $@
 
-gen/fortune.mojom.dart: mojom/mojom/examples/fortune.mojom | mojo-env-check
+.PHONY: gen/fortune.mojom.dart
+gen/fortune.mojom.dart: dart-examples/fortune/lib/gen/dart-gen/mojom/lib/mojo/examples/fortune.mojom.dart dart-examples/fortune_server/lib/gen/dart-gen/mojom/lib/mojo/examples/fortune.mojom.dart | mojo-env-check
+
+dart-examples/fortune/lib/gen/dart-gen/mojom/lib/mojo/examples/fortune.mojom.dart: mojom/mojom/examples/fortune.mojom
 	cd dart-examples/fortune && pub get
-	cd dart-examples/fortune_server && pub get
 	$(call MOJOM_GEN,$<,mojom,dart-examples/fortune/lib/gen,dart,--generate-type-info)
+
+dart-examples/fortune_server/lib/gen/dart-gen/mojom/lib/mojo/examples/fortune.mojom.dart: mojom/mojom/examples/fortune.mojom
+	cd dart-examples/fortune_server && pub get
 	$(call MOJOM_GEN,$<,mojom,dart-examples/fortune_server/lib/gen,dart,--generate-type-info)
 
-$(BUILD_DIR)/v23clientproxy.mojo: $(shell find $(PWD)/go/src/v.io/x/mojo/proxy/clientproxy -name *.go) gen/go/src/mojom/v23clientproxy/v23clientproxy.mojom.go gen/go/src/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.go | mojo-env-check
+$(BUILD_DIR)/v23clientproxy.mojo: $(shell find $(PWD)/go/src/v.io/x/mojo/proxy/clientproxy -name *.go) gen/go/src/mojom/v23clientproxy/v23clientproxy.mojom.go gen/go/src/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.go gen/v23clientproxy.mojom.dart | mojo-env-check
 	$(call MOGO_BUILD,v.io/x/mojo/proxy/clientproxy,$@)
 
-$(BUILD_DIR)/v23serverproxy.mojo: $(shell find $(PWD)/go/src/v.io/x/mojo/proxy/serverproxy -name *.go) gen/go/src/mojom/v23serverproxy/v23serverproxy.mojom.go | mojo-env-check
+$(BUILD_DIR)/v23serverproxy.mojo: $(shell find $(PWD)/go/src/v.io/x/mojo/proxy/serverproxy -name *.go) gen/go/src/mojom/v23serverproxy/v23serverproxy.mojom.go gen/v23serverproxy.mojom.dart | mojo-env-check
 	$(call MOGO_BUILD,v.io/x/mojo/proxy/serverproxy,$@)
 
 gen/go/src/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.go: mojom/mojo/public/interfaces/bindings/mojom_types.mojom | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,gen,go,--generate-type-info)
 	gofmt -w $@
 
+.PHONY: gen/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.dart
 gen/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.dart: mojom/mojo/public/interfaces/bindings/mojom_types.mojom packages | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,lib/gen,dart,--generate-type-info)
 	# TODO(nlacasse): mojom_bindings_generator creates bad symlinks on dart
@@ -167,6 +207,13 @@ gen/go/src/mojom/tests/end_to_end_test/end_to_end_test.mojom.go: mojom/mojom/tes
 	$(call MOJOM_GEN,$<,mojom,gen,go,--generate-type-info)
 	gofmt -w $@
 
+dart-tests/end_to_end_test/lib/gen/dart-gen/mojom/lib/mojo/v23proxy/tests/end_to_end_test.mojom.dart: mojom/mojom/tests/end_to_end_test.mojom | mojo-env-check
+	cd dart-tests/end_to_end_test && pub get
+	$(call MOJOM_GEN,$<,mojom,dart-tests/end_to_end_test/lib/gen,dart,--generate-type-info)
+	cd dart-tests/end_to_end_test && dartanalyzer lib/client.dart | grep -v "\[warning\] The imported libraries"
+	cd dart-tests/end_to_end_test && dartanalyzer lib/server.dart | grep -v "\[warning\] The imported libraries"
+
+.PHONY: gen/v23clientproxy.mojom.dart
 gen/v23clientproxy.mojom.dart: mojom/mojom/v23clientproxy.mojom packages gen/mojo/public/interfaces/bindings/mojom_types/mojom_types.mojom.dart | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,lib/gen,dart)
 	# TODO(nlacasse): mojom_bindings_generator creates bad symlinks on dart
@@ -174,6 +221,7 @@ gen/v23clientproxy.mojom.dart: mojom/mojom/v23clientproxy.mojom packages gen/moj
 	# See https://github.com/domokit/mojo/issues/386
 	rm -f lib/gen/mojom/$(notdir $@)
 
+.PHONY: gen/v23serverproxy.mojom.dart
 gen/v23serverproxy.mojom.dart: mojom/mojom/v23serverproxy.mojom packages | mojo-env-check
 	$(call MOJOM_GEN,$<,mojom,lib/gen,dart)
 	# TODO(nlacasse): mojom_bindings_generator creates bad symlinks on dart
