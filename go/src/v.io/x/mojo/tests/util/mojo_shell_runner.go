@@ -16,12 +16,11 @@ import (
 	"v.io/jiri/profiles/profilesreader"
 	"v.io/x/lib/cmdline"
 	"v.io/x/lib/envvar"
-	"v.io/x/lib/timing"
 )
 
 func RunMojoShell(mojoUrl, configFile string, configAliases map[string]string, argsFor map[string][]string, target profiles.Target) *exec.Cmd {
 	// ensure the profiles are loaded
-	jirix, err := jiri.NewX(&cmdline.Env{Timer: timing.NewTimer("root")})
+	jirix, err := jiri.NewX(cmdline.EnvFromOS())
 	if err != nil {
 		panic(err)
 	}
@@ -72,7 +71,7 @@ func RunMojoShellForV23ProxyTests(mojoFile, v23ProxyRoot string, args []string) 
 		"V23PROXY_BUILD_DIR": buildDir,
 	}
 	argsFor := map[string][]string{
-		mojoUrl: args,
+		mojoUrl:                     args,
 		"mojo:dart_content_handler": []string{"--enable-strict-mode"},
 	}
 	target := profiles.DefaultTarget()
