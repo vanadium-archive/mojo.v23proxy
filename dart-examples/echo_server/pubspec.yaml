@@ -1,7 +1,7 @@
 author: Vanadium Authors
 description: Echo Server is an example Mojo Dart application that uses the v23proxy.
 homepage: https://github.com/vanadium/mojo.v23proxy
-name: v23proxy-echo-server
+name: v23proxy_echo_server
 version: 0.0.1
 dependencies:
   mojo: '>=0.3.0 <0.4.0'

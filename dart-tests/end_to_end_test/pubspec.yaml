@@ -1,7 +1,7 @@
 author: Vanadium Authors
 description: End To End Test
 homepage: https://github.com/vanadium/mojo.v23proxy
-name: v23proxy-end-to-end-test
+name: v23proxy_end_to_end_test
 version: 0.0.1
 dependencies:
   mojo_sdk: 0.2.15
