@@ -60,6 +60,23 @@ func (AnEnum) __VDLReflect(struct {
 }) {
 }
 
+func (m AnEnum) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+	if err := t.FromEnumLabel(m.String(), __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_AnEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m AnEnum) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m AnEnum) IsZero() bool {
+
+	var1 := (m == AnEnumFirst)
+	return var1
+}
+
 type (
 	// PodUnion represents any single field of the PodUnion union type.
 	PodUnion interface {
@@ -71,6 +88,8 @@ type (
 		Name() string
 		// __VDLReflect describes the PodUnion union type.
 		__VDLReflect(__PodUnionReflect)
+		FillVDLTarget(vdl.Target, *vdl.Type) error
+		IsZero() bool
 	}
 	// PodUnionFInt8 represents field FInt8 of the PodUnion union type.
 	PodUnionFInt8 struct{ Value int8 }
@@ -125,65 +144,495 @@ func (x PodUnionFInt8) Interface() interface{}         { return x.Value }
 func (x PodUnionFInt8) Name() string                   { return "FInt8" }
 func (x PodUnionFInt8) __VDLReflect(__PodUnionReflect) {}
 
+func (m PodUnionFInt8) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_PodUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("FInt8")
+	if err != nil {
+		return err
+	}
+	if err := fieldTarget3.FromInt(int64(m.Value), vdl.Int8Type); err != nil {
+		return err
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m PodUnionFInt8) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m PodUnionFInt8) IsZero() bool {
+
+	var1 := (m == PodUnion(PodUnionFInt8{}))
+	return var1
+}
+
 func (x PodUnionFInt8Other) Index() int                     { return 1 }
 func (x PodUnionFInt8Other) Interface() interface{}         { return x.Value }
 func (x PodUnionFInt8Other) Name() string                   { return "FInt8Other" }
 func (x PodUnionFInt8Other) __VDLReflect(__PodUnionReflect) {}
+
+func (m PodUnionFInt8Other) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_PodUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("FInt8Other")
+	if err != nil {
+		return err
+	}
+	if err := fieldTarget3.FromInt(int64(m.Value), vdl.Int8Type); err != nil {
+		return err
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m PodUnionFInt8Other) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m PodUnionFInt8Other) IsZero() bool {
+
+	var1 := (m == PodUnion(PodUnionFInt8{}))
+	return var1
+}
 
 func (x PodUnionFUint8) Index() int                     { return 2 }
 func (x PodUnionFUint8) Interface() interface{}         { return x.Value }
 func (x PodUnionFUint8) Name() string                   { return "FUint8" }
 func (x PodUnionFUint8) __VDLReflect(__PodUnionReflect) {}
 
+func (m PodUnionFUint8) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_PodUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("FUint8")
+	if err != nil {
+		return err
+	}
+	if err := fieldTarget3.FromUint(uint64(m.Value), vdl.ByteType); err != nil {
+		return err
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m PodUnionFUint8) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m PodUnionFUint8) IsZero() bool {
+
+	var1 := (m == PodUnion(PodUnionFInt8{}))
+	return var1
+}
+
 func (x PodUnionFInt16) Index() int                     { return 3 }
 func (x PodUnionFInt16) Interface() interface{}         { return x.Value }
 func (x PodUnionFInt16) Name() string                   { return "FInt16" }
 func (x PodUnionFInt16) __VDLReflect(__PodUnionReflect) {}
+
+func (m PodUnionFInt16) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_PodUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("FInt16")
+	if err != nil {
+		return err
+	}
+	if err := fieldTarget3.FromInt(int64(m.Value), vdl.Int16Type); err != nil {
+		return err
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m PodUnionFInt16) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m PodUnionFInt16) IsZero() bool {
+
+	var1 := (m == PodUnion(PodUnionFInt8{}))
+	return var1
+}
 
 func (x PodUnionFUint16) Index() int                     { return 4 }
 func (x PodUnionFUint16) Interface() interface{}         { return x.Value }
 func (x PodUnionFUint16) Name() string                   { return "FUint16" }
 func (x PodUnionFUint16) __VDLReflect(__PodUnionReflect) {}
 
+func (m PodUnionFUint16) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_PodUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("FUint16")
+	if err != nil {
+		return err
+	}
+	if err := fieldTarget3.FromUint(uint64(m.Value), vdl.Uint16Type); err != nil {
+		return err
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m PodUnionFUint16) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m PodUnionFUint16) IsZero() bool {
+
+	var1 := (m == PodUnion(PodUnionFInt8{}))
+	return var1
+}
+
 func (x PodUnionFint32) Index() int                     { return 5 }
 func (x PodUnionFint32) Interface() interface{}         { return x.Value }
 func (x PodUnionFint32) Name() string                   { return "Fint32" }
 func (x PodUnionFint32) __VDLReflect(__PodUnionReflect) {}
+
+func (m PodUnionFint32) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_PodUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("Fint32")
+	if err != nil {
+		return err
+	}
+	if err := fieldTarget3.FromInt(int64(m.Value), vdl.Int32Type); err != nil {
+		return err
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m PodUnionFint32) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m PodUnionFint32) IsZero() bool {
+
+	var1 := (m == PodUnion(PodUnionFInt8{}))
+	return var1
+}
 
 func (x PodUnionFuint32) Index() int                     { return 6 }
 func (x PodUnionFuint32) Interface() interface{}         { return x.Value }
 func (x PodUnionFuint32) Name() string                   { return "Fuint32" }
 func (x PodUnionFuint32) __VDLReflect(__PodUnionReflect) {}
 
+func (m PodUnionFuint32) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_PodUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("Fuint32")
+	if err != nil {
+		return err
+	}
+	if err := fieldTarget3.FromUint(uint64(m.Value), vdl.Uint32Type); err != nil {
+		return err
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m PodUnionFuint32) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m PodUnionFuint32) IsZero() bool {
+
+	var1 := (m == PodUnion(PodUnionFInt8{}))
+	return var1
+}
+
 func (x PodUnionFInt64) Index() int                     { return 7 }
 func (x PodUnionFInt64) Interface() interface{}         { return x.Value }
 func (x PodUnionFInt64) Name() string                   { return "FInt64" }
 func (x PodUnionFInt64) __VDLReflect(__PodUnionReflect) {}
+
+func (m PodUnionFInt64) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_PodUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("FInt64")
+	if err != nil {
+		return err
+	}
+	if err := fieldTarget3.FromInt(int64(m.Value), vdl.Int64Type); err != nil {
+		return err
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m PodUnionFInt64) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m PodUnionFInt64) IsZero() bool {
+
+	var1 := (m == PodUnion(PodUnionFInt8{}))
+	return var1
+}
 
 func (x PodUnionFUint64) Index() int                     { return 8 }
 func (x PodUnionFUint64) Interface() interface{}         { return x.Value }
 func (x PodUnionFUint64) Name() string                   { return "FUint64" }
 func (x PodUnionFUint64) __VDLReflect(__PodUnionReflect) {}
 
+func (m PodUnionFUint64) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_PodUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("FUint64")
+	if err != nil {
+		return err
+	}
+	if err := fieldTarget3.FromUint(uint64(m.Value), vdl.Uint64Type); err != nil {
+		return err
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m PodUnionFUint64) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m PodUnionFUint64) IsZero() bool {
+
+	var1 := (m == PodUnion(PodUnionFInt8{}))
+	return var1
+}
+
 func (x PodUnionFFloat) Index() int                     { return 9 }
 func (x PodUnionFFloat) Interface() interface{}         { return x.Value }
 func (x PodUnionFFloat) Name() string                   { return "FFloat" }
 func (x PodUnionFFloat) __VDLReflect(__PodUnionReflect) {}
+
+func (m PodUnionFFloat) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_PodUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("FFloat")
+	if err != nil {
+		return err
+	}
+	if err := fieldTarget3.FromFloat(float64(m.Value), vdl.Float32Type); err != nil {
+		return err
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m PodUnionFFloat) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m PodUnionFFloat) IsZero() bool {
+
+	var1 := (m == PodUnion(PodUnionFInt8{}))
+	return var1
+}
 
 func (x PodUnionFDouble) Index() int                     { return 10 }
 func (x PodUnionFDouble) Interface() interface{}         { return x.Value }
 func (x PodUnionFDouble) Name() string                   { return "FDouble" }
 func (x PodUnionFDouble) __VDLReflect(__PodUnionReflect) {}
 
+func (m PodUnionFDouble) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_PodUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("FDouble")
+	if err != nil {
+		return err
+	}
+	if err := fieldTarget3.FromFloat(float64(m.Value), vdl.Float64Type); err != nil {
+		return err
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m PodUnionFDouble) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m PodUnionFDouble) IsZero() bool {
+
+	var1 := (m == PodUnion(PodUnionFInt8{}))
+	return var1
+}
+
 func (x PodUnionFBool) Index() int                     { return 11 }
 func (x PodUnionFBool) Interface() interface{}         { return x.Value }
 func (x PodUnionFBool) Name() string                   { return "FBool" }
 func (x PodUnionFBool) __VDLReflect(__PodUnionReflect) {}
 
+func (m PodUnionFBool) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_PodUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("FBool")
+	if err != nil {
+		return err
+	}
+	if err := fieldTarget3.FromBool(bool(m.Value), vdl.BoolType); err != nil {
+		return err
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m PodUnionFBool) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m PodUnionFBool) IsZero() bool {
+
+	var1 := (m == PodUnion(PodUnionFInt8{}))
+	return var1
+}
+
 func (x PodUnionFEnum) Index() int                     { return 12 }
 func (x PodUnionFEnum) Interface() interface{}         { return x.Value }
 func (x PodUnionFEnum) Name() string                   { return "FEnum" }
 func (x PodUnionFEnum) __VDLReflect(__PodUnionReflect) {}
+
+func (m PodUnionFEnum) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_PodUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("FEnum")
+	if err != nil {
+		return err
+	}
+
+	if err := m.Value.FillVDLTarget(fieldTarget3, __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_AnEnum); err != nil {
+		return err
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m PodUnionFEnum) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m PodUnionFEnum) IsZero() bool {
+
+	var1 := (m == PodUnion(PodUnionFInt8{}))
+	return var1
+}
 
 type PodUnionWrapper struct {
 	PodUnion PodUnion
@@ -194,6 +643,54 @@ func (PodUnionWrapper) __VDLReflect(struct {
 }) {
 }
 
+func (m *PodUnionWrapper) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	if __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_PodUnionWrapper == nil || __VDLTypetesttypes_test0 == nil {
+		panic("Initialization order error: types generated for FillVDLTarget not initialized. Consider moving caller to an init() block.")
+	}
+	fieldsTarget1, err := t.StartFields(tt)
+	if err != nil {
+		return err
+	}
+
+	var2 := m.PodUnion.IsZero()
+	if !var2 {
+		keyTarget3, fieldTarget4, err := fieldsTarget1.StartField("PodUnion")
+		if err != vdl.ErrFieldNoExist && err != nil {
+			return err
+		}
+		if err != vdl.ErrFieldNoExist {
+
+			unionValue5 := m.PodUnion
+			if unionValue5 == nil {
+				unionValue5 = PodUnionFInt8{}
+			}
+			if err := unionValue5.FillVDLTarget(fieldTarget4, __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_PodUnion); err != nil {
+				return err
+			}
+			if err := fieldsTarget1.FinishField(keyTarget3, fieldTarget4); err != nil {
+				return err
+			}
+		}
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *PodUnionWrapper) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m *PodUnionWrapper) IsZero() bool {
+
+	var1 := (*m == PodUnionWrapper{
+		PodUnion: PodUnionFInt8{},
+	})
+	return var1
+}
+
 type DummyStruct struct {
 	FInt8 int8
 }
@@ -201,6 +698,47 @@ type DummyStruct struct {
 func (DummyStruct) __VDLReflect(struct {
 	Name string `vdl:"src/v.io/x/mojo/transcoder/testtypes.DummyStruct"`
 }) {
+}
+
+func (m *DummyStruct) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	if __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_DummyStruct == nil || __VDLTypetesttypes_test1 == nil {
+		panic("Initialization order error: types generated for FillVDLTarget not initialized. Consider moving caller to an init() block.")
+	}
+	fieldsTarget1, err := t.StartFields(tt)
+	if err != nil {
+		return err
+	}
+
+	var2 := (m.FInt8 == int8(0))
+	if !var2 {
+		keyTarget3, fieldTarget4, err := fieldsTarget1.StartField("FInt8")
+		if err != vdl.ErrFieldNoExist && err != nil {
+			return err
+		}
+		if err != vdl.ErrFieldNoExist {
+			if err := fieldTarget4.FromInt(int64(m.FInt8), vdl.Int8Type); err != nil {
+				return err
+			}
+			if err := fieldsTarget1.FinishField(keyTarget3, fieldTarget4); err != nil {
+				return err
+			}
+		}
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *DummyStruct) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m *DummyStruct) IsZero() bool {
+
+	var1 := (*m == DummyStruct{})
+	return var1
 }
 
 type (
@@ -214,6 +752,8 @@ type (
 		Name() string
 		// __VDLReflect describes the ObjectUnion union type.
 		__VDLReflect(__ObjectUnionReflect)
+		FillVDLTarget(vdl.Target, *vdl.Type) error
+		IsZero() bool
 	}
 	// ObjectUnionFInt8 represents field FInt8 of the ObjectUnion union type.
 	ObjectUnionFInt8 struct{ Value int8 }
@@ -250,35 +790,326 @@ func (x ObjectUnionFInt8) Interface() interface{}            { return x.Value }
 func (x ObjectUnionFInt8) Name() string                      { return "FInt8" }
 func (x ObjectUnionFInt8) __VDLReflect(__ObjectUnionReflect) {}
 
+func (m ObjectUnionFInt8) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_ObjectUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("FInt8")
+	if err != nil {
+		return err
+	}
+	if err := fieldTarget3.FromInt(int64(m.Value), vdl.Int8Type); err != nil {
+		return err
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m ObjectUnionFInt8) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m ObjectUnionFInt8) IsZero() bool {
+
+	var2 := (m.Value == int8(0))
+	return var2
+}
+
 func (x ObjectUnionFString) Index() int                        { return 1 }
 func (x ObjectUnionFString) Interface() interface{}            { return x.Value }
 func (x ObjectUnionFString) Name() string                      { return "FString" }
 func (x ObjectUnionFString) __VDLReflect(__ObjectUnionReflect) {}
+
+func (m ObjectUnionFString) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_ObjectUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("FString")
+	if err != nil {
+		return err
+	}
+	if err := fieldTarget3.FromString(string(m.Value), vdl.StringType); err != nil {
+		return err
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m ObjectUnionFString) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m ObjectUnionFString) IsZero() bool {
+
+	var2 := (m.Value == "")
+	return var2
+}
 
 func (x ObjectUnionFDummy) Index() int                        { return 2 }
 func (x ObjectUnionFDummy) Interface() interface{}            { return x.Value }
 func (x ObjectUnionFDummy) Name() string                      { return "FDummy" }
 func (x ObjectUnionFDummy) __VDLReflect(__ObjectUnionReflect) {}
 
+func (m ObjectUnionFDummy) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_ObjectUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("FDummy")
+	if err != nil {
+		return err
+	}
+
+	if err := m.Value.FillVDLTarget(fieldTarget3, __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_DummyStruct); err != nil {
+		return err
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m ObjectUnionFDummy) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m ObjectUnionFDummy) IsZero() bool {
+
+	var2 := m.Value.IsZero()
+	return var2
+}
+
 func (x ObjectUnionFNullable) Index() int                        { return 3 }
 func (x ObjectUnionFNullable) Interface() interface{}            { return x.Value }
 func (x ObjectUnionFNullable) Name() string                      { return "FNullable" }
 func (x ObjectUnionFNullable) __VDLReflect(__ObjectUnionReflect) {}
+
+func (m ObjectUnionFNullable) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_ObjectUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("FNullable")
+	if err != nil {
+		return err
+	}
+
+	if m.Value == nil {
+		if err := fieldTarget3.FromNil(__VDLTypetesttypes_test1); err != nil {
+			return err
+		}
+	} else {
+		if err := m.Value.FillVDLTarget(fieldTarget3, __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_DummyStruct); err != nil {
+			return err
+		}
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m ObjectUnionFNullable) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m ObjectUnionFNullable) IsZero() bool {
+
+	var2 := (m.Value == (*DummyStruct)(nil))
+	return var2
+}
 
 func (x ObjectUnionFArrayInt8) Index() int                        { return 4 }
 func (x ObjectUnionFArrayInt8) Interface() interface{}            { return x.Value }
 func (x ObjectUnionFArrayInt8) Name() string                      { return "FArrayInt8" }
 func (x ObjectUnionFArrayInt8) __VDLReflect(__ObjectUnionReflect) {}
 
+func (m ObjectUnionFArrayInt8) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_ObjectUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("FArrayInt8")
+	if err != nil {
+		return err
+	}
+
+	listTarget4, err := fieldTarget3.StartList(__VDLTypetesttypes_test2, len(m.Value))
+	if err != nil {
+		return err
+	}
+	for i, elem6 := range m.Value {
+		elemTarget5, err := listTarget4.StartElem(i)
+		if err != nil {
+			return err
+		}
+		if err := elemTarget5.FromInt(int64(elem6), vdl.Int8Type); err != nil {
+			return err
+		}
+		if err := listTarget4.FinishElem(elemTarget5); err != nil {
+			return err
+		}
+	}
+	if err := fieldTarget3.FinishList(listTarget4); err != nil {
+		return err
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m ObjectUnionFArrayInt8) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m ObjectUnionFArrayInt8) IsZero() bool {
+
+	var var2 bool
+	if len(m.Value) == 0 {
+		var2 = true
+	}
+	return var2
+}
+
 func (x ObjectUnionFMapInt8) Index() int                        { return 5 }
 func (x ObjectUnionFMapInt8) Interface() interface{}            { return x.Value }
 func (x ObjectUnionFMapInt8) Name() string                      { return "FMapInt8" }
 func (x ObjectUnionFMapInt8) __VDLReflect(__ObjectUnionReflect) {}
 
+func (m ObjectUnionFMapInt8) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_ObjectUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("FMapInt8")
+	if err != nil {
+		return err
+	}
+
+	mapTarget4, err := fieldTarget3.StartMap(__VDLTypetesttypes_test3, len(m.Value))
+	if err != nil {
+		return err
+	}
+	for key6, value8 := range m.Value {
+		keyTarget5, err := mapTarget4.StartKey()
+		if err != nil {
+			return err
+		}
+		if err := keyTarget5.FromString(string(key6), vdl.StringType); err != nil {
+			return err
+		}
+		valueTarget7, err := mapTarget4.FinishKeyStartField(keyTarget5)
+		if err != nil {
+			return err
+		}
+		if err := valueTarget7.FromInt(int64(value8), vdl.Int8Type); err != nil {
+			return err
+		}
+		if err := mapTarget4.FinishField(keyTarget5, valueTarget7); err != nil {
+			return err
+		}
+	}
+	if err := fieldTarget3.FinishMap(mapTarget4); err != nil {
+		return err
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m ObjectUnionFMapInt8) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m ObjectUnionFMapInt8) IsZero() bool {
+
+	var var2 bool
+	if len(m.Value) == 0 {
+		var2 = true
+	}
+	return var2
+}
+
 func (x ObjectUnionFPodUnion) Index() int                        { return 6 }
 func (x ObjectUnionFPodUnion) Interface() interface{}            { return x.Value }
 func (x ObjectUnionFPodUnion) Name() string                      { return "FPodUnion" }
 func (x ObjectUnionFPodUnion) __VDLReflect(__ObjectUnionReflect) {}
+
+func (m ObjectUnionFPodUnion) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	fieldsTarget1, err := t.StartFields(__VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_ObjectUnion)
+	if err != nil {
+		return err
+	}
+	keyTarget2, fieldTarget3, err := fieldsTarget1.StartField("FPodUnion")
+	if err != nil {
+		return err
+	}
+
+	unionValue4 := m.Value
+	if unionValue4 == nil {
+		unionValue4 = PodUnionFInt8{}
+	}
+	if err := unionValue4.FillVDLTarget(fieldTarget3, __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_PodUnion); err != nil {
+		return err
+	}
+	if err := fieldsTarget1.FinishField(keyTarget2, fieldTarget3); err != nil {
+		return err
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m ObjectUnionFPodUnion) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m ObjectUnionFPodUnion) IsZero() bool {
+
+	var2 := m.Value.IsZero()
+	return var2
+}
 
 type ObjectUnionWrapper struct {
 	ObjectUnion ObjectUnion
@@ -287,6 +1118,54 @@ type ObjectUnionWrapper struct {
 func (ObjectUnionWrapper) __VDLReflect(struct {
 	Name string `vdl:"src/v.io/x/mojo/transcoder/testtypes.ObjectUnionWrapper"`
 }) {
+}
+
+func (m *ObjectUnionWrapper) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	if __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_ObjectUnionWrapper == nil || __VDLTypetesttypes_test4 == nil {
+		panic("Initialization order error: types generated for FillVDLTarget not initialized. Consider moving caller to an init() block.")
+	}
+	fieldsTarget1, err := t.StartFields(tt)
+	if err != nil {
+		return err
+	}
+
+	var2 := m.ObjectUnion.IsZero()
+	if !var2 {
+		keyTarget3, fieldTarget4, err := fieldsTarget1.StartField("ObjectUnion")
+		if err != vdl.ErrFieldNoExist && err != nil {
+			return err
+		}
+		if err != vdl.ErrFieldNoExist {
+
+			unionValue5 := m.ObjectUnion
+			if unionValue5 == nil {
+				unionValue5 = ObjectUnionFInt8{}
+			}
+			if err := unionValue5.FillVDLTarget(fieldTarget4, __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_ObjectUnion); err != nil {
+				return err
+			}
+			if err := fieldsTarget1.FinishField(keyTarget3, fieldTarget4); err != nil {
+				return err
+			}
+		}
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ObjectUnionWrapper) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m *ObjectUnionWrapper) IsZero() bool {
+
+	var1 := true
+	var2 := m.ObjectUnion.IsZero()
+	var1 = var1 && var2
+	return var1
 }
 
 type Rect struct {
@@ -299,6 +1178,92 @@ type Rect struct {
 func (Rect) __VDLReflect(struct {
 	Name string `vdl:"src/v.io/x/mojo/transcoder/testtypes.Rect"`
 }) {
+}
+
+func (m *Rect) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	if __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_Rect == nil || __VDLTypetesttypes_test5 == nil {
+		panic("Initialization order error: types generated for FillVDLTarget not initialized. Consider moving caller to an init() block.")
+	}
+	fieldsTarget1, err := t.StartFields(tt)
+	if err != nil {
+		return err
+	}
+
+	var2 := (m.X == int32(0))
+	if !var2 {
+		keyTarget3, fieldTarget4, err := fieldsTarget1.StartField("X")
+		if err != vdl.ErrFieldNoExist && err != nil {
+			return err
+		}
+		if err != vdl.ErrFieldNoExist {
+			if err := fieldTarget4.FromInt(int64(m.X), vdl.Int32Type); err != nil {
+				return err
+			}
+			if err := fieldsTarget1.FinishField(keyTarget3, fieldTarget4); err != nil {
+				return err
+			}
+		}
+	}
+	var5 := (m.Y == int32(0))
+	if !var5 {
+		keyTarget6, fieldTarget7, err := fieldsTarget1.StartField("Y")
+		if err != vdl.ErrFieldNoExist && err != nil {
+			return err
+		}
+		if err != vdl.ErrFieldNoExist {
+			if err := fieldTarget7.FromInt(int64(m.Y), vdl.Int32Type); err != nil {
+				return err
+			}
+			if err := fieldsTarget1.FinishField(keyTarget6, fieldTarget7); err != nil {
+				return err
+			}
+		}
+	}
+	var8 := (m.Width == int32(0))
+	if !var8 {
+		keyTarget9, fieldTarget10, err := fieldsTarget1.StartField("Width")
+		if err != vdl.ErrFieldNoExist && err != nil {
+			return err
+		}
+		if err != vdl.ErrFieldNoExist {
+			if err := fieldTarget10.FromInt(int64(m.Width), vdl.Int32Type); err != nil {
+				return err
+			}
+			if err := fieldsTarget1.FinishField(keyTarget9, fieldTarget10); err != nil {
+				return err
+			}
+		}
+	}
+	var11 := (m.Height == int32(0))
+	if !var11 {
+		keyTarget12, fieldTarget13, err := fieldsTarget1.StartField("Height")
+		if err != vdl.ErrFieldNoExist && err != nil {
+			return err
+		}
+		if err != vdl.ErrFieldNoExist {
+			if err := fieldTarget13.FromInt(int64(m.Height), vdl.Int32Type); err != nil {
+				return err
+			}
+			if err := fieldsTarget1.FinishField(keyTarget12, fieldTarget13); err != nil {
+				return err
+			}
+		}
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Rect) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m *Rect) IsZero() bool {
+
+	var1 := (*m == Rect{})
+	return var1
 }
 
 type MultiVersionStruct struct {
@@ -315,6 +1280,158 @@ func (MultiVersionStruct) __VDLReflect(struct {
 }) {
 }
 
+func (m *MultiVersionStruct) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	if __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_MultiVersionStruct == nil || __VDLTypetesttypes_test6 == nil {
+		panic("Initialization order error: types generated for FillVDLTarget not initialized. Consider moving caller to an init() block.")
+	}
+	fieldsTarget1, err := t.StartFields(tt)
+	if err != nil {
+		return err
+	}
+
+	var2 := (m.FInt32 == int32(0))
+	if !var2 {
+		keyTarget3, fieldTarget4, err := fieldsTarget1.StartField("FInt32")
+		if err != vdl.ErrFieldNoExist && err != nil {
+			return err
+		}
+		if err != vdl.ErrFieldNoExist {
+			if err := fieldTarget4.FromInt(int64(m.FInt32), vdl.Int32Type); err != nil {
+				return err
+			}
+			if err := fieldsTarget1.FinishField(keyTarget3, fieldTarget4); err != nil {
+				return err
+			}
+		}
+	}
+	var5 := m.FRect.IsZero()
+	if !var5 {
+		keyTarget6, fieldTarget7, err := fieldsTarget1.StartField("FRect")
+		if err != vdl.ErrFieldNoExist && err != nil {
+			return err
+		}
+		if err != vdl.ErrFieldNoExist {
+
+			if err := m.FRect.FillVDLTarget(fieldTarget7, __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_Rect); err != nil {
+				return err
+			}
+			if err := fieldsTarget1.FinishField(keyTarget6, fieldTarget7); err != nil {
+				return err
+			}
+		}
+	}
+	var8 := (m.FString == "")
+	if !var8 {
+		keyTarget9, fieldTarget10, err := fieldsTarget1.StartField("FString")
+		if err != vdl.ErrFieldNoExist && err != nil {
+			return err
+		}
+		if err != vdl.ErrFieldNoExist {
+			if err := fieldTarget10.FromString(string(m.FString), vdl.StringType); err != nil {
+				return err
+			}
+			if err := fieldsTarget1.FinishField(keyTarget9, fieldTarget10); err != nil {
+				return err
+			}
+		}
+	}
+	var var11 bool
+	if len(m.FArray) == 0 {
+		var11 = true
+	}
+	if !var11 {
+		keyTarget12, fieldTarget13, err := fieldsTarget1.StartField("FArray")
+		if err != vdl.ErrFieldNoExist && err != nil {
+			return err
+		}
+		if err != vdl.ErrFieldNoExist {
+
+			listTarget14, err := fieldTarget13.StartList(__VDLTypetesttypes_test2, len(m.FArray))
+			if err != nil {
+				return err
+			}
+			for i, elem16 := range m.FArray {
+				elemTarget15, err := listTarget14.StartElem(i)
+				if err != nil {
+					return err
+				}
+				if err := elemTarget15.FromInt(int64(elem16), vdl.Int8Type); err != nil {
+					return err
+				}
+				if err := listTarget14.FinishElem(elemTarget15); err != nil {
+					return err
+				}
+			}
+			if err := fieldTarget13.FinishList(listTarget14); err != nil {
+				return err
+			}
+			if err := fieldsTarget1.FinishField(keyTarget12, fieldTarget13); err != nil {
+				return err
+			}
+		}
+	}
+	var17 := (m.FBool == false)
+	if !var17 {
+		keyTarget18, fieldTarget19, err := fieldsTarget1.StartField("FBool")
+		if err != vdl.ErrFieldNoExist && err != nil {
+			return err
+		}
+		if err != vdl.ErrFieldNoExist {
+			if err := fieldTarget19.FromBool(bool(m.FBool), vdl.BoolType); err != nil {
+				return err
+			}
+			if err := fieldsTarget1.FinishField(keyTarget18, fieldTarget19); err != nil {
+				return err
+			}
+		}
+	}
+	var20 := (m.FInt16 == int16(0))
+	if !var20 {
+		keyTarget21, fieldTarget22, err := fieldsTarget1.StartField("FInt16")
+		if err != vdl.ErrFieldNoExist && err != nil {
+			return err
+		}
+		if err != vdl.ErrFieldNoExist {
+			if err := fieldTarget22.FromInt(int64(m.FInt16), vdl.Int16Type); err != nil {
+				return err
+			}
+			if err := fieldsTarget1.FinishField(keyTarget21, fieldTarget22); err != nil {
+				return err
+			}
+		}
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MultiVersionStruct) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m *MultiVersionStruct) IsZero() bool {
+
+	var1 := true
+	var2 := (m.FInt32 == int32(0))
+	var1 = var1 && var2
+	var3 := m.FRect.IsZero()
+	var1 = var1 && var3
+	var4 := (m.FString == "")
+	var1 = var1 && var4
+	var var5 bool
+	if len(m.FArray) == 0 {
+		var5 = true
+	}
+	var1 = var1 && var5
+	var6 := (m.FBool == false)
+	var1 = var1 && var6
+	var7 := (m.FInt16 == int16(0))
+	var1 = var1 && var7
+	return var1
+}
+
 type MultiVersionStructV3 struct {
 	FInt32  int32
 	FRect   Rect
@@ -324,6 +1441,78 @@ type MultiVersionStructV3 struct {
 func (MultiVersionStructV3) __VDLReflect(struct {
 	Name string `vdl:"src/v.io/x/mojo/transcoder/testtypes.MultiVersionStructV3"`
 }) {
+}
+
+func (m *MultiVersionStructV3) FillVDLTarget(t vdl.Target, tt *vdl.Type) error {
+
+	if __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_MultiVersionStructV3 == nil || __VDLTypetesttypes_test7 == nil {
+		panic("Initialization order error: types generated for FillVDLTarget not initialized. Consider moving caller to an init() block.")
+	}
+	fieldsTarget1, err := t.StartFields(tt)
+	if err != nil {
+		return err
+	}
+
+	var2 := (m.FInt32 == int32(0))
+	if !var2 {
+		keyTarget3, fieldTarget4, err := fieldsTarget1.StartField("FInt32")
+		if err != vdl.ErrFieldNoExist && err != nil {
+			return err
+		}
+		if err != vdl.ErrFieldNoExist {
+			if err := fieldTarget4.FromInt(int64(m.FInt32), vdl.Int32Type); err != nil {
+				return err
+			}
+			if err := fieldsTarget1.FinishField(keyTarget3, fieldTarget4); err != nil {
+				return err
+			}
+		}
+	}
+	var5 := m.FRect.IsZero()
+	if !var5 {
+		keyTarget6, fieldTarget7, err := fieldsTarget1.StartField("FRect")
+		if err != vdl.ErrFieldNoExist && err != nil {
+			return err
+		}
+		if err != vdl.ErrFieldNoExist {
+
+			if err := m.FRect.FillVDLTarget(fieldTarget7, __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_Rect); err != nil {
+				return err
+			}
+			if err := fieldsTarget1.FinishField(keyTarget6, fieldTarget7); err != nil {
+				return err
+			}
+		}
+	}
+	var8 := (m.FString == "")
+	if !var8 {
+		keyTarget9, fieldTarget10, err := fieldsTarget1.StartField("FString")
+		if err != vdl.ErrFieldNoExist && err != nil {
+			return err
+		}
+		if err != vdl.ErrFieldNoExist {
+			if err := fieldTarget10.FromString(string(m.FString), vdl.StringType); err != nil {
+				return err
+			}
+			if err := fieldsTarget1.FinishField(keyTarget9, fieldTarget10); err != nil {
+				return err
+			}
+		}
+	}
+	if err := t.FinishFields(fieldsTarget1); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *MultiVersionStructV3) MakeVDLTarget() vdl.Target {
+	return nil
+}
+
+func (m *MultiVersionStructV3) IsZero() bool {
+
+	var1 := (*m == MultiVersionStructV3{})
+	return var1
 }
 
 func init() {
@@ -336,4 +1525,29 @@ func init() {
 	vdl.Register((*Rect)(nil))
 	vdl.Register((*MultiVersionStruct)(nil))
 	vdl.Register((*MultiVersionStructV3)(nil))
+}
+
+var __VDLTypetesttypes_test1 *vdl.Type = vdl.TypeOf((*DummyStruct)(nil))
+var __VDLTypetesttypes_test6 *vdl.Type = vdl.TypeOf((*MultiVersionStruct)(nil))
+var __VDLTypetesttypes_test7 *vdl.Type = vdl.TypeOf((*MultiVersionStructV3)(nil))
+var __VDLTypetesttypes_test4 *vdl.Type = vdl.TypeOf((*ObjectUnionWrapper)(nil))
+var __VDLTypetesttypes_test0 *vdl.Type = vdl.TypeOf((*PodUnionWrapper)(nil))
+var __VDLTypetesttypes_test5 *vdl.Type = vdl.TypeOf((*Rect)(nil))
+var __VDLTypetesttypes_test2 *vdl.Type = vdl.TypeOf([]int8(nil))
+var __VDLTypetesttypes_test3 *vdl.Type = vdl.TypeOf(map[string]int8(nil))
+var __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_AnEnum *vdl.Type = vdl.TypeOf(AnEnumFirst)
+var __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_DummyStruct *vdl.Type = vdl.TypeOf(DummyStruct{})
+var __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_MultiVersionStruct *vdl.Type = vdl.TypeOf(MultiVersionStruct{})
+var __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_MultiVersionStructV3 *vdl.Type = vdl.TypeOf(MultiVersionStructV3{})
+var __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_ObjectUnion *vdl.Type = vdl.TypeOf(ObjectUnion(ObjectUnionFInt8{}))
+var __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_ObjectUnionWrapper *vdl.Type = vdl.TypeOf(ObjectUnionWrapper{
+	ObjectUnion: ObjectUnionFInt8{},
+})
+var __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_PodUnion *vdl.Type = vdl.TypeOf(PodUnion(PodUnionFInt8{}))
+var __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_PodUnionWrapper *vdl.Type = vdl.TypeOf(PodUnionWrapper{
+	PodUnion: PodUnionFInt8{},
+})
+var __VDLType_testtypes_test_src_v_io_x_mojo_transcoder_testtypes_Rect *vdl.Type = vdl.TypeOf(Rect{})
+
+func __VDLEnsureNativeBuilt_testtypes_test() {
 }
