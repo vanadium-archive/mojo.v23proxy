@@ -17,13 +17,13 @@ import (
 func TestVdlAndMojoTypeConversion(t *testing.T) {
 	// Create types.
 	enumType := vdl.NamedType("v23proxy/tests/transcoder_testcases.TestEnum", vdl.EnumType("A", "B", "C"))
-	basicStructType := vdl.NamedType("v23proxy/tests/transcoder_testcases.TestBasicStruct", vdl.StructType(vdl.Field{"TestEnum", enumType}, vdl.Field{"A", vdl.Int32Type}))
+	basicStructType := vdl.NamedType("v23proxy/tests/transcoder_testcases.TestBasicStruct", vdl.StructType(vdl.Field{"Enum", enumType}, vdl.Field{"A", vdl.Int32Type}))
 
 	builder := vdl.TypeBuilder{}
 	strct := builder.Struct()
-	strct.AppendField("TestEnum", enumType)
+	strct.AppendField("Enum", enumType)
 	namedStruct := builder.Named("v23proxy/tests/transcoder_testcases.TestCyclicStruct").AssignBase(strct)
-	strct.AppendField("TestCyclicStruct", builder.Optional().AssignElem(namedStruct))
+	strct.AppendField("CyclicStruct", builder.Optional().AssignElem(namedStruct))
 	strct.AppendField("A", vdl.Int32Type)
 	builder.Build()
 	cyclicStructType, err := namedStruct.Built()
@@ -117,36 +117,47 @@ func TestVdlAndMojoTypeConversion(t *testing.T) {
 		// ?map[int64]bool is currently disallowed in vdl, so skipping
 		{
 			enumType,
-			&mojom_types.TypeTypeReference{mojom_types.TypeReference{Nullable: false, TypeKey: stringPtr("transcoder_testcases_TestEnum__")}},
+			&mojom_types.TypeTypeReference{mojom_types.TypeReference{Nullable: false, TypeKey: stringPtr("TYPE_KEY:v23proxy.tests.transcoder_testcases.TestEnum")}},
 			map[string]mojom_types.UserDefinedType{
-				"transcoder_testcases_TestEnum__": transcoder_testcases.GetAllMojomTypeDefinitions()["transcoder_testcases_TestEnum__"],
+				"TYPE_KEY:v23proxy.tests.transcoder_testcases.TestEnum": transcoder_testcases.GetAllMojomTypeDefinitions()["TYPE_KEY:v23proxy.tests.transcoder_testcases.TestEnum"],
 			},
 		},
 		{
 			basicStructType,
-			&mojom_types.TypeTypeReference{mojom_types.TypeReference{Nullable: false, TypeKey: stringPtr("transcoder_testcases_TestBasicStruct__")}},
+			&mojom_types.TypeTypeReference{mojom_types.TypeReference{Nullable: false, TypeKey: stringPtr("TYPE_KEY:v23proxy.tests.transcoder_testcases.TestBasicStruct")}},
 			map[string]mojom_types.UserDefinedType{
-				"transcoder_testcases_TestBasicStruct__": transcoder_testcases.GetAllMojomTypeDefinitions()["transcoder_testcases_TestBasicStruct__"],
-				"transcoder_testcases_TestEnum__":        transcoder_testcases.GetAllMojomTypeDefinitions()["transcoder_testcases_TestEnum__"],
+				"TYPE_KEY:v23proxy.tests.transcoder_testcases.TestBasicStruct": transcoder_testcases.GetAllMojomTypeDefinitions()["TYPE_KEY:v23proxy.tests.transcoder_testcases.TestBasicStruct"],
+				"TYPE_KEY:v23proxy.tests.transcoder_testcases.TestEnum":        transcoder_testcases.GetAllMojomTypeDefinitions()["TYPE_KEY:v23proxy.tests.transcoder_testcases.TestEnum"],
 			},
 		},
 		{
 			cyclicStructType,
-			&mojom_types.TypeTypeReference{mojom_types.TypeReference{Nullable: false, TypeKey: stringPtr("transcoder_testcases_TestCyclicStruct__")}},
+			&mojom_types.TypeTypeReference{mojom_types.TypeReference{Nullable: false, TypeKey: stringPtr("TYPE_KEY:v23proxy.tests.transcoder_testcases.TestCyclicStruct")}},
 			map[string]mojom_types.UserDefinedType{
-				"transcoder_testcases_TestCyclicStruct__": transcoder_testcases.GetAllMojomTypeDefinitions()["transcoder_testcases_TestCyclicStruct__"],
-				"transcoder_testcases_TestEnum__":         transcoder_testcases.GetAllMojomTypeDefinitions()["transcoder_testcases_TestEnum__"],
+				"TYPE_KEY:v23proxy.tests.transcoder_testcases.TestCyclicStruct": transcoder_testcases.GetAllMojomTypeDefinitions()["TYPE_KEY:v23proxy.tests.transcoder_testcases.TestCyclicStruct"],
+				"TYPE_KEY:v23proxy.tests.transcoder_testcases.TestEnum":         transcoder_testcases.GetAllMojomTypeDefinitions()["TYPE_KEY:v23proxy.tests.transcoder_testcases.TestEnum"],
 			},
 		},
 	}
 
 	for _, test := range tests {
 		mojomtype, mp := transcoder.VDLToMojomType(test.vdl)
+
+		// Note: Equality is only guaranteed if the casing matches up. Mojom no longer sends out UpperCamelCase values.
 		if !reflect.DeepEqual(mojomtype, test.mojom) {
 			t.Errorf("vdl type %v, when converted to mojo type was %#v. expected %#v", test.vdl, mojomtype, test.mojom)
 		}
-		if !reflect.DeepEqual(mp, test.mp) {
-			t.Errorf("vdl type %v, when converted to mojo type did not match expected user defined types. got %#v, expected %#v", test.vdl, mojomtype, test.mojom)
+		// Note: Equality of structs is virtually impossible. The DeclarationData of the values in the map contains lots of information we cannot recover from vdl.
+		//if !reflect.DeepEqual(mp, test.mp) {
+		//	t.Errorf("vdl type %v, when converted to mojo type did not match expected user defined types. got %#v, expected %#v", test.vdl, mp, test.mp)
+		//}
+		for k, _ := range test.mp {
+			if _, ok := mp[k]; !ok {
+				t.Errorf("vdl type %v, when converted to mojo type did not create an entry for %s", test.vdl, k)
+			}
+		}
+		if len(mp) != len(test.mp) {
+			t.Errorf("vdl type %v, when converted to mojo type created %d map entries, expected %d", test.vdl, len(mp), len(test.mp))
 		}
 
 		vt, err := transcoder.MojomToVDLType(test.mojom, test.mp)

@@ -44,14 +44,14 @@ enum TestEnum {
 };
 
 struct TestBasicStruct {
-  TestEnum testEnum;
-  int32 a;
+  TestEnum Enum;
+  int32 A;
 };
 
 struct TestCyclicStruct {
-    TestEnum testEnum;
-    TestCyclicStruct? testCyclicStruct;
-    int32 a;
+    TestEnum Enum;
+    TestCyclicStruct? CyclicStruct;
+    int32 A;
 };
 
 

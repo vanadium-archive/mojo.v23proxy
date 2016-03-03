@@ -4,7 +4,7 @@ homepage: https://github.com/vanadium/mojo.v23proxy
 name: v23proxy_end_to_end_test
 version: 0.0.1
 dependencies:
-  mojo_sdk: 0.2.15
+  mojo_sdk: 0.2.16
   v23proxy: '>=0.0.1'
 environment:
   sdk: '>=1.12.0 <2.0.0'

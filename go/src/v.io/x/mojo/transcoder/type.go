@@ -7,11 +7,22 @@ package transcoder
 import (
 	"fmt"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"mojo/public/interfaces/bindings/mojom_types"
 
 	"v.io/v23/vdl"
 )
+
+// upperCamelCase converts thisString to ThisString.
+func upperCamelCase(s string) string {
+	if s == "" {
+		return ""
+	}
+	r, n := utf8.DecodeRuneInString(s)
+	return string(unicode.ToUpper(r)) + s[n:]
+}
 
 func MojomStructToVDLType(ms mojom_types.MojomStruct, mp map[string]mojom_types.UserDefinedType) (*vdl.Type, error) {
 	builder := &vdl.TypeBuilder{}
@@ -35,10 +46,14 @@ func MojomToVDLType(mt mojom_types.Type, mp map[string]mojom_types.UserDefinedTy
 
 func mojomStructToVDLType(typeKey string, ms mojom_types.MojomStruct, mp map[string]mojom_types.UserDefinedType, builder *vdl.TypeBuilder, pendingUdts map[string]vdl.TypeOrPending) (vt vdl.PendingType) {
 	strct := builder.Struct()
-	vt = builder.Named(mojomToVdlPath(*ms.DeclData.FullIdentifier)).AssignBase(strct)
+	if ms.DeclData.FullIdentifier != nil {
+		vt = builder.Named(mojomToVdlPath(*ms.DeclData.FullIdentifier)).AssignBase(strct)
+	} else {
+		vt = strct
+	}
 	pendingUdts[typeKey] = vt
 	for _, mfield := range ms.Fields {
-		strct.AppendField(*mfield.DeclData.ShortName, mojomToVDLType(mfield.Type, mp, builder, pendingUdts))
+		strct.AppendField(upperCamelCase(*mfield.DeclData.ShortName), mojomToVDLType(mfield.Type, mp, builder, pendingUdts))
 	}
 	return
 }
@@ -54,7 +69,7 @@ func mojomToVDLTypeUDT(typeKey string, udt mojom_types.UserDefinedType, mp map[s
 		for _, ev := range me.Values { // per EnumValue...
 			// EnumValue has DeclData, EnumTypeKey, and IntValue.
 			// We just need the first and last.
-			labels[int(ev.IntValue)] = *ev.DeclData.ShortName
+			labels[int(ev.IntValue)] = upperCamelCase(*ev.DeclData.ShortName)
 		}
 
 		vt = vdl.NamedType(mojomToVdlPath(*me.DeclData.FullIdentifier), vdl.EnumType(labels...))
@@ -68,7 +83,7 @@ func mojomToVDLTypeUDT(typeKey string, udt mojom_types.UserDefinedType, mp map[s
 		vt = builder.Named(mojomToVdlPath(*mu.DeclData.FullIdentifier)).AssignBase(union)
 		pendingUdts[typeKey] = vt
 		for _, mfield := range mu.Fields {
-			union = union.AppendField(*mfield.DeclData.ShortName, mojomToVDLType(mfield.Type, mp, builder, pendingUdts))
+			union = union.AppendField(upperCamelCase(*mfield.DeclData.ShortName), mojomToVDLType(mfield.Type, mp, builder, pendingUdts))
 		}
 	case *mojom_types.UserDefinedTypeInterfaceType: // interface
 		panic("interfaces don't exist in vdl")
@@ -352,9 +367,7 @@ func strPtr(x string) *string {
 // mojomTypeKey creates a key from the vdl type's name that matches the generator's key.
 // The reason for exactly matching the generator is to simplify the tests.
 func mojomTypeKey(t *vdl.Type) string {
-	pkgPath, name := vdl.SplitIdent(t.Name())
-	pathComponents := strings.Split(pkgPath, "/")
-	return fmt.Sprintf("%s_%s__", pathComponents[len(pathComponents)-1], name)
+	return fmt.Sprintf("TYPE_KEY:%s", mojomIdentifier(t))
 }
 
 func mojomIdentifier(t *vdl.Type) string {

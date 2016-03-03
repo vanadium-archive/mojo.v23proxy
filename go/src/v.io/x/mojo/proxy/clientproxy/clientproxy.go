@@ -18,10 +18,10 @@ import (
 	"v.io/v23/context"
 	"v.io/v23/options"
 	"v.io/v23/security"
+	"v.io/v23/vom"
 	"v.io/x/mojo/proxy/util"
 	"v.io/x/mojo/transcoder"
 	_ "v.io/x/ref/runtime/factories/roaming"
-	"v.io/v23/vom"
 )
 
 //#include "mojo/public/c/system/types.h"
@@ -148,7 +148,6 @@ func (s *messageReceiver) Accept(message *bindings.Message) (err error) {
 
 func (s *messageReceiver) call(name, method string, value []byte, inParamsType mojom_types.MojomStruct, outParamsType *mojom_types.MojomStruct) ([]byte, error) {
 	s.ctx.Infof("server: %s.%s: %#v", name, method, inParamsType)
-
 	inVType, err := transcoder.MojomStructToVDLType(inParamsType, s.header.desc)
 	if err != nil {
 		return nil, err
