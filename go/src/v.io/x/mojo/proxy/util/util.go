@@ -64,7 +64,7 @@ func JoinRawBytesAsStruct(targ vdl.Target, structType *vdl.Type, fields []*vom.R
 		if err != nil {
 			return err
 		}
-		if err := fields[i].FillVDLTarget(t); err != nil {
+		if err := fields[i].FillVDLTarget(t, f.Type); err != nil {
 			return err
 		}
 		if err := st.FinishField(k, t); err != nil {
