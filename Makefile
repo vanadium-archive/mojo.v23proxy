@@ -68,10 +68,10 @@ test: test-unit test-integration
 .PHONY: benchmark
 benchmark: mock packages $(BUILD_DIR)/test_client.mojo $(BUILD_DIR)/test_server.mojo $(BUILD_DIR)/v23clientproxy.mojo $(BUILD_DIR)/v23serverproxy.mojo
 	$(call MOGO_TEST,-bench . -run XXX v.io/x/mojo/transcoder/internal) || ($(MAKE) unmock && exit 1)
-	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -bench || ($(MAKE) unmock && exit 1)
-	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -bench -client dart || ($(MAKE) unmock && exit 1)
-	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -bench -server dart || ($(MAKE) unmock && exit 1)
-	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -bench -client dart -server dart || ($(MAKE) unmock && exit 1)
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -bench || ($(MAKE) unmock && exit 1)
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,v23:dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -bench -client dart || ($(MAKE) unmock && exit 1)
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,v23:dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -bench -server dart || ($(MAKE) unmock && exit 1)
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,v23:dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -bench -client dart -server dart || ($(MAKE) unmock && exit 1)
 	$(MAKE) unmock
 
 .PHONY: mock
@@ -129,10 +129,10 @@ $(BUILD_DIR)/echo_server.mojo: gen/go/src/mojom/examples/echo/echo.mojom.go
 
 .PHONY: test-integration
 test-integration: mock packages $(BUILD_DIR)/test_client.mojo $(BUILD_DIR)/test_server.mojo $(BUILD_DIR)/v23clientproxy.mojo $(BUILD_DIR)/v23serverproxy.mojo
-	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go || ($(MAKE) unmock && exit 1)
-	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -client dart || ($(MAKE) unmock && exit 1)
-	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -server dart || ($(MAKE) unmock && exit 1)
-	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=base,dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -client dart -server dart || ($(MAKE) unmock && exit 1)
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go || ($(MAKE) unmock && exit 1)
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,v23:dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -client dart || ($(MAKE) unmock && exit 1)
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,v23:dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -server dart || ($(MAKE) unmock && exit 1)
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,v23:dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -client dart -server dart || ($(MAKE) unmock && exit 1)
 	$(MAKE) unmock
 
 $(BUILD_DIR)/test_client.mojo: go/src/v.io/x/mojo/tests/client/test_client.go gen/go/src/mojom/tests/end_to_end_test/end_to_end_test.mojom.go dart-tests/end_to_end_test/lib/gen/dart-gen/mojom/lib/mojo/v23proxy/tests/end_to_end_test.mojom.dart gen/go/src/mojom/v23clientproxy/v23clientproxy.mojom.go
