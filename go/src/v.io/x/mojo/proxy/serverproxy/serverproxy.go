@@ -23,10 +23,10 @@ import (
 	"v.io/v23/security"
 	"v.io/v23/vdl"
 	"v.io/v23/vdlroot/signature"
+	"v.io/v23/vom"
 	"v.io/x/mojo/proxy/util"
 	"v.io/x/mojo/transcoder"
-	_ "v.io/x/ref/runtime/factories/roaming"
-	"v.io/v23/vom"
+	"v.io/x/ref/runtime/factories/roaming"
 )
 
 //#include "mojo/public/c/system/types.h"
@@ -262,7 +262,6 @@ func (fs fakeService) callRemoteMethod(ctx *context.T, method string, mi mojom_t
 	return target.Fields(), nil
 }
 
-
 func encodeMessageFromVom(header bindings.MessageHeader, argptrs []interface{}, t *vdl.Type) (*bindings.Message, error) {
 	// Convert argptrs into their true form: []*vom.RawBytes
 	inargs := make([]*vom.RawBytes, len(argptrs))
@@ -336,7 +335,8 @@ func (delegate *delegate) Initialize(context application.Context) {
 	// Start up v23 whenever a v23proxy is begun.
 	// This is done regardless of whether we are initializing this v23proxy for use
 	// as a client or as a server.
-	ctx, shutdown := v23.Init(context)
+	roaming.SetArgs(context)
+	ctx, shutdown := v23.Init()
 	delegate.ctx = ctx
 	delegate.shutdown = shutdown
 	ctx.Infof("delegate.Initialize...")

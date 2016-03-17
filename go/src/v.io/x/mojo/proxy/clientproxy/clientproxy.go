@@ -21,7 +21,7 @@ import (
 	"v.io/v23/vom"
 	"v.io/x/mojo/proxy/util"
 	"v.io/x/mojo/transcoder"
-	_ "v.io/x/ref/runtime/factories/roaming"
+	"v.io/x/ref/runtime/factories/roaming"
 )
 
 //#include "mojo/public/c/system/types.h"
@@ -207,7 +207,8 @@ type delegate struct {
 }
 
 func (delegate *delegate) Initialize(context application.Context) {
-	ctx, shutdown := v23.Init(context)
+	roaming.SetArgs(context)
+	ctx, shutdown := v23.Init()
 	delegate.ctx = ctx
 	delegate.shutdown = shutdown
 	ctx.Infof("delegate.Initialize...")
