@@ -24,7 +24,7 @@ func RunMojoShell(mojoUrl, configFile string, configAliases map[string]string, a
 	if err != nil {
 		panic(err)
 	}
-	rd, err := profilesreader.NewReader(jirix, profilesreader.UseProfiles, filepath.Join(jirix.Root, ".jiri_v23_profiles"))
+	rd, err := profilesreader.NewReader(jirix, profilesreader.UseProfiles, filepath.Join(jirix.Root, ".jiri_root", "profile_db"))
 	if err != nil {
 		panic(err)
 	}
