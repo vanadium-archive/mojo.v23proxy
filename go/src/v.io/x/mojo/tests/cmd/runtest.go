@@ -12,6 +12,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	"v.io/x/mojo/tests/expected"
 	"v.io/x/mojo/tests/util"
@@ -41,14 +42,37 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println("DEBUG LOG: Starting server proxy...")
 	v23proxy, err := util.StartV23ServerProxy(wd)
 	if err != nil {
 		panic(err)
 	}
-	endpoint, err := v23proxy.Endpoint()
-	if err != nil {
-		panic(err)
+
+	fmt.Println("DEBUG LOG: Waiting for v23 endpoint...")
+	timeout := make(chan bool, 1)
+	endpoint_chan := make(chan string, 1)
+	go func() {
+		time.Sleep(15 * time.Second)
+		timeout <- true
+	}()
+	go func() {
+		endpoint, err := v23proxy.Endpoint()
+		if err != nil {
+			panic(err)
+		}
+		endpoint_chan <- endpoint
+	}()
+
+	var endpoint string
+	select {
+	case endpoint = <-endpoint_chan:
+		// keep going!
+		break
+	case <-timeout:
+		panic("Failed to read endpoint!")
 	}
+	fmt.Println("DEBUG LOG: Starting client proxy...")
+
 	endpointFlag := fmt.Sprintf("-endpoint=%s/https://mojo.v.io/%s/mojo::v23proxy::tests::V23ProxyTest", endpoint, serverMap[*serverType])
 	args := []string{endpointFlag, "--v23.tcp.address=127.0.0.1:0"}
 	if *runBench {
