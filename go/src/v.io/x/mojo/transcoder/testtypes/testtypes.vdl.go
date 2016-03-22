@@ -1340,7 +1340,7 @@ type MultiVersionStructTarget struct {
 	fInt32Target  vdl.Int32Target
 	fRectTarget   RectTarget
 	fStringTarget vdl.StringTarget
-	fArrayTarget  unnamed_5b5d696e7438Target
+	fArrayTarget  __VDLTarget1_list
 	fBoolTarget   vdl.BoolTarget
 	fInt16Target  vdl.Int16Target
 	vdl.TargetBase
@@ -1393,14 +1393,14 @@ func (t *MultiVersionStructTarget) FinishFields(_ vdl.FieldsTarget) error {
 }
 
 // []int8
-type unnamed_5b5d696e7438Target struct {
+type __VDLTarget1_list struct {
 	Value      *[]int8
 	elemTarget vdl.Int8Target
 	vdl.TargetBase
 	vdl.ListTargetBase
 }
 
-func (t *unnamed_5b5d696e7438Target) StartList(tt *vdl.Type, len int) (vdl.ListTarget, error) {
+func (t *__VDLTarget1_list) StartList(tt *vdl.Type, len int) (vdl.ListTarget, error) {
 
 	if ttWant := vdl.TypeOf((*[]int8)(nil)); !vdl.Compatible(tt, ttWant) {
 		return nil, fmt.Errorf("type %v incompatible with %v", tt, ttWant)
@@ -1412,15 +1412,15 @@ func (t *unnamed_5b5d696e7438Target) StartList(tt *vdl.Type, len int) (vdl.ListT
 	}
 	return t, nil
 }
-func (t *unnamed_5b5d696e7438Target) StartElem(index int) (elem vdl.Target, _ error) {
+func (t *__VDLTarget1_list) StartElem(index int) (elem vdl.Target, _ error) {
 	t.elemTarget.Value = &(*t.Value)[index]
 	target, err := &t.elemTarget, error(nil)
 	return target, err
 }
-func (t *unnamed_5b5d696e7438Target) FinishElem(elem vdl.Target) error {
+func (t *__VDLTarget1_list) FinishElem(elem vdl.Target) error {
 	return nil
 }
-func (t *unnamed_5b5d696e7438Target) FinishList(elem vdl.ListTarget) error {
+func (t *__VDLTarget1_list) FinishList(elem vdl.ListTarget) error {
 
 	return nil
 }
@@ -1530,6 +1530,23 @@ func (t *MultiVersionStructV3Target) FinishFields(_ vdl.FieldsTarget) error {
 
 	return nil
 }
+
+// Create zero values for each type.
+var (
+	__VDLZeroAnEnum          = AnEnumFirst
+	__VDLZeroPodUnion        = PodUnion(PodUnionFInt8{})
+	__VDLZeroPodUnionWrapper = PodUnionWrapper{
+		PodUnion: PodUnionFInt8{},
+	}
+	__VDLZeroDummyStruct        = DummyStruct{}
+	__VDLZeroObjectUnion        = ObjectUnion(ObjectUnionFInt8{})
+	__VDLZeroObjectUnionWrapper = ObjectUnionWrapper{
+		ObjectUnion: ObjectUnionFInt8{},
+	}
+	__VDLZeroRect                 = Rect{}
+	__VDLZeroMultiVersionStruct   = MultiVersionStruct{}
+	__VDLZeroMultiVersionStructV3 = MultiVersionStructV3{}
+)
 
 var __VDLInitCalled bool
 

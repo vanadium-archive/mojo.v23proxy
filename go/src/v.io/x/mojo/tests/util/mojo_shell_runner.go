@@ -81,7 +81,7 @@ func RunMojoShellForV23ProxyTests(mojoFile, v23ProxyRoot string, args []string) 
 func mojoProfileName() string {
 	if val, ok := os.LookupEnv("USE_MOJO_DEV_PROFILE"); ok && val == "true" {
 		fmt.Printf("Using dev profile\n")
-		return "mojo-dev"
+		return "v23:mojo-dev"
 	}
-	return "mojo"
+	return "v23:mojo"
 }
