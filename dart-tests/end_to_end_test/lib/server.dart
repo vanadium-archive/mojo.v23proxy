@@ -18,6 +18,7 @@ class V23ProxyTestImpl implements V23ProxyTest {
   Application _application; // This isn't needed, is it...?
 
   V23ProxyTestImpl(this._application, MojoMessagePipeEndpoint endpoint) {
+    print("Creating the v23proxy test impl.");
     _stub = new V23ProxyTestStub.fromEndpoint(endpoint, this);
   }
 
@@ -79,6 +80,7 @@ class EndToEndTestServer extends Application {
   @override
   void acceptConnection(String requestorUrl, String resolvedUrl,
       ApplicationConnection connection) {
+    print("Server: Accepting a connection from ${requestorUrl} to ${resolvedUrl}");
     connection.provideService(V23ProxyTest.serviceName,
         (endpoint) => new V23ProxyTestImpl(this, endpoint),
         description: V23ProxyTestStub.serviceDescription);

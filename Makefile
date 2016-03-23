@@ -130,8 +130,11 @@ $(BUILD_DIR)/echo_server.mojo: gen/go/src/mojom/examples/echo/echo.mojom.go
 .PHONY: test-integration
 test-integration: mock packages $(BUILD_DIR)/test_client.mojo $(BUILD_DIR)/test_server.mojo $(BUILD_DIR)/v23clientproxy.mojo $(BUILD_DIR)/v23serverproxy.mojo
 	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go || ($(MAKE) unmock && exit 1)
+	sleep 10
 	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,v23:dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -client dart || ($(MAKE) unmock && exit 1)
+	sleep 10
 	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,v23:dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -server dart || ($(MAKE) unmock && exit 1)
+	sleep 10
 	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,v23:dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -client dart -server dart || ($(MAKE) unmock && exit 1)
 	$(MAKE) unmock
 

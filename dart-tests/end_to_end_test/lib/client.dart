@@ -18,20 +18,21 @@ class EndToEndTestClient extends Application {
   EndToEndTestClient.fromHandle(MojoHandle handle) : super.fromHandle(handle);
 
   void initialize(List<String> args, String url) {
+    print("Starting the End To End Test...");
     run(args, url);
   }
 
   Future testSimple() async {
-    print ("Running Test Simple...");
+    print("Running Test Simple...");
     V23ProxyTestSimpleResponseParams response = await testProxy.ptr.simple(SimpleRequestA);
     if (response.value != SimpleResponseValue) {
       throw "expected $SimpleResponseValue, but got ${response.value}";
     }
-    print ("Completed Test Simple! OK");
+    print("Completed Test Simple! OK");
   }
 
   Future testMultiArgs() async {
-    print ("Running Test MultiArgs...");
+    print("Running Test MultiArgs...");
     V23ProxyTestMultiArgsResponseParams response1 = await testProxy.ptr.multiArgs(MultiArgsRequestA, MultiArgsRequestB, MultiArgsRequestC, MultiArgsRequestD);
     if (response1.x.toString() != MultiArgsResponseX.toString()) { // compare strings since this is a union
       throw "expected $MultiArgsResponseX, but got ${response1.x}";
@@ -39,29 +40,29 @@ class EndToEndTestClient extends Application {
     if (response1.y != MultiArgsResponseY) {
       throw "expected $MultiArgsResponseY, but got ${response1.y}";
     }
-    print ("Completed Test MultiArgs! OK");
+    print("Completed Test MultiArgs! OK");
   }
 
   Future testNoOutArgs() async {
-    print ("Running Test NoOutArgs...");
+    print("Running Test NoOutArgs...");
     String expectedMessage = "message-for-no-return";
     V23ProxyTestNoOutArgsPutResponseParams _ = await testProxy.ptr.noOutArgsPut(expectedMessage);
     V23ProxyTestFetchMsgFromNoOutArgsPutResponseParams response3 = await testProxy.ptr.fetchMsgFromNoOutArgsPut();
     if (response3.storedMsg != expectedMessage) {
       throw "expected $expectedMessage, but got ${response3.storedMsg}";
     }
-    print ("Completed Test NoOutArgs! OK");
+    print("Completed Test NoOutArgs! OK");
   }
 
   Future benchmarkSimple() async {
-    print ("Running Benchmark Simple...");
+    print("Running Benchmark Simple...");
     int benchmarkN = 100;
     DateTime start = new DateTime.now();
     for (int i = 0; i < benchmarkN; i++) {
       await testProxy.ptr.simple(SimpleRequestA);
     }
     DateTime end = new DateTime.now();
-    print ("Completed Benchmark Simple! OK");
+    print("Completed Benchmark Simple! OK");
 
     // Print how long the benchmark took, somewhat mimicking what it would look like in Go.
     print("    $benchmarkN\t   ${(end.difference(start).inMicroseconds * 1000 / benchmarkN).floor()} ns/op");
