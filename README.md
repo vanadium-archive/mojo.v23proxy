@@ -9,7 +9,7 @@ that enables communication between Mojo applications on different devices.
 You must have the `jiri` tool installed with the `base` and `mojo` v23-profiles.
 
 To update v23proxy to the latest version of mojo, you will need to also have
-the `mojo-dev` profile.
+the `mojodev` profile.
 
 ## Quick start
 
@@ -30,4 +30,4 @@ Note: To run these examples, the devices used must run mojo_shell on the same lo
 ## Updating v23proxy to the latest version of mojo
 
 Prefix all commands with `USE_MOJO_DEV_PROFILE=1` in order to run with the
-`mojo-dev` profile instead of `mojo`.
+`mojodev` profile instead of `mojo`.
