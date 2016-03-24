@@ -45,13 +45,15 @@ lint-dart:
 	cd dart-examples/echo_server && dartanalyzer lib/main.dart | grep -v "\[warning\] The imported libraries"
 	cd dart-examples/fortune && dartanalyzer lib/main.dart | grep -v "\[warning\] The imported libraries"
 	cd dart-examples/fortune_server && dartanalyzer lib/main.dart | grep -v "\[warning\] The imported libraries"
+	cd dart-tests/end_to_end_test && dartanalyzer lib/client.dart | grep -v "\[warning\] The imported libraries"
+	cd dart-tests/end_to_end_test && dartanalyzer lib/server.dart | grep -v "\[warning\] The imported libraries"
 
 .PHONY: link-mojo_sdk
-link-mojo_sdk:
+link-mojo_sdk: .mojo_sdk
 	ln -sf $(MOJO_SDK) .mojo_sdk
 
 # Installs dart dependencies.
-packages: link-mojo_sdk
+packages: pubspec.yaml
 	pub get
 
 .PHONY: upgrade-packages
@@ -130,11 +132,8 @@ $(BUILD_DIR)/echo_server.mojo: gen/go/src/mojom/examples/echo/echo.mojom.go
 .PHONY: test-integration
 test-integration: mock packages $(BUILD_DIR)/test_client.mojo $(BUILD_DIR)/test_server.mojo $(BUILD_DIR)/v23clientproxy.mojo $(BUILD_DIR)/v23serverproxy.mojo
 	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go || ($(MAKE) unmock && exit 1)
-	sleep 10
 	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,v23:dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -client dart || ($(MAKE) unmock && exit 1)
-	sleep 10
 	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,v23:dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -server dart || ($(MAKE) unmock && exit 1)
-	sleep 10
 	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,v23:dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -client dart -server dart || ($(MAKE) unmock && exit 1)
 	$(MAKE) unmock
 
@@ -336,4 +335,5 @@ clean-dart:
 	rm -rf dart-examples/echo_server/lib/gen
 	rm -rf dart-examples/fortune/lib/gen
 	rm -rf dart-examples/fortune_server/lib/gen
+	rm -rf dart-tests/end_to_end_test/lib/gen
 	rm -rf packages

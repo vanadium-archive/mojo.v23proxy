@@ -43,42 +43,42 @@ func TestVdlAndMojoTypeConversion(t *testing.T) {
 		},
 		{
 			vdl.ByteType,
-			&mojom_types.TypeSimpleType{mojom_types.SimpleType_UinT8},
+			&mojom_types.TypeSimpleType{mojom_types.SimpleType_Uint8},
 			map[string]mojom_types.UserDefinedType{},
 		},
 		{
 			vdl.Uint16Type,
-			&mojom_types.TypeSimpleType{mojom_types.SimpleType_UinT16},
+			&mojom_types.TypeSimpleType{mojom_types.SimpleType_Uint16},
 			map[string]mojom_types.UserDefinedType{},
 		},
 		{
 			vdl.Uint32Type,
-			&mojom_types.TypeSimpleType{mojom_types.SimpleType_UinT32},
+			&mojom_types.TypeSimpleType{mojom_types.SimpleType_Uint32},
 			map[string]mojom_types.UserDefinedType{},
 		},
 		{
 			vdl.Uint64Type,
-			&mojom_types.TypeSimpleType{mojom_types.SimpleType_UinT64},
+			&mojom_types.TypeSimpleType{mojom_types.SimpleType_Uint64},
 			map[string]mojom_types.UserDefinedType{},
 		},
 		{
 			vdl.Int8Type,
-			&mojom_types.TypeSimpleType{mojom_types.SimpleType_InT8},
+			&mojom_types.TypeSimpleType{mojom_types.SimpleType_Int8},
 			map[string]mojom_types.UserDefinedType{},
 		},
 		{
 			vdl.Int16Type,
-			&mojom_types.TypeSimpleType{mojom_types.SimpleType_InT16},
+			&mojom_types.TypeSimpleType{mojom_types.SimpleType_Int16},
 			map[string]mojom_types.UserDefinedType{},
 		},
 		{
 			vdl.Int32Type,
-			&mojom_types.TypeSimpleType{mojom_types.SimpleType_InT32},
+			&mojom_types.TypeSimpleType{mojom_types.SimpleType_Int32},
 			map[string]mojom_types.UserDefinedType{},
 		},
 		{
 			vdl.Int64Type,
-			&mojom_types.TypeSimpleType{mojom_types.SimpleType_InT64},
+			&mojom_types.TypeSimpleType{mojom_types.SimpleType_Int64},
 			map[string]mojom_types.UserDefinedType{},
 		},
 		{
@@ -99,19 +99,19 @@ func TestVdlAndMojoTypeConversion(t *testing.T) {
 		// ?string is currently disallowed in vdl, so skipping
 		{
 			vdl.ArrayType(3, vdl.Int64Type),
-			&mojom_types.TypeArrayType{mojom_types.ArrayType{false, 3, &mojom_types.TypeSimpleType{mojom_types.SimpleType_InT64}}},
+			&mojom_types.TypeArrayType{mojom_types.ArrayType{false, 3, &mojom_types.TypeSimpleType{mojom_types.SimpleType_Int64}}},
 			map[string]mojom_types.UserDefinedType{},
 		},
 		// ?[3]int64 is currently disallowed in vdl, so skipping
 		{
 			vdl.ListType(vdl.Int64Type),
-			&mojom_types.TypeArrayType{mojom_types.ArrayType{false, -1, &mojom_types.TypeSimpleType{mojom_types.SimpleType_InT64}}},
+			&mojom_types.TypeArrayType{mojom_types.ArrayType{false, -1, &mojom_types.TypeSimpleType{mojom_types.SimpleType_Int64}}},
 			map[string]mojom_types.UserDefinedType{},
 		},
 		// ?[]int64 is currently disallowed in vdl, so skipping
 		{
 			vdl.MapType(vdl.Int64Type, vdl.BoolType),
-			&mojom_types.TypeMapType{mojom_types.MapType{false, &mojom_types.TypeSimpleType{mojom_types.SimpleType_InT64}, &mojom_types.TypeSimpleType{mojom_types.SimpleType_Bool}}},
+			&mojom_types.TypeMapType{mojom_types.MapType{false, &mojom_types.TypeSimpleType{mojom_types.SimpleType_Int64}, &mojom_types.TypeSimpleType{mojom_types.SimpleType_Bool}}},
 			map[string]mojom_types.UserDefinedType{},
 		},
 		// ?map[int64]bool is currently disallowed in vdl, so skipping

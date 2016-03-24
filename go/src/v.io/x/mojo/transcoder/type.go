@@ -105,21 +105,21 @@ func mojomToVDLType(mojomtype mojom_types.Type, mp map[string]mojom_types.UserDe
 			vt = vdl.Float64Type
 		case mojom_types.SimpleType_Float:
 			vt = vdl.Float32Type
-		case mojom_types.SimpleType_InT8:
+		case mojom_types.SimpleType_Int8:
 			vt = vdl.Int8Type
-		case mojom_types.SimpleType_InT16:
+		case mojom_types.SimpleType_Int16:
 			vt = vdl.Int16Type
-		case mojom_types.SimpleType_InT32:
+		case mojom_types.SimpleType_Int32:
 			vt = vdl.Int32Type
-		case mojom_types.SimpleType_InT64:
+		case mojom_types.SimpleType_Int64:
 			vt = vdl.Int64Type
-		case mojom_types.SimpleType_UinT8:
+		case mojom_types.SimpleType_Uint8:
 			vt = vdl.ByteType
-		case mojom_types.SimpleType_UinT16:
+		case mojom_types.SimpleType_Uint16:
 			vt = vdl.Uint16Type
-		case mojom_types.SimpleType_UinT32:
+		case mojom_types.SimpleType_Uint32:
 			vt = vdl.Uint32Type
-		case mojom_types.SimpleType_UinT64:
+		case mojom_types.SimpleType_Uint64:
 			vt = vdl.Uint64Type
 		}
 	case *mojom_types.TypeStringType: // TypeStringType
@@ -261,21 +261,21 @@ func simpleTypeCode(k vdl.Kind) mojom_types.SimpleType {
 	case vdl.Float32:
 		return mojom_types.SimpleType_Float
 	case vdl.Int8:
-		return mojom_types.SimpleType_InT8
+		return mojom_types.SimpleType_Int8
 	case vdl.Int16:
-		return mojom_types.SimpleType_InT16
+		return mojom_types.SimpleType_Int16
 	case vdl.Int32:
-		return mojom_types.SimpleType_InT32
+		return mojom_types.SimpleType_Int32
 	case vdl.Int64:
-		return mojom_types.SimpleType_InT64
+		return mojom_types.SimpleType_Int64
 	case vdl.Byte:
-		return mojom_types.SimpleType_UinT8
+		return mojom_types.SimpleType_Uint8
 	case vdl.Uint16:
-		return mojom_types.SimpleType_UinT16
+		return mojom_types.SimpleType_Uint16
 	case vdl.Uint32:
-		return mojom_types.SimpleType_UinT32
+		return mojom_types.SimpleType_Uint32
 	case vdl.Uint64:
-		return mojom_types.SimpleType_UinT64
+		return mojom_types.SimpleType_Uint64
 	default:
 		panic(fmt.Sprintf("kind %v does not represent a simple type", k))
 	}

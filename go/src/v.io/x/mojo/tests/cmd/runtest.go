@@ -10,6 +10,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"strings"
 	"time"
@@ -89,6 +90,16 @@ func main() {
 
 func runTestClient(v23ProxyRoot string, args ...string) error {
 	cmd := util.RunMojoShellForV23ProxyTests(clientMap[*clientType], v23ProxyRoot, args)
+
+	// A lock is put in home for the url response cache. Change HOME for v23proxy, since
+	// two mojo shells will be run.
+	tempHome, err := ioutil.TempDir("", "")
+	defer os.Remove(tempHome)
+	if err != nil {
+		return err
+	}
+	cmd.Env = append(cmd.Env, "HOME="+tempHome)
+
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return err

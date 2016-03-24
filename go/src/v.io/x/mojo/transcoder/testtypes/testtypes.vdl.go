@@ -9,7 +9,6 @@ package testtypes
 
 import (
 	"fmt"
-	"reflect"
 	"v.io/v23/vdl"
 )
 
@@ -139,9 +138,10 @@ type (
 	PodUnionFEnum struct{ Value AnEnum }
 	// __PodUnionReflect describes the PodUnion union type.
 	__PodUnionReflect struct {
-		Name  string `vdl:"src/v.io/x/mojo/transcoder/testtypes.PodUnion"`
-		Type  PodUnion
-		Union struct {
+		Name               string `vdl:"src/v.io/x/mojo/transcoder/testtypes.PodUnion"`
+		Type               PodUnion
+		UnionTargetFactory podUnionTargetFactory
+		Union              struct {
 			FInt8      PodUnionFInt8
 			FInt8Other PodUnionFInt8Other
 			FUint8     PodUnionFUint8
@@ -563,6 +563,112 @@ func (m PodUnionFEnum) MakeVDLTarget() vdl.Target {
 	return nil
 }
 
+type PodUnionTarget struct {
+	Value     *PodUnion
+	fieldName string
+
+	vdl.TargetBase
+	vdl.FieldsTargetBase
+}
+
+func (t *PodUnionTarget) StartFields(tt *vdl.Type) (vdl.FieldsTarget, error) {
+	if ttWant := vdl.TypeOf((*PodUnion)(nil)); !vdl.Compatible(tt, ttWant) {
+		return nil, fmt.Errorf("type %v incompatible with %v", tt, ttWant)
+	}
+
+	return t, nil
+}
+func (t *PodUnionTarget) StartField(name string) (key, field vdl.Target, _ error) {
+	t.fieldName = name
+	switch name {
+	case "FInt8":
+		val := int8(0)
+		return nil, &vdl.Int8Target{Value: &val}, nil
+	case "FInt8Other":
+		val := int8(0)
+		return nil, &vdl.Int8Target{Value: &val}, nil
+	case "FUint8":
+		val := byte(0)
+		return nil, &vdl.ByteTarget{Value: &val}, nil
+	case "FInt16":
+		val := int16(0)
+		return nil, &vdl.Int16Target{Value: &val}, nil
+	case "FUint16":
+		val := uint16(0)
+		return nil, &vdl.Uint16Target{Value: &val}, nil
+	case "Fint32":
+		val := int32(0)
+		return nil, &vdl.Int32Target{Value: &val}, nil
+	case "Fuint32":
+		val := uint32(0)
+		return nil, &vdl.Uint32Target{Value: &val}, nil
+	case "FInt64":
+		val := int64(0)
+		return nil, &vdl.Int64Target{Value: &val}, nil
+	case "FUint64":
+		val := uint64(0)
+		return nil, &vdl.Uint64Target{Value: &val}, nil
+	case "FFloat":
+		val := float32(0)
+		return nil, &vdl.Float32Target{Value: &val}, nil
+	case "FDouble":
+		val := float64(0)
+		return nil, &vdl.Float64Target{Value: &val}, nil
+	case "FBool":
+		val := false
+		return nil, &vdl.BoolTarget{Value: &val}, nil
+	case "FEnum":
+		val := AnEnumFirst
+		return nil, &AnEnumTarget{Value: &val}, nil
+	default:
+		return nil, nil, fmt.Errorf("field %s not in union src/v.io/x/mojo/transcoder/testtypes.PodUnion", name)
+	}
+}
+func (t *PodUnionTarget) FinishField(_, fieldTarget vdl.Target) error {
+	switch t.fieldName {
+	case "FInt8":
+		*t.Value = PodUnionFInt8{*(fieldTarget.(*vdl.Int8Target)).Value}
+	case "FInt8Other":
+		*t.Value = PodUnionFInt8Other{*(fieldTarget.(*vdl.Int8Target)).Value}
+	case "FUint8":
+		*t.Value = PodUnionFUint8{*(fieldTarget.(*vdl.ByteTarget)).Value}
+	case "FInt16":
+		*t.Value = PodUnionFInt16{*(fieldTarget.(*vdl.Int16Target)).Value}
+	case "FUint16":
+		*t.Value = PodUnionFUint16{*(fieldTarget.(*vdl.Uint16Target)).Value}
+	case "Fint32":
+		*t.Value = PodUnionFint32{*(fieldTarget.(*vdl.Int32Target)).Value}
+	case "Fuint32":
+		*t.Value = PodUnionFuint32{*(fieldTarget.(*vdl.Uint32Target)).Value}
+	case "FInt64":
+		*t.Value = PodUnionFInt64{*(fieldTarget.(*vdl.Int64Target)).Value}
+	case "FUint64":
+		*t.Value = PodUnionFUint64{*(fieldTarget.(*vdl.Uint64Target)).Value}
+	case "FFloat":
+		*t.Value = PodUnionFFloat{*(fieldTarget.(*vdl.Float32Target)).Value}
+	case "FDouble":
+		*t.Value = PodUnionFDouble{*(fieldTarget.(*vdl.Float64Target)).Value}
+	case "FBool":
+		*t.Value = PodUnionFBool{*(fieldTarget.(*vdl.BoolTarget)).Value}
+	case "FEnum":
+		*t.Value = PodUnionFEnum{*(fieldTarget.(*AnEnumTarget)).Value}
+	}
+	return nil
+}
+func (t *PodUnionTarget) FinishFields(_ vdl.FieldsTarget) error {
+
+	return nil
+}
+
+type podUnionTargetFactory struct{}
+
+func (t podUnionTargetFactory) VDLMakeUnionTarget(union interface{}) (vdl.Target, error) {
+	if typedUnion, ok := union.(*PodUnion); ok {
+		return &PodUnionTarget{Value: typedUnion}, nil
+	}
+	return nil, fmt.Errorf("got %T, want *PodUnion", union)
+}
+
 type PodUnionWrapper struct {
 	PodUnion PodUnion
 }
@@ -606,8 +712,8 @@ func (m *PodUnionWrapper) MakeVDLTarget() vdl.Target {
 }
 
 type PodUnionWrapperTarget struct {
-	Value *PodUnionWrapper
-
+	Value          *PodUnionWrapper
+	podUnionTarget PodUnionTarget
 	vdl.TargetBase
 	vdl.FieldsTargetBase
 }
@@ -622,7 +728,8 @@ func (t *PodUnionWrapperTarget) StartFields(tt *vdl.Type) (vdl.FieldsTarget, err
 func (t *PodUnionWrapperTarget) StartField(name string) (key, field vdl.Target, _ error) {
 	switch name {
 	case "PodUnion":
-		target, err := vdl.ReflectTarget(reflect.ValueOf(&t.Value.PodUnion))
+		t.podUnionTarget.Value = &t.Value.PodUnion
+		target, err := &t.podUnionTarget, error(nil)
 		return nil, target, err
 	default:
 		return nil, nil, fmt.Errorf("field %s not in struct src/v.io/x/mojo/transcoder/testtypes.PodUnionWrapper", name)
@@ -734,9 +841,10 @@ type (
 	ObjectUnionFPodUnion struct{ Value PodUnion }
 	// __ObjectUnionReflect describes the ObjectUnion union type.
 	__ObjectUnionReflect struct {
-		Name  string `vdl:"src/v.io/x/mojo/transcoder/testtypes.ObjectUnion"`
-		Type  ObjectUnion
-		Union struct {
+		Name               string `vdl:"src/v.io/x/mojo/transcoder/testtypes.ObjectUnion"`
+		Type               ObjectUnion
+		UnionTargetFactory objectUnionTargetFactory
+		Union              struct {
 			FInt8      ObjectUnionFInt8
 			FString    ObjectUnionFString
 			FDummy     ObjectUnionFDummy
@@ -1019,6 +1127,189 @@ func (m ObjectUnionFPodUnion) MakeVDLTarget() vdl.Target {
 	return nil
 }
 
+type ObjectUnionTarget struct {
+	Value     *ObjectUnion
+	fieldName string
+
+	vdl.TargetBase
+	vdl.FieldsTargetBase
+}
+
+func (t *ObjectUnionTarget) StartFields(tt *vdl.Type) (vdl.FieldsTarget, error) {
+	if ttWant := vdl.TypeOf((*ObjectUnion)(nil)); !vdl.Compatible(tt, ttWant) {
+		return nil, fmt.Errorf("type %v incompatible with %v", tt, ttWant)
+	}
+
+	return t, nil
+}
+func (t *ObjectUnionTarget) StartField(name string) (key, field vdl.Target, _ error) {
+	t.fieldName = name
+	switch name {
+	case "FInt8":
+		val := int8(0)
+		return nil, &vdl.Int8Target{Value: &val}, nil
+	case "FString":
+		val := ""
+		return nil, &vdl.StringTarget{Value: &val}, nil
+	case "FDummy":
+		val := DummyStruct{}
+		return nil, &DummyStructTarget{Value: &val}, nil
+	case "FNullable":
+		val := (*DummyStruct)(nil)
+		return nil, &__VDLTarget1_optional{Value: &val}, nil
+	case "FArrayInt8":
+		val := []int8(nil)
+		return nil, &__VDLTarget2_list{Value: &val}, nil
+	case "FMapInt8":
+		val := map[string]int8(nil)
+		return nil, &__VDLTarget3_map{Value: &val}, nil
+	case "FPodUnion":
+		val := PodUnion(PodUnionFInt8{})
+		return nil, &PodUnionTarget{Value: &val}, nil
+	default:
+		return nil, nil, fmt.Errorf("field %s not in union src/v.io/x/mojo/transcoder/testtypes.ObjectUnion", name)
+	}
+}
+func (t *ObjectUnionTarget) FinishField(_, fieldTarget vdl.Target) error {
+	switch t.fieldName {
+	case "FInt8":
+		*t.Value = ObjectUnionFInt8{*(fieldTarget.(*vdl.Int8Target)).Value}
+	case "FString":
+		*t.Value = ObjectUnionFString{*(fieldTarget.(*vdl.StringTarget)).Value}
+	case "FDummy":
+		*t.Value = ObjectUnionFDummy{*(fieldTarget.(*DummyStructTarget)).Value}
+	case "FNullable":
+		*t.Value = ObjectUnionFNullable{*(fieldTarget.(*__VDLTarget1_optional)).Value}
+	case "FArrayInt8":
+		*t.Value = ObjectUnionFArrayInt8{*(fieldTarget.(*__VDLTarget2_list)).Value}
+	case "FMapInt8":
+		*t.Value = ObjectUnionFMapInt8{*(fieldTarget.(*__VDLTarget3_map)).Value}
+	case "FPodUnion":
+		*t.Value = ObjectUnionFPodUnion{*(fieldTarget.(*PodUnionTarget)).Value}
+	}
+	return nil
+}
+func (t *ObjectUnionTarget) FinishFields(_ vdl.FieldsTarget) error {
+
+	return nil
+}
+
+type objectUnionTargetFactory struct{}
+
+func (t objectUnionTargetFactory) VDLMakeUnionTarget(union interface{}) (vdl.Target, error) {
+	if typedUnion, ok := union.(*ObjectUnion); ok {
+		return &ObjectUnionTarget{Value: typedUnion}, nil
+	}
+	return nil, fmt.Errorf("got %T, want *ObjectUnion", union)
+}
+
+// Optional DummyStruct
+type __VDLTarget1_optional struct {
+	Value      **DummyStruct
+	elemTarget DummyStructTarget
+	vdl.TargetBase
+	vdl.FieldsTargetBase
+}
+
+func (t *__VDLTarget1_optional) StartFields(tt *vdl.Type) (vdl.FieldsTarget, error) {
+
+	if *t.Value == nil {
+		*t.Value = &DummyStruct{}
+	}
+	t.elemTarget.Value = *t.Value
+	target, err := &t.elemTarget, error(nil)
+	if err != nil {
+		return nil, err
+	}
+	return target.StartFields(tt)
+}
+func (t *__VDLTarget1_optional) FinishFields(_ vdl.FieldsTarget) error {
+
+	return nil
+}
+func (t *__VDLTarget1_optional) FromNil(tt *vdl.Type) error {
+
+	*t.Value = nil
+
+	return nil
+}
+
+// []int8
+type __VDLTarget2_list struct {
+	Value      *[]int8
+	elemTarget vdl.Int8Target
+	vdl.TargetBase
+	vdl.ListTargetBase
+}
+
+func (t *__VDLTarget2_list) StartList(tt *vdl.Type, len int) (vdl.ListTarget, error) {
+
+	if ttWant := vdl.TypeOf((*[]int8)(nil)); !vdl.Compatible(tt, ttWant) {
+		return nil, fmt.Errorf("type %v incompatible with %v", tt, ttWant)
+	}
+	if cap(*t.Value) < len {
+		*t.Value = make([]int8, len)
+	} else {
+		*t.Value = (*t.Value)[:len]
+	}
+	return t, nil
+}
+func (t *__VDLTarget2_list) StartElem(index int) (elem vdl.Target, _ error) {
+	t.elemTarget.Value = &(*t.Value)[index]
+	target, err := &t.elemTarget, error(nil)
+	return target, err
+}
+func (t *__VDLTarget2_list) FinishElem(elem vdl.Target) error {
+	return nil
+}
+func (t *__VDLTarget2_list) FinishList(elem vdl.ListTarget) error {
+
+	return nil
+}
+
+// map[string]int8
+type __VDLTarget3_map struct {
+	Value      *map[string]int8
+	currKey    string
+	currElem   int8
+	keyTarget  vdl.StringTarget
+	elemTarget vdl.Int8Target
+	vdl.TargetBase
+	vdl.MapTargetBase
+}
+
+func (t *__VDLTarget3_map) StartMap(tt *vdl.Type, len int) (vdl.MapTarget, error) {
+
+	if ttWant := vdl.TypeOf((*map[string]int8)(nil)); !vdl.Compatible(tt, ttWant) {
+		return nil, fmt.Errorf("type %v incompatible with %v", tt, ttWant)
+	}
+	*t.Value = make(map[string]int8)
+	return t, nil
+}
+func (t *__VDLTarget3_map) StartKey() (key vdl.Target, _ error) {
+	t.currKey = ""
+	t.keyTarget.Value = &t.currKey
+	target, err := &t.keyTarget, error(nil)
+	return target, err
+}
+func (t *__VDLTarget3_map) FinishKeyStartField(key vdl.Target) (field vdl.Target, _ error) {
+	t.currElem = int8(0)
+	t.elemTarget.Value = &t.currElem
+	target, err := &t.elemTarget, error(nil)
+	return target, err
+}
+func (t *__VDLTarget3_map) FinishField(key, field vdl.Target) error {
+	(*t.Value)[t.currKey] = t.currElem
+	return nil
+}
+func (t *__VDLTarget3_map) FinishMap(elem vdl.MapTarget) error {
+	if len(*t.Value) == 0 {
+		*t.Value = nil
+	}
+
+	return nil
+}
+
 type ObjectUnionWrapper struct {
 	ObjectUnion ObjectUnion
 }
@@ -1062,8 +1353,8 @@ func (m *ObjectUnionWrapper) MakeVDLTarget() vdl.Target {
 }
 
 type ObjectUnionWrapperTarget struct {
-	Value *ObjectUnionWrapper
-
+	Value             *ObjectUnionWrapper
+	objectUnionTarget ObjectUnionTarget
 	vdl.TargetBase
 	vdl.FieldsTargetBase
 }
@@ -1078,7 +1369,8 @@ func (t *ObjectUnionWrapperTarget) StartFields(tt *vdl.Type) (vdl.FieldsTarget, 
 func (t *ObjectUnionWrapperTarget) StartField(name string) (key, field vdl.Target, _ error) {
 	switch name {
 	case "ObjectUnion":
-		target, err := vdl.ReflectTarget(reflect.ValueOf(&t.Value.ObjectUnion))
+		t.objectUnionTarget.Value = &t.Value.ObjectUnion
+		target, err := &t.objectUnionTarget, error(nil)
 		return nil, target, err
 	default:
 		return nil, nil, fmt.Errorf("field %s not in struct src/v.io/x/mojo/transcoder/testtypes.ObjectUnionWrapper", name)
@@ -1340,7 +1632,7 @@ type MultiVersionStructTarget struct {
 	fInt32Target  vdl.Int32Target
 	fRectTarget   RectTarget
 	fStringTarget vdl.StringTarget
-	fArrayTarget  __VDLTarget1_list
+	fArrayTarget  __VDLTarget2_list
 	fBoolTarget   vdl.BoolTarget
 	fInt16Target  vdl.Int16Target
 	vdl.TargetBase
@@ -1388,39 +1680,6 @@ func (t *MultiVersionStructTarget) FinishField(_, _ vdl.Target) error {
 	return nil
 }
 func (t *MultiVersionStructTarget) FinishFields(_ vdl.FieldsTarget) error {
-
-	return nil
-}
-
-// []int8
-type __VDLTarget1_list struct {
-	Value      *[]int8
-	elemTarget vdl.Int8Target
-	vdl.TargetBase
-	vdl.ListTargetBase
-}
-
-func (t *__VDLTarget1_list) StartList(tt *vdl.Type, len int) (vdl.ListTarget, error) {
-
-	if ttWant := vdl.TypeOf((*[]int8)(nil)); !vdl.Compatible(tt, ttWant) {
-		return nil, fmt.Errorf("type %v incompatible with %v", tt, ttWant)
-	}
-	if cap(*t.Value) < len {
-		*t.Value = make([]int8, len)
-	} else {
-		*t.Value = (*t.Value)[:len]
-	}
-	return t, nil
-}
-func (t *__VDLTarget1_list) StartElem(index int) (elem vdl.Target, _ error) {
-	t.elemTarget.Value = &(*t.Value)[index]
-	target, err := &t.elemTarget, error(nil)
-	return target, err
-}
-func (t *__VDLTarget1_list) FinishElem(elem vdl.Target) error {
-	return nil
-}
-func (t *__VDLTarget1_list) FinishList(elem vdl.ListTarget) error {
 
 	return nil
 }

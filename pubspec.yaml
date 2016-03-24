@@ -4,7 +4,7 @@ homepage: https://github.com/vanadium/mojo.v23proxy
 name: v23proxy
 version: 0.0.1
 dependencies:
-  mojo_sdk: 0.2.19
+  mojo_sdk: 0.2.21
 dev_dependencies:
   dart_style: any
   test: any
