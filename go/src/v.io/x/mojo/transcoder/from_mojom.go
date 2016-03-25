@@ -129,10 +129,6 @@ func (mtv *mojomToTargetTranscoder) transcodeValue(vt *vdl.Type, target vdl.Targ
 		}
 		target.FromEnumLabel(vt.EnumLabel(int(index)), vt)
 		return nil
-	case vdl.Complex64:
-		panic("unimplemented")
-	case vdl.Complex128:
-		panic("unimplemented")
 	case vdl.Array, vdl.List:
 		switch ptr, err := mtv.modec.ReadPointer(); {
 		case err != nil:

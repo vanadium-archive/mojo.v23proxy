@@ -47,9 +47,6 @@ func (vtm *targetToMojomTranscoder) FromInt(src int64, tt *vdl.Type) error {
 func (vtm *targetToMojomTranscoder) FromFloat(src float64, tt *vdl.Type) error {
 	panic("cannot encode top level float")
 }
-func (vtm *targetToMojomTranscoder) FromComplex(src complex128, tt *vdl.Type) error {
-	panic("cannot encode top level complex")
-}
 func (vtm *targetToMojomTranscoder) FromBytes(src []byte, tt *vdl.Type) error {
 	panic("cannot encode top level bytes")
 }

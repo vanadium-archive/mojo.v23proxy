@@ -69,9 +69,6 @@ func (t target) FromFloat(src float64, tt *vdl.Type) error {
 	}
 	return nil
 }
-func (t target) FromComplex(src complex128, tt *vdl.Type) error {
-	panic("UNIMPLEMENTED")
-}
 func (t target) writeBytes(src []byte) {
 	block := t.allocator().Allocate(uint32(len(src)), uint32(len(src)))
 	t.writePointer(block)
