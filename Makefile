@@ -49,7 +49,7 @@ lint-dart:
 	cd dart-tests/end_to_end_test && dartanalyzer lib/server.dart | grep -v "\[warning\] The imported libraries"
 
 .PHONY: link-mojo_sdk
-link-mojo_sdk: .mojo_sdk
+link-mojo_sdk:
 	ln -sf $(MOJO_SDK) .mojo_sdk
 
 # Installs dart dependencies.
