@@ -93,7 +93,10 @@ func (t target) FromTypeObject(src *vdl.Type) error {
 	panic("UNIMPLEMENTED")
 
 }
-func (t target) FromNil(tt *vdl.Type) error {
+func (t target) FromZero(tt *vdl.Type) error {
+	if tt.IsBytes() {
+		return t.FromBytes(nil, tt)
+	}
 	switch tt.Kind() {
 	case vdl.Optional:
 		elemType := tt.Elem()
@@ -106,8 +109,94 @@ func (t target) FromNil(tt *vdl.Type) error {
 		}
 	case vdl.Any:
 		panic("Any rep not yet determined")
+	case vdl.Bool:
+		return t.FromBool(false, tt)
+	case vdl.Byte, vdl.Uint16, vdl.Uint32, vdl.Uint64:
+		return t.FromUint(0, tt)
+	case vdl.Int8, vdl.Int16, vdl.Int32, vdl.Int64:
+		return t.FromInt(0, tt)
+	case vdl.Float32, vdl.Float64:
+		return t.FromFloat(0, tt)
+	case vdl.String:
+		return t.FromString("", tt)
+	case vdl.Enum:
+		return t.FromEnumLabel(tt.EnumLabel(0), tt)
+	case vdl.TypeObject:
+		return t.FromTypeObject(vdl.AnyType)
+	case vdl.List:
+		lt, err := t.StartList(tt, 0)
+		if err != nil {
+			return err
+		}
+		return t.FinishList(lt)
+	case vdl.Array:
+		lt, err := t.StartList(tt, tt.Len())
+		if err != nil {
+			return err
+		}
+		for i := 0; i < tt.Len(); i++ {
+			targ, err := lt.StartElem(i)
+			if err != nil {
+				return err
+			}
+			if err := targ.FromZero(tt.Elem()); err != nil {
+				return err
+			}
+			if err := lt.FinishElem(targ); err != nil {
+				return err
+			}
+		}
+		return t.FinishList(lt)
+	case vdl.Map:
+		mt, err := t.StartMap(tt, 0)
+		if err != nil {
+			return err
+		}
+		return t.FinishMap(mt)
+	case vdl.Set:
+		st, err := t.StartSet(tt, 0)
+		if err != nil {
+			return err
+		}
+		return t.FinishSet(st)
+	case vdl.Struct:
+		st, err := t.StartFields(tt)
+		if err != nil {
+			return err
+		}
+		for i := 0; i < tt.NumField(); i++ {
+			fld := tt.Field(i)
+			kt, ft, err := st.StartField(fld.Name)
+			if err != nil {
+				return err
+			}
+			if err := ft.FromZero(fld.Type); err != nil {
+				return err
+			}
+			if err := st.FinishField(kt, ft); err != nil {
+				return err
+			}
+		}
+		return t.FinishFields(st)
+	case vdl.Union:
+		st, err := t.StartFields(tt)
+		if err != nil {
+			return err
+		}
+		fld := tt.Field(0)
+		kt, ft, err := st.StartField(fld.Name)
+		if err != nil {
+			return err
+		}
+		if err := ft.FromZero(fld.Type); err != nil {
+			return err
+		}
+		if err := st.FinishField(kt, ft); err != nil {
+			return err
+		}
+		return t.FinishFields(st)
 	default:
-		panic("Type cannot be nil")
+		panic(fmt.Sprintf("unknown type %v", tt))
 	}
 	return nil
 }

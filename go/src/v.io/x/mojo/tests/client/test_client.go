@@ -28,7 +28,7 @@ import (
 import "C"
 
 var (
-	mojoFlag *flag.FlagSet
+	mojoFlag     *flag.FlagSet
 	endpointFlag *string
 )
 

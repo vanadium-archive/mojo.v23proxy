@@ -27,7 +27,7 @@ func ValueFromMojo(valptr interface{}, data []byte, datatype *vdl.Type) error {
 	return FromMojo(target, data, datatype)
 }
 
-func FromMojo(target vdl.Target, data []byte, datatype *vdl.Type) error  {
+func FromMojo(target vdl.Target, data []byte, datatype *vdl.Type) error {
 	mtv := &mojomToTargetTranscoder{modec: bindings.NewDecoder(data, nil)}
 	return mtv.transcodeValue(datatype, target, true, false)
 }
@@ -134,7 +134,7 @@ func (mtv *mojomToTargetTranscoder) transcodeValue(vt *vdl.Type, target vdl.Targ
 		case err != nil:
 			return err
 		case ptr == 0 && isNullable:
-			return target.FromNil(vdl.OptionalType(vt))
+			return target.FromZero(vdl.OptionalType(vt))
 		case ptr == 0 && !isNullable:
 			return fmt.Errorf("invalid null struct pointer")
 		}
@@ -212,7 +212,7 @@ func (mtv *mojomToTargetTranscoder) transcodeValue(vt *vdl.Type, target vdl.Targ
 		case err != nil:
 			return err
 		case ptr == 0 && isNullable:
-			return target.FromNil(vdl.OptionalType(vt))
+			return target.FromZero(vdl.OptionalType(vt))
 		case ptr == 0 && !isNullable:
 			return fmt.Errorf("invalid null struct pointer")
 		}
@@ -278,7 +278,7 @@ func (mtv *mojomToTargetTranscoder) transcodeValue(vt *vdl.Type, target vdl.Targ
 			case err != nil:
 				return err
 			case ptr == 0 && isNullable:
-				return target.FromNil(vdl.OptionalType(vt))
+				return target.FromZero(vdl.OptionalType(vt))
 			case ptr == 0 && !isNullable:
 				return fmt.Errorf("invalid null struct pointer")
 			}
@@ -318,7 +318,7 @@ func (mtv *mojomToTargetTranscoder) transcodeValue(vt *vdl.Type, target vdl.Targ
 		}
 		if size == 0 {
 			mtv.modec.SkipUnionValue()
-			return target.FromNil(vdl.OptionalType(vt))
+			return target.FromZero(vdl.OptionalType(vt))
 		}
 		if int(tag) >= vt.NumField() {
 			return fmt.Errorf("union tag out of bounds")
@@ -337,7 +337,7 @@ func (mtv *mojomToTargetTranscoder) transcodeValue(vt *vdl.Type, target vdl.Targ
 			case err != nil:
 				return err
 			case ptr == 0 && isNullable:
-				return target.FromNil(vdl.OptionalType(fld.Type))
+				return target.FromZero(vdl.OptionalType(fld.Type))
 			case ptr == 0 && !isNullable:
 				return fmt.Errorf("invalid null union pointer")
 			}

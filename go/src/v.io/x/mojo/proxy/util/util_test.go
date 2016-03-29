@@ -5,12 +5,12 @@
 package util_test
 
 import (
-	"testing"
 	"reflect"
+	"testing"
 
+	"v.io/v23/vdl"
 	"v.io/v23/vom"
 	"v.io/x/mojo/proxy/util"
-	"v.io/v23/vdl"
 )
 
 type TestStructA struct {
