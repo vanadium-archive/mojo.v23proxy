@@ -24,7 +24,7 @@ import (
 	"v.io/x/ref/runtime/factories/roaming"
 )
 
-//#include "mojo/public/c/system/types.h"
+//#include "mojo/public/c/system/handle.h"
 import "C"
 
 type v23HeaderReceiver struct {

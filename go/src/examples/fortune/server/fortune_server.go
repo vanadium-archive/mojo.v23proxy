@@ -16,7 +16,7 @@ import (
 	"mojom/examples/fortune"
 )
 
-//#include "mojo/public/c/system/types.h"
+//#include "mojo/public/c/system/handle.h"
 import "C"
 
 type FortuneImpl struct {

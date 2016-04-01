@@ -19,7 +19,7 @@ import (
 	"v.io/x/mojo/tests/expected"
 )
 
-//#include "mojo/public/c/system/types.h"
+//#include "mojo/public/c/system/handle.h"
 import "C"
 
 const noReturnReceiveTimeout = 1 * time.Second

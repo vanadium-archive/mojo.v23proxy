@@ -257,7 +257,7 @@ func (t *CreditAgencyTarget) FromEnumLabel(src string, tt *vdl.Type) error {
 	case "TransUnion":
 		*t.Value = 2
 	default:
-		return fmt.Errorf("label %s not in enum CreditAgencyEquifax", src)
+		return fmt.Errorf("label %s not in enum CreditAgency", src)
 	}
 
 	return nil
@@ -341,7 +341,7 @@ func (t *ExperianRatingTarget) FromEnumLabel(src string, tt *vdl.Type) error {
 	case "Bad":
 		*t.Value = 1
 	default:
-		return fmt.Errorf("label %s not in enum ExperianRatingGood", src)
+		return fmt.Errorf("label %s not in enum ExperianRating", src)
 	}
 
 	return nil

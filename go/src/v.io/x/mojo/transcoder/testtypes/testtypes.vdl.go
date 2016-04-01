@@ -91,7 +91,7 @@ func (t *AnEnumTarget) FromEnumLabel(src string, tt *vdl.Type) error {
 	case "Second":
 		*t.Value = 1
 	default:
-		return fmt.Errorf("label %s not in enum AnEnumFirst", src)
+		return fmt.Errorf("label %s not in enum AnEnum", src)
 	}
 
 	return nil

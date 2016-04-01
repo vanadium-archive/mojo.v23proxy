@@ -29,7 +29,7 @@ import (
 	"v.io/x/ref/runtime/factories/roaming"
 )
 
-//#include "mojo/public/c/system/types.h"
+//#include "mojo/public/c/system/handle.h"
 import "C"
 
 // As long as fakeService meets the Invoker interface, it is allowed to pass as
