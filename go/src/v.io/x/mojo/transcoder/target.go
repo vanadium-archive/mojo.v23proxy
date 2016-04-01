@@ -93,7 +93,13 @@ func (t target) FromTypeObject(src *vdl.Type) error {
 	panic("UNIMPLEMENTED")
 
 }
-func (t target) FromZero(tt *vdl.Type) error {
+func (t target) FromNil(tt *vdl.Type) error {
+	if tt.Kind() == vdl.Optional || tt.Kind() == vdl.Any {
+		return t.fromZero(tt)
+	}
+	return fmt.Errorf("FromNil called on non-nillable type")
+}
+func (t target) fromZero(tt *vdl.Type) error {
 	if tt.IsBytes() {
 		return t.FromBytes(nil, tt)
 	}
@@ -139,7 +145,7 @@ func (t target) FromZero(tt *vdl.Type) error {
 			if err != nil {
 				return err
 			}
-			if err := targ.FromZero(tt.Elem()); err != nil {
+			if err := targ.(target).fromZero(tt.Elem()); err != nil {
 				return err
 			}
 			if err := lt.FinishElem(targ); err != nil {
@@ -170,7 +176,7 @@ func (t target) FromZero(tt *vdl.Type) error {
 			if err != nil {
 				return err
 			}
-			if err := ft.FromZero(fld.Type); err != nil {
+			if err := ft.(target).fromZero(fld.Type); err != nil {
 				return err
 			}
 			if err := st.FinishField(kt, ft); err != nil {
@@ -188,7 +194,7 @@ func (t target) FromZero(tt *vdl.Type) error {
 		if err != nil {
 			return err
 		}
-		if err := ft.FromZero(fld.Type); err != nil {
+		if err := ft.(target).fromZero(fld.Type); err != nil {
 			return err
 		}
 		if err := st.FinishField(kt, ft); err != nil {

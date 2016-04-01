@@ -32,6 +32,20 @@ func (fe fieldsTarget) StartField(name string) (key, field vdl.Target, _ error) 
 func (fieldsTarget) FinishField(key, field vdl.Target) error {
 	return nil
 }
+func (fe fieldsTarget) ZeroField(name string) error {
+	key, field, err := fe.StartField(name)
+	if err != nil {
+		return err
+	}
+	fld, index := fe.vdlType.FieldByName(name)
+	if index < 0 {
+		return vdl.ErrFieldNoExist
+	}
+	if err := field.(target).fromZero(fld.Type); err != nil {
+		return err
+	}
+	return fe.FinishField(key, field)
+}
 
 type unionFieldsTarget struct {
 	vdlType *vdl.Type
@@ -61,6 +75,20 @@ func (ufe unionFieldsTarget) StartField(name string) (key, field vdl.Target, _ e
 }
 func (unionFieldsTarget) FinishField(key, field vdl.Target) error {
 	return nil
+}
+func (ufe unionFieldsTarget) ZeroField(name string) error {
+	key, field, err := ufe.StartField(name)
+	if err != nil {
+		return err
+	}
+	fld, index := ufe.vdlType.FieldByName(name)
+	if index < 0 {
+		return vdl.ErrFieldNoExist
+	}
+	if err := field.(target).fromZero(fld.Type); err != nil {
+		return err
+	}
+	return ufe.FinishField(key, field)
 }
 
 // doubles as set target

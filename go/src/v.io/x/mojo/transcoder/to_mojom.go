@@ -59,29 +59,6 @@ func (vtm *targetToMojomTranscoder) FromEnumLabel(src string, tt *vdl.Type) erro
 func (vtm *targetToMojomTranscoder) FromTypeObject(src *vdl.Type) error {
 	panic("cannot encode top level type object")
 }
-func (vtm *targetToMojomTranscoder) FromZero(tt *vdl.Type) error {
-	if tt.Kind() == vdl.Struct {
-		st, err := vtm.StartFields(tt)
-		if err != nil {
-			return err
-		}
-		for i := 0; i < tt.NumField(); i++ {
-			fld := tt.Field(i)
-			kt, ft, err := st.StartField(fld.Name)
-			if err != nil {
-				return err
-			}
-			if err := ft.FromZero(fld.Type); err != nil {
-				return err
-			}
-			if err := st.FinishField(kt, ft); err != nil {
-				return err
-			}
-		}
-		return vtm.FinishFields(st)
-	}
-	panic("UNIMPLEMENTED")
-}
 
 func (vtm *targetToMojomTranscoder) StartList(tt *vdl.Type, len int) (vdl.ListTarget, error) {
 	panic("UNIMPLEMENTED")
@@ -116,4 +93,8 @@ func (vtm *targetToMojomTranscoder) StartFields(tt *vdl.Type) (vdl.FieldsTarget,
 
 func (vtm *targetToMojomTranscoder) FinishFields(x vdl.FieldsTarget) error {
 	return nil
+}
+
+func (vtm *targetToMojomTranscoder) FromNil(tt *vdl.Type) error {
+	panic("UNIMPLEMENTED")
 }
