@@ -1,4 +1,4 @@
-# [Mojo](https://github.com/domokit/mojo) + [v23 RPCs](https://github.com/vanadium/docs/blob/master/concepts/rpc.md)
+# [Mojo](https://github.com/domokit/mojo) + [v23 RPCs](https://vanadium.github.io/concepts/rpc.html)
 
 This repository implements the proposal outlined
 [here](https://docs.google.com/a/google.com/document/d/17cMUkwolbQphimAYdyVNBCzA_f-HZy3YcxEpKOAmw48/edit?usp=sharing)
