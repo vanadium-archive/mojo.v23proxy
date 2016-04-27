@@ -97,6 +97,34 @@ func (t *AnEnumTarget) FromEnumLabel(src string, tt *vdl.Type) error {
 	return nil
 }
 
+func (x AnEnum) VDLIsZero() bool {
+	return x == AnEnumFirst
+}
+
+func (x AnEnum) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*AnEnum)(nil))); err != nil {
+		return err
+	}
+	if err := enc.EncodeString(x.String()); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x *AnEnum) VDLRead(dec vdl.Decoder) error {
+	if err := dec.StartValue(); err != nil {
+		return err
+	}
+	enum, err := dec.DecodeString()
+	if err != nil {
+		return err
+	}
+	if err := x.Set(enum); err != nil {
+		return err
+	}
+	return dec.FinishValue()
+}
+
 type (
 	// PodUnion represents any single field of the PodUnion union type.
 	PodUnion interface {
@@ -109,6 +137,8 @@ type (
 		// __VDLReflect describes the PodUnion union type.
 		__VDLReflect(__PodUnionReflect)
 		FillVDLTarget(vdl.Target, *vdl.Type) error
+		VDLIsZero() bool
+		VDLWrite(vdl.Encoder) error
 	}
 	// PodUnionFInt8 represents field FInt8 of the PodUnion union type.
 	PodUnionFInt8 struct{ Value int8 }
@@ -669,6 +699,534 @@ func (t podUnionTargetFactory) VDLMakeUnionTarget(union interface{}) (vdl.Target
 	return nil, fmt.Errorf("got %T, want *PodUnion", union)
 }
 
+func (x PodUnionFInt8) VDLIsZero() bool {
+	return x.Value == 0
+}
+
+func (x PodUnionFInt8Other) VDLIsZero() bool {
+	return false
+}
+
+func (x PodUnionFUint8) VDLIsZero() bool {
+	return false
+}
+
+func (x PodUnionFInt16) VDLIsZero() bool {
+	return false
+}
+
+func (x PodUnionFUint16) VDLIsZero() bool {
+	return false
+}
+
+func (x PodUnionFint32) VDLIsZero() bool {
+	return false
+}
+
+func (x PodUnionFuint32) VDLIsZero() bool {
+	return false
+}
+
+func (x PodUnionFInt64) VDLIsZero() bool {
+	return false
+}
+
+func (x PodUnionFUint64) VDLIsZero() bool {
+	return false
+}
+
+func (x PodUnionFFloat) VDLIsZero() bool {
+	return false
+}
+
+func (x PodUnionFDouble) VDLIsZero() bool {
+	return false
+}
+
+func (x PodUnionFBool) VDLIsZero() bool {
+	return false
+}
+
+func (x PodUnionFEnum) VDLIsZero() bool {
+	return false
+}
+
+func (x PodUnionFInt8) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*PodUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("FInt8"); err != nil {
+		return err
+	}
+	if err := enc.StartValue(vdl.Int8Type); err != nil {
+		return err
+	}
+	if err := enc.EncodeInt(int64(x.Value)); err != nil {
+		return err
+	}
+	if err := enc.FinishValue(); err != nil {
+		return err
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x PodUnionFInt8Other) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*PodUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("FInt8Other"); err != nil {
+		return err
+	}
+	if err := enc.StartValue(vdl.Int8Type); err != nil {
+		return err
+	}
+	if err := enc.EncodeInt(int64(x.Value)); err != nil {
+		return err
+	}
+	if err := enc.FinishValue(); err != nil {
+		return err
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x PodUnionFUint8) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*PodUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("FUint8"); err != nil {
+		return err
+	}
+	if err := enc.StartValue(vdl.ByteType); err != nil {
+		return err
+	}
+	if err := enc.EncodeUint(uint64(x.Value)); err != nil {
+		return err
+	}
+	if err := enc.FinishValue(); err != nil {
+		return err
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x PodUnionFInt16) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*PodUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("FInt16"); err != nil {
+		return err
+	}
+	if err := enc.StartValue(vdl.Int16Type); err != nil {
+		return err
+	}
+	if err := enc.EncodeInt(int64(x.Value)); err != nil {
+		return err
+	}
+	if err := enc.FinishValue(); err != nil {
+		return err
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x PodUnionFUint16) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*PodUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("FUint16"); err != nil {
+		return err
+	}
+	if err := enc.StartValue(vdl.Uint16Type); err != nil {
+		return err
+	}
+	if err := enc.EncodeUint(uint64(x.Value)); err != nil {
+		return err
+	}
+	if err := enc.FinishValue(); err != nil {
+		return err
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x PodUnionFint32) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*PodUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("Fint32"); err != nil {
+		return err
+	}
+	if err := enc.StartValue(vdl.Int32Type); err != nil {
+		return err
+	}
+	if err := enc.EncodeInt(int64(x.Value)); err != nil {
+		return err
+	}
+	if err := enc.FinishValue(); err != nil {
+		return err
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x PodUnionFuint32) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*PodUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("Fuint32"); err != nil {
+		return err
+	}
+	if err := enc.StartValue(vdl.Uint32Type); err != nil {
+		return err
+	}
+	if err := enc.EncodeUint(uint64(x.Value)); err != nil {
+		return err
+	}
+	if err := enc.FinishValue(); err != nil {
+		return err
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x PodUnionFInt64) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*PodUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("FInt64"); err != nil {
+		return err
+	}
+	if err := enc.StartValue(vdl.Int64Type); err != nil {
+		return err
+	}
+	if err := enc.EncodeInt(x.Value); err != nil {
+		return err
+	}
+	if err := enc.FinishValue(); err != nil {
+		return err
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x PodUnionFUint64) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*PodUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("FUint64"); err != nil {
+		return err
+	}
+	if err := enc.StartValue(vdl.Uint64Type); err != nil {
+		return err
+	}
+	if err := enc.EncodeUint(x.Value); err != nil {
+		return err
+	}
+	if err := enc.FinishValue(); err != nil {
+		return err
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x PodUnionFFloat) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*PodUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("FFloat"); err != nil {
+		return err
+	}
+	if err := enc.StartValue(vdl.Float32Type); err != nil {
+		return err
+	}
+	if err := enc.EncodeFloat(float64(x.Value)); err != nil {
+		return err
+	}
+	if err := enc.FinishValue(); err != nil {
+		return err
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x PodUnionFDouble) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*PodUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("FDouble"); err != nil {
+		return err
+	}
+	if err := enc.StartValue(vdl.Float64Type); err != nil {
+		return err
+	}
+	if err := enc.EncodeFloat(x.Value); err != nil {
+		return err
+	}
+	if err := enc.FinishValue(); err != nil {
+		return err
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x PodUnionFBool) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*PodUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("FBool"); err != nil {
+		return err
+	}
+	if err := enc.StartValue(vdl.BoolType); err != nil {
+		return err
+	}
+	if err := enc.EncodeBool(x.Value); err != nil {
+		return err
+	}
+	if err := enc.FinishValue(); err != nil {
+		return err
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x PodUnionFEnum) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*PodUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("FEnum"); err != nil {
+		return err
+	}
+	if err := x.Value.VDLWrite(enc); err != nil {
+		return err
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func VDLReadPodUnion(dec vdl.Decoder, x *PodUnion) error {
+	if err := dec.StartValue(); err != nil {
+		return err
+	}
+	if (dec.StackDepth() == 1 || dec.IsAny()) && !vdl.Compatible(vdl.TypeOf(x), dec.Type()) {
+		return fmt.Errorf("incompatible union %T, from %v", x, dec.Type())
+	}
+	f, err := dec.NextField()
+	if err != nil {
+		return err
+	}
+	switch f {
+	case "FInt8":
+		var field PodUnionFInt8
+		if err := dec.StartValue(); err != nil {
+			return err
+		}
+		tmp, err := dec.DecodeInt(8)
+		if err != nil {
+			return err
+		}
+		field.Value = int8(tmp)
+		if err := dec.FinishValue(); err != nil {
+			return err
+		}
+		*x = field
+	case "FInt8Other":
+		var field PodUnionFInt8Other
+		if err := dec.StartValue(); err != nil {
+			return err
+		}
+		tmp, err := dec.DecodeInt(8)
+		if err != nil {
+			return err
+		}
+		field.Value = int8(tmp)
+		if err := dec.FinishValue(); err != nil {
+			return err
+		}
+		*x = field
+	case "FUint8":
+		var field PodUnionFUint8
+		if err := dec.StartValue(); err != nil {
+			return err
+		}
+		tmp, err := dec.DecodeUint(8)
+		if err != nil {
+			return err
+		}
+		field.Value = byte(tmp)
+		if err := dec.FinishValue(); err != nil {
+			return err
+		}
+		*x = field
+	case "FInt16":
+		var field PodUnionFInt16
+		if err := dec.StartValue(); err != nil {
+			return err
+		}
+		tmp, err := dec.DecodeInt(16)
+		if err != nil {
+			return err
+		}
+		field.Value = int16(tmp)
+		if err := dec.FinishValue(); err != nil {
+			return err
+		}
+		*x = field
+	case "FUint16":
+		var field PodUnionFUint16
+		if err := dec.StartValue(); err != nil {
+			return err
+		}
+		tmp, err := dec.DecodeUint(16)
+		if err != nil {
+			return err
+		}
+		field.Value = uint16(tmp)
+		if err := dec.FinishValue(); err != nil {
+			return err
+		}
+		*x = field
+	case "Fint32":
+		var field PodUnionFint32
+		if err := dec.StartValue(); err != nil {
+			return err
+		}
+		tmp, err := dec.DecodeInt(32)
+		if err != nil {
+			return err
+		}
+		field.Value = int32(tmp)
+		if err := dec.FinishValue(); err != nil {
+			return err
+		}
+		*x = field
+	case "Fuint32":
+		var field PodUnionFuint32
+		if err := dec.StartValue(); err != nil {
+			return err
+		}
+		tmp, err := dec.DecodeUint(32)
+		if err != nil {
+			return err
+		}
+		field.Value = uint32(tmp)
+		if err := dec.FinishValue(); err != nil {
+			return err
+		}
+		*x = field
+	case "FInt64":
+		var field PodUnionFInt64
+		if err := dec.StartValue(); err != nil {
+			return err
+		}
+		var err error
+		if field.Value, err = dec.DecodeInt(64); err != nil {
+			return err
+		}
+		if err := dec.FinishValue(); err != nil {
+			return err
+		}
+		*x = field
+	case "FUint64":
+		var field PodUnionFUint64
+		if err := dec.StartValue(); err != nil {
+			return err
+		}
+		var err error
+		if field.Value, err = dec.DecodeUint(64); err != nil {
+			return err
+		}
+		if err := dec.FinishValue(); err != nil {
+			return err
+		}
+		*x = field
+	case "FFloat":
+		var field PodUnionFFloat
+		if err := dec.StartValue(); err != nil {
+			return err
+		}
+		tmp, err := dec.DecodeFloat(32)
+		if err != nil {
+			return err
+		}
+		field.Value = float32(tmp)
+		if err := dec.FinishValue(); err != nil {
+			return err
+		}
+		*x = field
+	case "FDouble":
+		var field PodUnionFDouble
+		if err := dec.StartValue(); err != nil {
+			return err
+		}
+		var err error
+		if field.Value, err = dec.DecodeFloat(64); err != nil {
+			return err
+		}
+		if err := dec.FinishValue(); err != nil {
+			return err
+		}
+		*x = field
+	case "FBool":
+		var field PodUnionFBool
+		if err := dec.StartValue(); err != nil {
+			return err
+		}
+		var err error
+		if field.Value, err = dec.DecodeBool(); err != nil {
+			return err
+		}
+		if err := dec.FinishValue(); err != nil {
+			return err
+		}
+		*x = field
+	case "FEnum":
+		var field PodUnionFEnum
+		if err := field.Value.VDLRead(dec); err != nil {
+			return err
+		}
+		*x = field
+	case "":
+		return fmt.Errorf("missing field in union %T, from %v", x, dec.Type())
+	default:
+		return fmt.Errorf("field %q not in union %T, from %v", f, x, dec.Type())
+	}
+	switch f, err := dec.NextField(); {
+	case err != nil:
+		return err
+	case f != "":
+		return fmt.Errorf("extra field %q in union %T, from %v", f, x, dec.Type())
+	}
+	return dec.FinishValue()
+}
+
 type PodUnionWrapper struct {
 	PodUnion PodUnion
 }
@@ -763,6 +1321,61 @@ func (t *PodUnionWrapperTarget) FinishFields(_ vdl.FieldsTarget) error {
 	return nil
 }
 
+func (x PodUnionWrapper) VDLIsZero() bool {
+	if x.PodUnion != nil && !x.PodUnion.VDLIsZero() {
+		return false
+	}
+	return true
+}
+
+func (x PodUnionWrapper) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*PodUnionWrapper)(nil)).Elem()); err != nil {
+		return err
+	}
+	if x.PodUnion != nil && !x.PodUnion.VDLIsZero() {
+		if err := enc.NextField("PodUnion"); err != nil {
+			return err
+		}
+		if err := x.PodUnion.VDLWrite(enc); err != nil {
+			return err
+		}
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x *PodUnionWrapper) VDLRead(dec vdl.Decoder) error {
+	*x = PodUnionWrapper{
+		PodUnion: PodUnionFInt8{},
+	}
+	if err := dec.StartValue(); err != nil {
+		return err
+	}
+	if (dec.StackDepth() == 1 || dec.IsAny()) && !vdl.Compatible(vdl.TypeOf(*x), dec.Type()) {
+		return fmt.Errorf("incompatible struct %T, from %v", *x, dec.Type())
+	}
+	for {
+		f, err := dec.NextField()
+		if err != nil {
+			return err
+		}
+		switch f {
+		case "":
+			return dec.FinishValue()
+		case "PodUnion":
+			if err := VDLReadPodUnion(dec, &x.PodUnion); err != nil {
+				return err
+			}
+		default:
+			if err := dec.SkipValue(); err != nil {
+				return err
+			}
+		}
+	}
+}
+
 type DummyStruct struct {
 	FInt8 int8
 }
@@ -847,6 +1460,70 @@ func (t *DummyStructTarget) FinishFields(_ vdl.FieldsTarget) error {
 	return nil
 }
 
+func (x DummyStruct) VDLIsZero() bool {
+	return x == DummyStruct{}
+}
+
+func (x DummyStruct) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*DummyStruct)(nil)).Elem()); err != nil {
+		return err
+	}
+	if x.FInt8 != 0 {
+		if err := enc.NextField("FInt8"); err != nil {
+			return err
+		}
+		if err := enc.StartValue(vdl.Int8Type); err != nil {
+			return err
+		}
+		if err := enc.EncodeInt(int64(x.FInt8)); err != nil {
+			return err
+		}
+		if err := enc.FinishValue(); err != nil {
+			return err
+		}
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x *DummyStruct) VDLRead(dec vdl.Decoder) error {
+	*x = DummyStruct{}
+	if err := dec.StartValue(); err != nil {
+		return err
+	}
+	if (dec.StackDepth() == 1 || dec.IsAny()) && !vdl.Compatible(vdl.TypeOf(*x), dec.Type()) {
+		return fmt.Errorf("incompatible struct %T, from %v", *x, dec.Type())
+	}
+	for {
+		f, err := dec.NextField()
+		if err != nil {
+			return err
+		}
+		switch f {
+		case "":
+			return dec.FinishValue()
+		case "FInt8":
+			if err := dec.StartValue(); err != nil {
+				return err
+			}
+			tmp, err := dec.DecodeInt(8)
+			if err != nil {
+				return err
+			}
+			x.FInt8 = int8(tmp)
+			if err := dec.FinishValue(); err != nil {
+				return err
+			}
+		default:
+			if err := dec.SkipValue(); err != nil {
+				return err
+			}
+		}
+	}
+}
+
 type (
 	// ObjectUnion represents any single field of the ObjectUnion union type.
 	ObjectUnion interface {
@@ -859,6 +1536,8 @@ type (
 		// __VDLReflect describes the ObjectUnion union type.
 		__VDLReflect(__ObjectUnionReflect)
 		FillVDLTarget(vdl.Target, *vdl.Type) error
+		VDLIsZero() bool
+		VDLWrite(vdl.Encoder) error
 	}
 	// ObjectUnionFInt8 represents field FInt8 of the ObjectUnion union type.
 	ObjectUnionFInt8 struct{ Value int8 }
@@ -1337,6 +2016,432 @@ func (t *__VDLTarget3_map) FinishMap(elem vdl.MapTarget) error {
 	return nil
 }
 
+func (x ObjectUnionFInt8) VDLIsZero() bool {
+	return x.Value == 0
+}
+
+func (x ObjectUnionFString) VDLIsZero() bool {
+	return false
+}
+
+func (x ObjectUnionFDummy) VDLIsZero() bool {
+	return false
+}
+
+func (x ObjectUnionFNullable) VDLIsZero() bool {
+	return false
+}
+
+func (x ObjectUnionFArrayInt8) VDLIsZero() bool {
+	return false
+}
+
+func (x ObjectUnionFMapInt8) VDLIsZero() bool {
+	return false
+}
+
+func (x ObjectUnionFPodUnion) VDLIsZero() bool {
+	return false
+}
+
+func (x ObjectUnionFInt8) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*ObjectUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("FInt8"); err != nil {
+		return err
+	}
+	if err := enc.StartValue(vdl.Int8Type); err != nil {
+		return err
+	}
+	if err := enc.EncodeInt(int64(x.Value)); err != nil {
+		return err
+	}
+	if err := enc.FinishValue(); err != nil {
+		return err
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x ObjectUnionFString) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*ObjectUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("FString"); err != nil {
+		return err
+	}
+	if err := enc.StartValue(vdl.StringType); err != nil {
+		return err
+	}
+	if err := enc.EncodeString(x.Value); err != nil {
+		return err
+	}
+	if err := enc.FinishValue(); err != nil {
+		return err
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x ObjectUnionFDummy) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*ObjectUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("FDummy"); err != nil {
+		return err
+	}
+	if err := x.Value.VDLWrite(enc); err != nil {
+		return err
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x ObjectUnionFNullable) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*ObjectUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("FNullable"); err != nil {
+		return err
+	}
+	if x.Value == nil {
+		if err := enc.NilValue(vdl.TypeOf((**DummyStruct)(nil))); err != nil {
+			return err
+		}
+	} else {
+		enc.SetNextStartValueIsOptional()
+		if err := enc.StartValue(vdl.TypeOf((*DummyStruct)(nil)).Elem()); err != nil {
+			return err
+		}
+		if err := x.Value.VDLWrite(enc); err != nil {
+			return err
+		}
+		if err := enc.FinishValue(); err != nil {
+			return err
+		}
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x ObjectUnionFArrayInt8) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*ObjectUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("FArrayInt8"); err != nil {
+		return err
+	}
+	if err := __VDLWriteAnon_list_1(enc, x.Value); err != nil {
+		return err
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x ObjectUnionFMapInt8) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*ObjectUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("FMapInt8"); err != nil {
+		return err
+	}
+	if err := __VDLWriteAnon_map_2(enc, x.Value); err != nil {
+		return err
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x ObjectUnionFPodUnion) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*ObjectUnion)(nil))); err != nil {
+		return err
+	}
+	if err := enc.NextField("FPodUnion"); err != nil {
+		return err
+	}
+	if err := x.Value.VDLWrite(enc); err != nil {
+		return err
+	}
+	switch {
+	case x.Value == nil:
+		// Write the zero value of the union type.
+		if err := vdl.ZeroValue(vdl.TypeOf((*PodUnion)(nil))).VDLWrite(enc); err != nil {
+			return err
+		}
+	default:
+		if err := x.Value.VDLWrite(enc); err != nil {
+			return err
+		}
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func __VDLWriteAnon_list_1(enc vdl.Encoder, x []int8) error {
+	if err := enc.StartValue(vdl.TypeOf((*[]int8)(nil))); err != nil {
+		return err
+	}
+	if err := enc.SetLenHint(len(x)); err != nil {
+		return err
+	}
+	for i := 0; i < len(x); i++ {
+		if err := enc.NextEntry(false); err != nil {
+			return err
+		}
+		if err := enc.StartValue(vdl.Int8Type); err != nil {
+			return err
+		}
+		if err := enc.EncodeInt(int64(x[i])); err != nil {
+			return err
+		}
+		if err := enc.FinishValue(); err != nil {
+			return err
+		}
+	}
+	if err := enc.NextEntry(true); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func __VDLWriteAnon_map_2(enc vdl.Encoder, x map[string]int8) error {
+	if err := enc.StartValue(vdl.TypeOf((*map[string]int8)(nil))); err != nil {
+		return err
+	}
+	if err := enc.SetLenHint(len(x)); err != nil {
+		return err
+	}
+	for key, elem := range x {
+		if err := enc.NextEntry(false); err != nil {
+			return err
+		}
+		if err := enc.StartValue(vdl.StringType); err != nil {
+			return err
+		}
+		if err := enc.EncodeString(key); err != nil {
+			return err
+		}
+		if err := enc.FinishValue(); err != nil {
+			return err
+		}
+		if err := enc.StartValue(vdl.Int8Type); err != nil {
+			return err
+		}
+		if err := enc.EncodeInt(int64(elem)); err != nil {
+			return err
+		}
+		if err := enc.FinishValue(); err != nil {
+			return err
+		}
+	}
+	if err := enc.NextEntry(true); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func VDLReadObjectUnion(dec vdl.Decoder, x *ObjectUnion) error {
+	if err := dec.StartValue(); err != nil {
+		return err
+	}
+	if (dec.StackDepth() == 1 || dec.IsAny()) && !vdl.Compatible(vdl.TypeOf(x), dec.Type()) {
+		return fmt.Errorf("incompatible union %T, from %v", x, dec.Type())
+	}
+	f, err := dec.NextField()
+	if err != nil {
+		return err
+	}
+	switch f {
+	case "FInt8":
+		var field ObjectUnionFInt8
+		if err := dec.StartValue(); err != nil {
+			return err
+		}
+		tmp, err := dec.DecodeInt(8)
+		if err != nil {
+			return err
+		}
+		field.Value = int8(tmp)
+		if err := dec.FinishValue(); err != nil {
+			return err
+		}
+		*x = field
+	case "FString":
+		var field ObjectUnionFString
+		if err := dec.StartValue(); err != nil {
+			return err
+		}
+		var err error
+		if field.Value, err = dec.DecodeString(); err != nil {
+			return err
+		}
+		if err := dec.FinishValue(); err != nil {
+			return err
+		}
+		*x = field
+	case "FDummy":
+		var field ObjectUnionFDummy
+		if err := field.Value.VDLRead(dec); err != nil {
+			return err
+		}
+		*x = field
+	case "FNullable":
+		var field ObjectUnionFNullable
+		if err := dec.StartValue(); err != nil {
+			return err
+		}
+		if dec.IsNil() {
+			if (dec.StackDepth() == 1 || dec.IsAny()) && !vdl.Compatible(vdl.TypeOf(field.Value), dec.Type()) {
+				return fmt.Errorf("incompatible optional %T, from %v", field.Value, dec.Type())
+			}
+			field.Value = nil
+			if err := dec.FinishValue(); err != nil {
+				return err
+			}
+		} else {
+			field.Value = new(DummyStruct)
+			dec.IgnoreNextStartValue()
+			if err := field.Value.VDLRead(dec); err != nil {
+				return err
+			}
+		}
+		*x = field
+	case "FArrayInt8":
+		var field ObjectUnionFArrayInt8
+		if err := __VDLReadAnon_list_1(dec, &field.Value); err != nil {
+			return err
+		}
+		*x = field
+	case "FMapInt8":
+		var field ObjectUnionFMapInt8
+		if err := __VDLReadAnon_map_2(dec, &field.Value); err != nil {
+			return err
+		}
+		*x = field
+	case "FPodUnion":
+		var field ObjectUnionFPodUnion
+		if err := VDLReadPodUnion(dec, &field.Value); err != nil {
+			return err
+		}
+		*x = field
+	case "":
+		return fmt.Errorf("missing field in union %T, from %v", x, dec.Type())
+	default:
+		return fmt.Errorf("field %q not in union %T, from %v", f, x, dec.Type())
+	}
+	switch f, err := dec.NextField(); {
+	case err != nil:
+		return err
+	case f != "":
+		return fmt.Errorf("extra field %q in union %T, from %v", f, x, dec.Type())
+	}
+	return dec.FinishValue()
+}
+
+func __VDLReadAnon_list_1(dec vdl.Decoder, x *[]int8) error {
+	if err := dec.StartValue(); err != nil {
+		return err
+	}
+	if (dec.StackDepth() == 1 || dec.IsAny()) && !vdl.Compatible(vdl.TypeOf(*x), dec.Type()) {
+		return fmt.Errorf("incompatible list %T, from %v", *x, dec.Type())
+	}
+	switch len := dec.LenHint(); {
+	case len > 0:
+		*x = make([]int8, 0, len)
+	default:
+		*x = nil
+	}
+	for {
+		switch done, err := dec.NextEntry(); {
+		case err != nil:
+			return err
+		case done:
+			return dec.FinishValue()
+		}
+		var elem int8
+		if err := dec.StartValue(); err != nil {
+			return err
+		}
+		tmp, err := dec.DecodeInt(8)
+		if err != nil {
+			return err
+		}
+		elem = int8(tmp)
+		if err := dec.FinishValue(); err != nil {
+			return err
+		}
+		*x = append(*x, elem)
+	}
+}
+
+func __VDLReadAnon_map_2(dec vdl.Decoder, x *map[string]int8) error {
+	if err := dec.StartValue(); err != nil {
+		return err
+	}
+	if (dec.StackDepth() == 1 || dec.IsAny()) && !vdl.Compatible(vdl.TypeOf(*x), dec.Type()) {
+		return fmt.Errorf("incompatible map %T, from %v", *x, dec.Type())
+	}
+	var tmpMap map[string]int8
+	if len := dec.LenHint(); len > 0 {
+		tmpMap = make(map[string]int8, len)
+	}
+	for {
+		switch done, err := dec.NextEntry(); {
+		case err != nil:
+			return err
+		case done:
+			*x = tmpMap
+			return dec.FinishValue()
+		}
+		var key string
+		{
+			if err := dec.StartValue(); err != nil {
+				return err
+			}
+			var err error
+			if key, err = dec.DecodeString(); err != nil {
+				return err
+			}
+			if err := dec.FinishValue(); err != nil {
+				return err
+			}
+		}
+		var elem int8
+		{
+			if err := dec.StartValue(); err != nil {
+				return err
+			}
+			tmp, err := dec.DecodeInt(8)
+			if err != nil {
+				return err
+			}
+			elem = int8(tmp)
+			if err := dec.FinishValue(); err != nil {
+				return err
+			}
+		}
+		if tmpMap == nil {
+			tmpMap = make(map[string]int8)
+		}
+		tmpMap[key] = elem
+	}
+}
+
 type ObjectUnionWrapper struct {
 	ObjectUnion ObjectUnion
 }
@@ -1429,6 +2534,61 @@ func (t *ObjectUnionWrapperTarget) ZeroField(name string) error {
 func (t *ObjectUnionWrapperTarget) FinishFields(_ vdl.FieldsTarget) error {
 
 	return nil
+}
+
+func (x ObjectUnionWrapper) VDLIsZero() bool {
+	if x.ObjectUnion != nil && !x.ObjectUnion.VDLIsZero() {
+		return false
+	}
+	return true
+}
+
+func (x ObjectUnionWrapper) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*ObjectUnionWrapper)(nil)).Elem()); err != nil {
+		return err
+	}
+	if x.ObjectUnion != nil && !x.ObjectUnion.VDLIsZero() {
+		if err := enc.NextField("ObjectUnion"); err != nil {
+			return err
+		}
+		if err := x.ObjectUnion.VDLWrite(enc); err != nil {
+			return err
+		}
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x *ObjectUnionWrapper) VDLRead(dec vdl.Decoder) error {
+	*x = ObjectUnionWrapper{
+		ObjectUnion: ObjectUnionFInt8{},
+	}
+	if err := dec.StartValue(); err != nil {
+		return err
+	}
+	if (dec.StackDepth() == 1 || dec.IsAny()) && !vdl.Compatible(vdl.TypeOf(*x), dec.Type()) {
+		return fmt.Errorf("incompatible struct %T, from %v", *x, dec.Type())
+	}
+	for {
+		f, err := dec.NextField()
+		if err != nil {
+			return err
+		}
+		switch f {
+		case "":
+			return dec.FinishValue()
+		case "ObjectUnion":
+			if err := VDLReadObjectUnion(dec, &x.ObjectUnion); err != nil {
+				return err
+			}
+		default:
+			if err := dec.SkipValue(); err != nil {
+				return err
+			}
+		}
+	}
 }
 
 type Rect struct {
@@ -1597,6 +2757,148 @@ func (t *RectTarget) ZeroField(name string) error {
 func (t *RectTarget) FinishFields(_ vdl.FieldsTarget) error {
 
 	return nil
+}
+
+func (x Rect) VDLIsZero() bool {
+	return x == Rect{}
+}
+
+func (x Rect) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*Rect)(nil)).Elem()); err != nil {
+		return err
+	}
+	if x.X != 0 {
+		if err := enc.NextField("X"); err != nil {
+			return err
+		}
+		if err := enc.StartValue(vdl.Int32Type); err != nil {
+			return err
+		}
+		if err := enc.EncodeInt(int64(x.X)); err != nil {
+			return err
+		}
+		if err := enc.FinishValue(); err != nil {
+			return err
+		}
+	}
+	if x.Y != 0 {
+		if err := enc.NextField("Y"); err != nil {
+			return err
+		}
+		if err := enc.StartValue(vdl.Int32Type); err != nil {
+			return err
+		}
+		if err := enc.EncodeInt(int64(x.Y)); err != nil {
+			return err
+		}
+		if err := enc.FinishValue(); err != nil {
+			return err
+		}
+	}
+	if x.Width != 0 {
+		if err := enc.NextField("Width"); err != nil {
+			return err
+		}
+		if err := enc.StartValue(vdl.Int32Type); err != nil {
+			return err
+		}
+		if err := enc.EncodeInt(int64(x.Width)); err != nil {
+			return err
+		}
+		if err := enc.FinishValue(); err != nil {
+			return err
+		}
+	}
+	if x.Height != 0 {
+		if err := enc.NextField("Height"); err != nil {
+			return err
+		}
+		if err := enc.StartValue(vdl.Int32Type); err != nil {
+			return err
+		}
+		if err := enc.EncodeInt(int64(x.Height)); err != nil {
+			return err
+		}
+		if err := enc.FinishValue(); err != nil {
+			return err
+		}
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x *Rect) VDLRead(dec vdl.Decoder) error {
+	*x = Rect{}
+	if err := dec.StartValue(); err != nil {
+		return err
+	}
+	if (dec.StackDepth() == 1 || dec.IsAny()) && !vdl.Compatible(vdl.TypeOf(*x), dec.Type()) {
+		return fmt.Errorf("incompatible struct %T, from %v", *x, dec.Type())
+	}
+	for {
+		f, err := dec.NextField()
+		if err != nil {
+			return err
+		}
+		switch f {
+		case "":
+			return dec.FinishValue()
+		case "X":
+			if err := dec.StartValue(); err != nil {
+				return err
+			}
+			tmp, err := dec.DecodeInt(32)
+			if err != nil {
+				return err
+			}
+			x.X = int32(tmp)
+			if err := dec.FinishValue(); err != nil {
+				return err
+			}
+		case "Y":
+			if err := dec.StartValue(); err != nil {
+				return err
+			}
+			tmp, err := dec.DecodeInt(32)
+			if err != nil {
+				return err
+			}
+			x.Y = int32(tmp)
+			if err := dec.FinishValue(); err != nil {
+				return err
+			}
+		case "Width":
+			if err := dec.StartValue(); err != nil {
+				return err
+			}
+			tmp, err := dec.DecodeInt(32)
+			if err != nil {
+				return err
+			}
+			x.Width = int32(tmp)
+			if err := dec.FinishValue(); err != nil {
+				return err
+			}
+		case "Height":
+			if err := dec.StartValue(); err != nil {
+				return err
+			}
+			tmp, err := dec.DecodeInt(32)
+			if err != nil {
+				return err
+			}
+			x.Height = int32(tmp)
+			if err := dec.FinishValue(); err != nil {
+				return err
+			}
+		default:
+			if err := dec.SkipValue(); err != nil {
+				return err
+			}
+		}
+	}
 }
 
 type MultiVersionStruct struct {
@@ -1844,6 +3146,188 @@ func (t *MultiVersionStructTarget) FinishFields(_ vdl.FieldsTarget) error {
 	return nil
 }
 
+func (x MultiVersionStruct) VDLIsZero() bool {
+	if x.FInt32 != 0 {
+		return false
+	}
+	if x.FRect != (Rect{}) {
+		return false
+	}
+	if x.FString != "" {
+		return false
+	}
+	if len(x.FArray) != 0 {
+		return false
+	}
+	if x.FBool {
+		return false
+	}
+	if x.FInt16 != 0 {
+		return false
+	}
+	return true
+}
+
+func (x MultiVersionStruct) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*MultiVersionStruct)(nil)).Elem()); err != nil {
+		return err
+	}
+	if x.FInt32 != 0 {
+		if err := enc.NextField("FInt32"); err != nil {
+			return err
+		}
+		if err := enc.StartValue(vdl.Int32Type); err != nil {
+			return err
+		}
+		if err := enc.EncodeInt(int64(x.FInt32)); err != nil {
+			return err
+		}
+		if err := enc.FinishValue(); err != nil {
+			return err
+		}
+	}
+	if x.FRect != (Rect{}) {
+		if err := enc.NextField("FRect"); err != nil {
+			return err
+		}
+		if err := x.FRect.VDLWrite(enc); err != nil {
+			return err
+		}
+	}
+	if x.FString != "" {
+		if err := enc.NextField("FString"); err != nil {
+			return err
+		}
+		if err := enc.StartValue(vdl.StringType); err != nil {
+			return err
+		}
+		if err := enc.EncodeString(x.FString); err != nil {
+			return err
+		}
+		if err := enc.FinishValue(); err != nil {
+			return err
+		}
+	}
+	if len(x.FArray) != 0 {
+		if err := enc.NextField("FArray"); err != nil {
+			return err
+		}
+		if err := __VDLWriteAnon_list_1(enc, x.FArray); err != nil {
+			return err
+		}
+	}
+	if x.FBool {
+		if err := enc.NextField("FBool"); err != nil {
+			return err
+		}
+		if err := enc.StartValue(vdl.BoolType); err != nil {
+			return err
+		}
+		if err := enc.EncodeBool(x.FBool); err != nil {
+			return err
+		}
+		if err := enc.FinishValue(); err != nil {
+			return err
+		}
+	}
+	if x.FInt16 != 0 {
+		if err := enc.NextField("FInt16"); err != nil {
+			return err
+		}
+		if err := enc.StartValue(vdl.Int16Type); err != nil {
+			return err
+		}
+		if err := enc.EncodeInt(int64(x.FInt16)); err != nil {
+			return err
+		}
+		if err := enc.FinishValue(); err != nil {
+			return err
+		}
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x *MultiVersionStruct) VDLRead(dec vdl.Decoder) error {
+	*x = MultiVersionStruct{}
+	if err := dec.StartValue(); err != nil {
+		return err
+	}
+	if (dec.StackDepth() == 1 || dec.IsAny()) && !vdl.Compatible(vdl.TypeOf(*x), dec.Type()) {
+		return fmt.Errorf("incompatible struct %T, from %v", *x, dec.Type())
+	}
+	for {
+		f, err := dec.NextField()
+		if err != nil {
+			return err
+		}
+		switch f {
+		case "":
+			return dec.FinishValue()
+		case "FInt32":
+			if err := dec.StartValue(); err != nil {
+				return err
+			}
+			tmp, err := dec.DecodeInt(32)
+			if err != nil {
+				return err
+			}
+			x.FInt32 = int32(tmp)
+			if err := dec.FinishValue(); err != nil {
+				return err
+			}
+		case "FRect":
+			if err := x.FRect.VDLRead(dec); err != nil {
+				return err
+			}
+		case "FString":
+			if err := dec.StartValue(); err != nil {
+				return err
+			}
+			var err error
+			if x.FString, err = dec.DecodeString(); err != nil {
+				return err
+			}
+			if err := dec.FinishValue(); err != nil {
+				return err
+			}
+		case "FArray":
+			if err := __VDLReadAnon_list_1(dec, &x.FArray); err != nil {
+				return err
+			}
+		case "FBool":
+			if err := dec.StartValue(); err != nil {
+				return err
+			}
+			var err error
+			if x.FBool, err = dec.DecodeBool(); err != nil {
+				return err
+			}
+			if err := dec.FinishValue(); err != nil {
+				return err
+			}
+		case "FInt16":
+			if err := dec.StartValue(); err != nil {
+				return err
+			}
+			tmp, err := dec.DecodeInt(16)
+			if err != nil {
+				return err
+			}
+			x.FInt16 = int16(tmp)
+			if err := dec.FinishValue(); err != nil {
+				return err
+			}
+		default:
+			if err := dec.SkipValue(); err != nil {
+				return err
+			}
+		}
+	}
+}
+
 type MultiVersionStructV3 struct {
 	FInt32  int32
 	FRect   Rect
@@ -1983,6 +3467,107 @@ func (t *MultiVersionStructV3Target) ZeroField(name string) error {
 func (t *MultiVersionStructV3Target) FinishFields(_ vdl.FieldsTarget) error {
 
 	return nil
+}
+
+func (x MultiVersionStructV3) VDLIsZero() bool {
+	return x == MultiVersionStructV3{}
+}
+
+func (x MultiVersionStructV3) VDLWrite(enc vdl.Encoder) error {
+	if err := enc.StartValue(vdl.TypeOf((*MultiVersionStructV3)(nil)).Elem()); err != nil {
+		return err
+	}
+	if x.FInt32 != 0 {
+		if err := enc.NextField("FInt32"); err != nil {
+			return err
+		}
+		if err := enc.StartValue(vdl.Int32Type); err != nil {
+			return err
+		}
+		if err := enc.EncodeInt(int64(x.FInt32)); err != nil {
+			return err
+		}
+		if err := enc.FinishValue(); err != nil {
+			return err
+		}
+	}
+	if x.FRect != (Rect{}) {
+		if err := enc.NextField("FRect"); err != nil {
+			return err
+		}
+		if err := x.FRect.VDLWrite(enc); err != nil {
+			return err
+		}
+	}
+	if x.FString != "" {
+		if err := enc.NextField("FString"); err != nil {
+			return err
+		}
+		if err := enc.StartValue(vdl.StringType); err != nil {
+			return err
+		}
+		if err := enc.EncodeString(x.FString); err != nil {
+			return err
+		}
+		if err := enc.FinishValue(); err != nil {
+			return err
+		}
+	}
+	if err := enc.NextField(""); err != nil {
+		return err
+	}
+	return enc.FinishValue()
+}
+
+func (x *MultiVersionStructV3) VDLRead(dec vdl.Decoder) error {
+	*x = MultiVersionStructV3{}
+	if err := dec.StartValue(); err != nil {
+		return err
+	}
+	if (dec.StackDepth() == 1 || dec.IsAny()) && !vdl.Compatible(vdl.TypeOf(*x), dec.Type()) {
+		return fmt.Errorf("incompatible struct %T, from %v", *x, dec.Type())
+	}
+	for {
+		f, err := dec.NextField()
+		if err != nil {
+			return err
+		}
+		switch f {
+		case "":
+			return dec.FinishValue()
+		case "FInt32":
+			if err := dec.StartValue(); err != nil {
+				return err
+			}
+			tmp, err := dec.DecodeInt(32)
+			if err != nil {
+				return err
+			}
+			x.FInt32 = int32(tmp)
+			if err := dec.FinishValue(); err != nil {
+				return err
+			}
+		case "FRect":
+			if err := x.FRect.VDLRead(dec); err != nil {
+				return err
+			}
+		case "FString":
+			if err := dec.StartValue(); err != nil {
+				return err
+			}
+			var err error
+			if x.FString, err = dec.DecodeString(); err != nil {
+				return err
+			}
+			if err := dec.FinishValue(); err != nil {
+				return err
+			}
+		default:
+			if err := dec.SkipValue(); err != nil {
+				return err
+			}
+		}
+	}
 }
 
 var __VDLInitCalled bool

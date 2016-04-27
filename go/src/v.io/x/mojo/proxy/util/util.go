@@ -46,6 +46,21 @@ func (ft *structSplitFieldsTarget) FinishField(key, field vdl.Target) error {
 	return nil
 }
 
+func (ft *structSplitFieldsTarget) ZeroField(name string) (error) {
+	key, field, err := ft.StartField(name)
+	if err != nil {
+		return err
+	}
+	fld, index := ft.targ.tt.FieldByName(name)
+	if index < 0 {
+		return vdl.ErrFieldNoExist
+	}
+	if err := vdl.FromValue(field, vdl.ZeroValue(fld.Type)); err != nil {
+		return err
+	}
+	return ft.FinishField(key, field)
+}
+
 func StructSplitTarget() *structSplitTarget {
 	return &structSplitTarget{}
 }

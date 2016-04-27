@@ -129,13 +129,28 @@ $(BUILD_DIR)/echo_client.mojo: gen/go/src/mojom/examples/echo/echo.mojom.go
 $(BUILD_DIR)/echo_server.mojo: gen/go/src/mojom/examples/echo/echo.mojom.go
 	$(call MOGO_BUILD,examples/echo/server,$@)
 
-.PHONY: test-integration
-test-integration: mock packages $(BUILD_DIR)/test_client.mojo $(BUILD_DIR)/test_server.mojo $(BUILD_DIR)/v23clientproxy.mojo $(BUILD_DIR)/v23serverproxy.mojo
-	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go || ($(MAKE) unmock && exit 1)
-	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,v23:dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -client dart || ($(MAKE) unmock && exit 1)
-	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,v23:dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -server dart || ($(MAKE) unmock && exit 1)
-	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,v23:dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -client dart -server dart || ($(MAKE) unmock && exit 1)
+.PHONY: test-integration-depends
+test-integration-depends: mock packages $(BUILD_DIR)/test_client.mojo $(BUILD_DIR)/test_server.mojo $(BUILD_DIR)/v23clientproxy.mojo $(BUILD_DIR)/v23serverproxy.mojo
 	$(MAKE) unmock
+
+.PHONY: test-integration-go-go
+test-integration-go-go: test-integration-depends
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go || ($(MAKE) unmock && exit 1)
+
+.PHONY: test-integration-dart-go
+test-integration-dart-go: test-integration-depends
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,v23:dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -client dart || ($(MAKE) unmock && exit 1)
+
+.PHONY: test-integration-go-dart
+test-integration-go-dart: test-integration-depends
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,v23:dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -server dart || ($(MAKE) unmock && exit 1)
+
+.PHONY: test-integration-dart-dart
+test-integration-dart-dart: test-integration-depends
+	GOPATH=$(PWD)/go:$(PWD)/gen/go jiri go -profiles=v23:base,v23:dart,$(MOJO_PROFILE) run go/src/v.io/x/mojo/tests/cmd/runtest.go -client dart -server dart || ($(MAKE) unmock && exit 1)
+
+.PHONY: test-integration
+test-integration: test-integration-go-go test-integration-dart-go test-integration-go-dart test-integration-dart-dart
 
 $(BUILD_DIR)/test_client.mojo: go/src/v.io/x/mojo/tests/client/test_client.go gen/go/src/mojom/tests/end_to_end_test/end_to_end_test.mojom.go dart-tests/end_to_end_test/lib/gen/dart-gen/mojom/lib/mojo/v23proxy/tests/end_to_end_test.mojom.dart gen/go/src/mojom/v23clientproxy/v23clientproxy.mojom.go
 	$(call MOGO_BUILD,v.io/x/mojo/tests/client,$@)
