@@ -343,9 +343,8 @@ func enumType(t *vdl.Type) mojom_types.UserDefinedType {
 	enumValues := make([]mojom_types.EnumValue, t.NumEnumLabel())
 	for i := 0; i < t.NumEnumLabel(); i++ {
 		enumValues[i] = mojom_types.EnumValue{
-			DeclData:    &mojom_types.DeclarationData{ShortName: strPtr(t.EnumLabel(i))},
-			IntValue:    int32(i),
-			EnumTypeKey: mojomTypeKey(t),
+			DeclData: &mojom_types.DeclarationData{ShortName: strPtr(t.EnumLabel(i))},
+			IntValue: int32(i),
 		}
 	}
 	_, name := vdl.SplitIdent(t.Name())

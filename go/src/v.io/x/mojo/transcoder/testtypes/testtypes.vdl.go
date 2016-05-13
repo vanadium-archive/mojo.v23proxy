@@ -1301,7 +1301,7 @@ func (t *PodUnionWrapperTarget) StartField(name string) (key, field vdl.Target, 
 		target, err := &t.podUnionTarget, error(nil)
 		return nil, target, err
 	default:
-		return nil, nil, fmt.Errorf("field %s not in struct src/v.io/x/mojo/transcoder/testtypes.PodUnionWrapper", name)
+		return nil, nil, vdl.ErrFieldNoExist
 	}
 }
 func (t *PodUnionWrapperTarget) FinishField(_, _ vdl.Target) error {
@@ -1313,7 +1313,7 @@ func (t *PodUnionWrapperTarget) ZeroField(name string) error {
 		t.Value.PodUnion = PodUnion(PodUnionFInt8{})
 		return nil
 	default:
-		return fmt.Errorf("field %s not in struct src/v.io/x/mojo/transcoder/testtypes.PodUnionWrapper", name)
+		return vdl.ErrFieldNoExist
 	}
 }
 func (t *PodUnionWrapperTarget) FinishFields(_ vdl.FieldsTarget) error {
@@ -1440,7 +1440,7 @@ func (t *DummyStructTarget) StartField(name string) (key, field vdl.Target, _ er
 		target, err := &t.fInt8Target, error(nil)
 		return nil, target, err
 	default:
-		return nil, nil, fmt.Errorf("field %s not in struct src/v.io/x/mojo/transcoder/testtypes.DummyStruct", name)
+		return nil, nil, vdl.ErrFieldNoExist
 	}
 }
 func (t *DummyStructTarget) FinishField(_, _ vdl.Target) error {
@@ -1452,7 +1452,7 @@ func (t *DummyStructTarget) ZeroField(name string) error {
 		t.Value.FInt8 = int8(0)
 		return nil
 	default:
-		return fmt.Errorf("field %s not in struct src/v.io/x/mojo/transcoder/testtypes.DummyStruct", name)
+		return vdl.ErrFieldNoExist
 	}
 }
 func (t *DummyStructTarget) FinishFields(_ vdl.FieldsTarget) error {
@@ -2117,15 +2117,11 @@ func (x ObjectUnionFNullable) VDLWrite(enc vdl.Encoder) error {
 		}
 	} else {
 		enc.SetNextStartValueIsOptional()
-		if err := enc.StartValue(vdl.TypeOf((*DummyStruct)(nil)).Elem()); err != nil {
-			return err
-		}
+
 		if err := x.Value.VDLWrite(enc); err != nil {
 			return err
 		}
-		if err := enc.FinishValue(); err != nil {
-			return err
-		}
+
 	}
 	if err := enc.NextField(""); err != nil {
 		return err
@@ -2170,9 +2166,6 @@ func (x ObjectUnionFPodUnion) VDLWrite(enc vdl.Encoder) error {
 		return err
 	}
 	if err := enc.NextField("FPodUnion"); err != nil {
-		return err
-	}
-	if err := x.Value.VDLWrite(enc); err != nil {
 		return err
 	}
 	switch {
@@ -2516,7 +2509,7 @@ func (t *ObjectUnionWrapperTarget) StartField(name string) (key, field vdl.Targe
 		target, err := &t.objectUnionTarget, error(nil)
 		return nil, target, err
 	default:
-		return nil, nil, fmt.Errorf("field %s not in struct src/v.io/x/mojo/transcoder/testtypes.ObjectUnionWrapper", name)
+		return nil, nil, vdl.ErrFieldNoExist
 	}
 }
 func (t *ObjectUnionWrapperTarget) FinishField(_, _ vdl.Target) error {
@@ -2528,7 +2521,7 @@ func (t *ObjectUnionWrapperTarget) ZeroField(name string) error {
 		t.Value.ObjectUnion = ObjectUnion(ObjectUnionFInt8{})
 		return nil
 	default:
-		return fmt.Errorf("field %s not in struct src/v.io/x/mojo/transcoder/testtypes.ObjectUnionWrapper", name)
+		return vdl.ErrFieldNoExist
 	}
 }
 func (t *ObjectUnionWrapperTarget) FinishFields(_ vdl.FieldsTarget) error {
@@ -2730,7 +2723,7 @@ func (t *RectTarget) StartField(name string) (key, field vdl.Target, _ error) {
 		target, err := &t.heightTarget, error(nil)
 		return nil, target, err
 	default:
-		return nil, nil, fmt.Errorf("field %s not in struct src/v.io/x/mojo/transcoder/testtypes.Rect", name)
+		return nil, nil, vdl.ErrFieldNoExist
 	}
 }
 func (t *RectTarget) FinishField(_, _ vdl.Target) error {
@@ -2751,7 +2744,7 @@ func (t *RectTarget) ZeroField(name string) error {
 		t.Value.Height = int32(0)
 		return nil
 	default:
-		return fmt.Errorf("field %s not in struct src/v.io/x/mojo/transcoder/testtypes.Rect", name)
+		return vdl.ErrFieldNoExist
 	}
 }
 func (t *RectTarget) FinishFields(_ vdl.FieldsTarget) error {
@@ -3111,7 +3104,7 @@ func (t *MultiVersionStructTarget) StartField(name string) (key, field vdl.Targe
 		target, err := &t.fInt16Target, error(nil)
 		return nil, target, err
 	default:
-		return nil, nil, fmt.Errorf("field %s not in struct src/v.io/x/mojo/transcoder/testtypes.MultiVersionStruct", name)
+		return nil, nil, vdl.ErrFieldNoExist
 	}
 }
 func (t *MultiVersionStructTarget) FinishField(_, _ vdl.Target) error {
@@ -3138,7 +3131,7 @@ func (t *MultiVersionStructTarget) ZeroField(name string) error {
 		t.Value.FInt16 = int16(0)
 		return nil
 	default:
-		return fmt.Errorf("field %s not in struct src/v.io/x/mojo/transcoder/testtypes.MultiVersionStruct", name)
+		return vdl.ErrFieldNoExist
 	}
 }
 func (t *MultiVersionStructTarget) FinishFields(_ vdl.FieldsTarget) error {
@@ -3443,7 +3436,7 @@ func (t *MultiVersionStructV3Target) StartField(name string) (key, field vdl.Tar
 		target, err := &t.fStringTarget, error(nil)
 		return nil, target, err
 	default:
-		return nil, nil, fmt.Errorf("field %s not in struct src/v.io/x/mojo/transcoder/testtypes.MultiVersionStructV3", name)
+		return nil, nil, vdl.ErrFieldNoExist
 	}
 }
 func (t *MultiVersionStructV3Target) FinishField(_, _ vdl.Target) error {
@@ -3461,7 +3454,7 @@ func (t *MultiVersionStructV3Target) ZeroField(name string) error {
 		t.Value.FString = ""
 		return nil
 	default:
-		return fmt.Errorf("field %s not in struct src/v.io/x/mojo/transcoder/testtypes.MultiVersionStructV3", name)
+		return vdl.ErrFieldNoExist
 	}
 }
 func (t *MultiVersionStructV3Target) FinishFields(_ vdl.FieldsTarget) error {
